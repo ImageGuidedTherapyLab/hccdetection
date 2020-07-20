@@ -6,6 +6,7 @@ DATADIR=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\
 
 art: $(addprefix $(WORKDIR)/,$(addsuffix /Art.raw.nii.gz,$(UIDLIST)))  
 scaled: $(addprefix $(WORKDIR)/,$(addsuffix /Art.scaled.nii.gz,$(UIDLIST)))  
+combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
 pre: $(addprefix $(WORKDIR)/,$(addsuffix /Pre.raw.nii.gz,$(UIDLIST)))  
 ven: $(addprefix $(WORKDIR)/,$(addsuffix /Ven.raw.nii.gz,$(UIDLIST)))  
 truth: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.nii.gz,$(UIDLIST)))  
@@ -16,6 +17,8 @@ lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(UIDLIST)))
 
 %/Art.scaled.nii.gz: %/Art.raw.nii.gz
 	python normalization.py --imagefile=$< 
+%/Art.combined.nii.gz: %/Art.scaled.nii.gz %/Truth.nii.gz
+	c3d $^ -binarize  -omc $@
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
 	DicomSeriesReadImageWrite2 $(DATADIR)/$(word 2,$(subst /, ,$*))/ART $@
