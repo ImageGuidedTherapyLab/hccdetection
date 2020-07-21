@@ -27,10 +27,12 @@ trainingList = {...
      ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/512/run_a/005020/005/004/setup.json'),...
                 };
 
+gpuDevice(2)
+
 %for idtrain= 1: numel(trainingList )
 for idtrain= 6:10
   % walker - best way to parallelize ? 
-  a = trainingList{idtrain} ; 
+  a = trainingList{idtrain}  
   
   % before starting, need to define "n" which is the number of channels.
   NumberOfChannels = 1;
