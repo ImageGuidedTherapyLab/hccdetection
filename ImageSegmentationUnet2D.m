@@ -1,6 +1,7 @@
 classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass  
    methods
       function obj = ImageSegmentationUnet2D(fname)
+        obj = obj@ImageSegmentationBaseClass(fname);
         obj.patchSize = [320 320 1];
         obj.patchPerImage = 80;
       end

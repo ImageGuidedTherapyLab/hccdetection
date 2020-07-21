@@ -28,7 +28,7 @@ trainingList = {...
                 };
 
 %for idtrain= 1: numel(trainingList )
-for idtrain= 7:7
+for idtrain= 6:10
   % walker - best way to parallelize ? 
   a = trainingList{idtrain} ; 
   
