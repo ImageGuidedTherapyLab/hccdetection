@@ -44,7 +44,7 @@ trainingdictionary = {'hcc':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestH
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/trainingnorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccvol':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumordata.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccmri':{'dbfile':'/home/fuentes/trainingdata.csv','rootlocation':'/','delimiter':','},
+                      'hccmri':{'dbfile':'/home/fuentes/trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
                       'hccvolnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumornorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccroinorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumorroi.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'dbg':{'dbfile':'/home/fuentes/dbgtrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' },
@@ -55,7 +55,7 @@ options.dbfile       = trainingdictionary[options.databaseid]['dbfile']
 options.rootlocation = trainingdictionary[options.databaseid]['rootlocation']
 options.delimiter    = trainingdictionary[options.databaseid]['delimiter']
 options.sqlitefile   = options.dbfile.replace('.csv','.sqlite' )
-_globaldirectorytemplate = './%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d'
+_globaldirectorytemplate = 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d'
 _xstr = lambda s: s or ""
 print(options.sqlitefile)
 
@@ -222,21 +222,20 @@ elif (options.setuptestset):
     for iii in range(options.kfolds):
       (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
       uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,options.trainingresample,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
-      setupconfig = {'nnmodel':nnid, 'kfold':iii, 'testset':[ '%s.mat' % databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [ '%s.mat' % databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': ['%s.mat' %  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'delimiter':',', 'volCol':3, 'lblCol':4,'stoFoldername': '%slog' % options.databaseid,'fullFileName':options.dbfile, 'uidoutputdir':uidoutputdir}
+      setupconfig = {'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'delimiter':',', 'volCol':3, 'lblCol':4,'stoFoldername': '%slog' % options.databaseid,'fullFileName':options.dbfile, 'uidoutputdir':uidoutputdir}
       modelprereq    = '%s/trained3DUNet.mat' % uidoutputdir
       setupprereq    = '%s/setup.json' % uidoutputdir
       os.system ('mkdir -p %s' % uidoutputdir)
       with open(setupprereq, 'w') as json_file:
         json.dump(setupconfig , json_file)
-      fileHandle.write('%s: %s \n' % (modelprereq,setupprereq )    )
-      fileHandle.write('\techo python hccmodel.py --databaseid=%s --traintumor --idfold=%d --kfolds=%d --trainingresample=%d --numepochs=50\n' % (options.databaseid,iii,options.kfolds,options.trainingresample))
+      fileHandle.write('%s: %s \n\tcat $<\n' % (modelprereq,setupprereq )    )
       modeltargetlist.append(modelprereq    )
       uiddictionary[iii]=[]
       for idtest in test_set:
          # write target
          imageprereq    = '$(TRAININGROOT)/%s' % databaseinfo[idtest]['image']
-         maskprereq     = '%slog/ImageDatabase/%s/%s/label.nii.gz'  % (options.databaseid, databaseinfo[idtest]['uid'], nnid)
-         segmaketarget  = '%slog/ImageDatabase/%s/%s/tumor.nii.gz' % (options.databaseid, databaseinfo[idtest]['uid'], nnid)
+         maskprereq     = 'anonymize/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], nnid)
+         segmaketarget  = 'anonymize/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], nnid)
          uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
          cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
          fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
@@ -249,7 +248,7 @@ elif (options.setuptestset):
   # build job list
   with open(makefilename , 'r') as original: datastream = original.read()
   with open(makefilename , 'w') as modified:
-     modified.write( 'TRAININGROOT=%s\nMATLABROOT      := /data/apps/MATLAB/R2019a/\n' % options.rootlocation +'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
+     modified.write( 'TRAININGROOT=%s\n' % options.rootlocation +'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
      for idkey in uiddictionary.keys():
         modified.write("UIDLIST%d=%s \n" % (idkey,' '.join(uiddictionary[idkey])))
      modified.write("UIDLIST=%s \n" % " ".join(map(lambda x : "$(UIDLIST%d)" % x, uiddictionary.keys()))    +datastream)

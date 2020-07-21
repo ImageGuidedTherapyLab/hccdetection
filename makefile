@@ -1,25 +1,20 @@
 SHELL := /bin/bash
-WORKDIR=Processed
+WORKDIR=anonymize
 DATADIR=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
+MATLABROOT      := /data/apps/MATLAB/R2019a/
 
--include datalocation/dependencies
--include hccmri512kfold005.makefile
+PHILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
+COUNT := $(words $(PHILIST))
+ANONLIST = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f1 )
+SEQUENCE = $(shell seq $(COUNT))
+art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(PHILIST)))  
+pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(PHILIST)))  
+ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(PHILIST)))  
+truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(PHILIST)))  
 
-art: $(addprefix $(WORKDIR)/,$(addsuffix /Art.raw.nii.gz,$(UIDLIST)))  
-pre: $(addprefix $(WORKDIR)/,$(addsuffix /Pre.raw.nii.gz,$(UIDLIST)))  
-ven: $(addprefix $(WORKDIR)/,$(addsuffix /Ven.raw.nii.gz,$(UIDLIST)))  
-truth: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.raw.nii.gz,$(UIDLIST)))  
-view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(UIDLIST)))  
-info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(UIDLIST)))  
-lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(UIDLIST)))  
 
-resize: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.resize.nii,$(UIDLIST)))   \
-        $(addprefix $(WORKDIR)/,$(addsuffix /Art.resize.nii.gz,$(UIDLIST)))  
-scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /Art.scaled.nii,$(UIDLIST)))  
-
-mask:        $(addprefix $(WORKDIR),$(addsuffix /unet3d/label.nii.gz,$(UIDLIST)))
-overlap:     $(addprefix $(WORKDIR)/,$(addsuffix /$(DATABASEID)/overlap.sql,$(UIDLIST)))
-combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
+anon:
+	$(foreach number, $(SEQUENCE), echo $(word $(number), $(PHILIST)) $(number); ln -sf ../Processed/$(word $(number), $(PHILIST)) anonymize/$(word $(number), $(ANONLIST));)
 
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
@@ -34,12 +29,34 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIR)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
 
+-include hccmri512kfold005.makefile
+
+print:
+	@echo $(SEQUENCE)
+	@echo $(PHILIST)
+	@echo $(UIDLIST)
+	@echo $(ANONLIST)
+	@echo $(join $(ANONLIST),$(addprefix /,$(PHILIST)))
+
+view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(UIDLIST)))  
+info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(UIDLIST)))  
+lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(UIDLIST)))  
+
+resize: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.resize.nii,$(UIDLIST)))   \
+        $(addprefix $(WORKDIR)/,$(addsuffix /Art.resize.nii.gz,$(UIDLIST)))  
+scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /Art.scaled.nii,$(UIDLIST)))  
+
+mask:        $(addprefix $(WORKDIR),$(addsuffix /unet3d/label.nii.gz,$(UIDLIST)))
+overlap:     $(addprefix $(WORKDIR)/,$(addsuffix /$(DATABASEID)/overlap.sql,$(UIDLIST)))
+combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
+
+
 # Data set with a valid size for 3-D U-Net (multiple of 8)
 %/Art.resize.nii.gz: %/Art.raw.nii.gz
 	python resize.py --imagefile=$<  --output=$@
 
 %/Truth.resize.nii: %/Truth.raw.nii.gz
-	python resize.py --imagefile=$<  --output=$@
+	python resize.py --imagefile=$<  --output=$@ --datatype=uchar
 
 ## pre processing
 %/Art.scaled.nii: %/Art.resize.nii.gz
@@ -51,8 +68,9 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))
 	c3d  $(@D)/Art.raw.nii.gz  -info   $(@D)/Truth.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s  $(@D)/Truth.raw.nii.gz 
 
-%/info: %/Art.raw.nii.gz
-	c3d $< -info 
+%/info: %/Art.raw.nii.gz  %/Art.scaled.nii
+	c3d $< -info $(word 2,$^) -info
+
 %/lstat.csv: %/Art.raw.nii.gz %/Truth.nii.gz
 	c3d $^ -lstat > $(@D)/lstat.txt &&  sed "s/^\s\+/$(word 3 ,$(subst /, ,$*)),$(MODELID)$(word 7 ,$(subst /, ,$*)),$(word 5 ,$(subst /, ,$*)),/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/lstat.txt  > $@
 
