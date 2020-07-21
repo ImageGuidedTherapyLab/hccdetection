@@ -27,12 +27,8 @@ if (options.imagefile != None and options.output != None ):
   rawlstatinfo = [filter(len,lines.strip('\n').split(" ")) for lines in headerProcess.stdout.readlines()]
   labeldictionary =  dict([(int(line[0]),dict(zip(rawlstatheader[1:-1],map(float,line[1:-3])))) for line in rawlstatinfo ])
   #print labeldictionary 
-  # Data set with a valid size for 3-D U-Net (multiple of 8)
-  pyimg = nib.load(options.imagefile)
-  print(pyimg.shape )
-  cropind = map(lambda x : x/8 * 8, pyimg.shape )
   # zscore = (image - mean) / std
-  rescalecmd = 'c3d -verbose %s -shift %12.5e -scale %12.5e -clip -5 5  -region 0x0x0vox %dx%dx%dvox -type float -o %s ' % (options.imagefile,-labeldictionary[0]['Mean'],1./labeldictionary[0]['StdD'],cropind[0],cropind[1],cropind[2],options.output )
+  rescalecmd = 'c3d -verbose %s -shift %12.5e -scale %12.5e -clip -5 5  -type float -o %s ' % (options.imagefile,-labeldictionary[0]['Mean'],1./labeldictionary[0]['StdD'],options.output )
   print(rescalecmd )
   os.system(rescalecmd)
   verifyrescalecmd = 'c3d %s -info -dup -scale 0.0 -lstat  ' % (options.output )
