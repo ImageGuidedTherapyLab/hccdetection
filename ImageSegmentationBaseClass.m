@@ -7,6 +7,8 @@ classdef ImageSegmentationBaseClass  < handle
       lgraph %   NN data structure
       tabledb  %  training database
       jsonData %  configuration file
+      patchSize
+      patchPerImage 
    end
    % abstact base class methods
    methods (Abstract)

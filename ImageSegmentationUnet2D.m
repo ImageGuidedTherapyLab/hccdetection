@@ -1,5 +1,9 @@
 classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass  
    methods
+      function obj = ImageSegmentationUnet2D(fname)
+        obj.patchSize = [320 320 1];
+        obj.patchPerImage = 80;
+      end
       function loadneuralnet(obj,NumberChannels)
          tempLayers = [
              imageInputLayer([64 64 NumberChannels],"Name","input","Normalization","none")

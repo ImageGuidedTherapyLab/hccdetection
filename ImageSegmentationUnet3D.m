@@ -1,5 +1,9 @@
 classdef ImageSegmentationUnet3D  < ImageSegmentationBaseClass  
    methods
+      function obj = ImageSegmentationUnet3D(fname)
+        obj.patchSize = [64 64 64];
+        obj.patchPerImage = 16;
+      end
       % load 3d Unet, input: number of channels
       function loadneuralnet(obj,NumberChannels)
          tempLayers = [

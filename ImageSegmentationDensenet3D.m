@@ -1,5 +1,9 @@
 classdef ImageSegmentationDensenet3D  < ImageSegmentationBaseClass  
    methods
+      function obj = ImageSegmentationDensenet3D(fname)
+        obj.patchSize = [64 64 64];
+        obj.patchPerImage = 16;
+      end
       function loadneuralnet(obj,NumberChannels)
       
         tempLayers = [
