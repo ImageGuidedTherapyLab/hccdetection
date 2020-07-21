@@ -30,7 +30,7 @@ trainingList = {...
 gpuDevice(2)
 
 %for idtrain= 1: numel(trainingList )
-for idtrain= 6:10
+for idtrain= 1:10
   % walker - best way to parallelize ? 
   a = trainingList{idtrain}  
   

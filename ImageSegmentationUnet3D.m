@@ -81,7 +81,6 @@ classdef ImageSegmentationUnet3D  < ImageSegmentationBaseClass
          obj.lgraph = connectLayers(obj.lgraph,"transConv_Module5","concat2/in2");
          obj.lgraph = connectLayers(obj.lgraph,"transConv_Module6","concat1/in2");
          
-         obj
          plot(obj.lgraph);
       end
    end
