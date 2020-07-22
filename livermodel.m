@@ -29,8 +29,8 @@ trainingList = {...
 
 gpuDevice(1)
 
-%for idtrain= 1: numel(trainingList )
-for idtrain= 11:11
+for idtrain= 1: numel(trainingList )
+%for idtrain= 11:11
   % walker - best way to parallelize ? 
   a = trainingList{idtrain}  
   
@@ -42,14 +42,14 @@ for idtrain= 11:11
   procReader = @(x) niftiread(x);
   
   % read image volume data
-  trainData      = imageDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Art.resample.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
-  validationData = imageDatastore(fullfile('anonymize',a.jsonData.validationset,'Art.resample.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  trainData      = imageDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Art.resample256.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  validationData = imageDatastore(fullfile('anonymize',a.jsonData.validationset,'Art.resample256.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
   
   % read these into pixellabeldatastores
   classNames = ["background","liver"];
   pixelLabelID = [0 1];
-  trainMask      = pixelLabelDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Truth.resize.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
-  validationMask = pixelLabelDatastore(fullfile('anonymize',a.jsonData.validationset,'Truth.resize.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  trainMask      = pixelLabelDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Truth.resample256.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  validationMask = pixelLabelDatastore(fullfile('anonymize',a.jsonData.validationset,'Truth.resample256.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
   
   % Need Random Patch Extraction on testing and validation Data
   miniBatchSize = 8;

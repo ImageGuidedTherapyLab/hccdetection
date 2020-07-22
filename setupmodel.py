@@ -44,7 +44,7 @@ trainingdictionary = {'hcc':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestH
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/trainingnorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccvol':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumordata.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccmri':{'dbfile':'/home/fuentes/trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
+                      'hccmri':{'dbfile':'/rsrch2/ip/dtfuentes/github/hccdetection/trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
                       'hccvolnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumornorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'hccroinorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumorroi.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'dbg':{'dbfile':'/home/fuentes/dbgtrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' },

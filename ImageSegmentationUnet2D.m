@@ -7,7 +7,7 @@ classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass
       end
       function loadneuralnet(obj,NumberChannels)
          tempLayers = [
-             imageInputLayer([64 64 NumberChannels],"Name","input","Normalization","none")
+             imageInputLayer([256 256 NumberChannels],"Name","input","Normalization","none")
              convolution2dLayer([3 3],32,"Name","conv_Module1_Level1","Padding","same","WeightsInitializer","narrow-normal")
              batchNormalizationLayer("Name","BN_Module1_Level1")
              reluLayer("Name","relu_Module1_Level1")
