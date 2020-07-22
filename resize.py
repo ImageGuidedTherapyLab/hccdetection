@@ -13,15 +13,29 @@ parser.add_option( "--output",
 parser.add_option( "--datatype",
                   action="store", dest="datatype", default='float',
                   help="datatype output", metavar="FILE")
+parser.add_option( "--interpolation",
+                  action="store", dest="interpolation", default='linear',
+                  help="resampling option", metavar="INT")
 (options, args) = parser.parse_args()
 
 if (options.imagefile != None and options.output != None ):
+  interplationdict = {'linear':1,'nearest':0}
   # Data set with a valid size for 3-D U-Net (multiple of 8)
   pyimg = nib.load(options.imagefile)
+  cropoutput = options.output
+  resample256output = options.output.replace('crop','resample256')
+  resample512output = options.output.replace('crop','resample512')
+  print(cropoutput,resample256output, resample512output )
   print(pyimg.shape )
   cropind = map(lambda x : x/8 * 8, pyimg.shape )
-  rescalecmd = 'c3d -verbose %s  -region 0x0x0vox %dx%dx%dvox -type %s -o %s ' % (options.imagefile, cropind[0],cropind[1],cropind[2],options.datatype,options.output )
-  os.system( rescalecmd )
-  verifyrescalecmd = 'c3d %s -info  ' % (options.output )
-  print(verifyrescalecmd )
-  os.system( verifyrescalecmd  )
+  cropcmd = 'c3d -verbose %s  -info -region 0x0x0vox %dx%dx%dvox -info -type %s -o %s  ' % (options.imagefile, cropind[0],cropind[1],cropind[2],options.datatype,cropoutput )
+  print( cropcmd )
+  os.system( cropcmd )
+
+  resample256cmd = 'c3d -verbose %s  -info -interpolation %d -resample 256x256x%d -type %s -info -o %s ' % (cropoutput,interplationdict[options.interpolation], cropind[2], options.datatype, resample256output )
+  print(resample256cmd )
+  os.system(resample256cmd)
+
+  resample512cmd = 'c3d -verbose %s  -info -interpolation %d -resample 512x512x%d -type %s -info -o %s ' % (cropoutput,interplationdict[options.interpolation], cropind[2], options.datatype, resample512output )
+  print(resample512cmd )
+  os.system(resample512cmd)

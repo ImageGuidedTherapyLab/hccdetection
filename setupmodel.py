@@ -11,7 +11,7 @@ parser.add_option( "--setuptestset",
                   action="store_true", dest="setuptestset", default=False,
                   help="cross validate test set", metavar="FILE")
 parser.add_option( "--trainingresample",
-                  type="int", dest="trainingresample", default=512,
+                  type="int", dest="trainingresample", default=256,
                   help="setup info", metavar="int")
 parser.add_option( "--kfolds",
                   type="int", dest="kfolds", default=5,

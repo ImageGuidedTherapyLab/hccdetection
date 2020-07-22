@@ -29,6 +29,9 @@ truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(PHILIST)))
 anon:
 	$(foreach number, $(SEQUENCE), echo $(word $(number), $(PHILIST)) $(number); ln -sf ../Processed/$(word $(number), $(PHILIST)) anonymize/$(word $(number), $(ANONLIST));)
 
+# keep tmp files
+.SECONDARY: 
+
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
 	DicomSeriesReadImageWrite2 $(DATADIR)/$(word 2,$(subst /, ,$*))/ART $@
@@ -42,7 +45,7 @@ anon:
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIR)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
 
--include hccmri512kfold005.makefile
+-include hccmri256kfold005.makefile
 
 print:
 	@echo $(SEQUENCE)
@@ -55,8 +58,8 @@ view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(UIDLIST)))
 info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(UIDLIST)))  
 lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(UIDLIST)))  
 
-resize: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.resize.nii,$(UIDLIST)))   \
-        $(addprefix $(WORKDIR)/,$(addsuffix /Art.resize.nii.gz,$(UIDLIST)))  
+resize: $(addprefix $(WORKDIR)/,$(addsuffix /Truth.crop.nii,$(UIDLIST)))   \
+        $(addprefix $(WORKDIR)/,$(addsuffix /Art.crop.nii,$(UIDLIST)))  
 scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /Art.scaled.nii,$(UIDLIST)))  
 
 mask:        $(addprefix $(WORKDIR),$(addsuffix /unet3d/label.nii.gz,$(UIDLIST)))
@@ -64,16 +67,16 @@ overlap:     $(addprefix $(WORKDIR)/,$(addsuffix /$(DATABASEID)/overlap.sql,$(UI
 combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
 
 
+## pre processing
+%/Art.scaled.nii.gz: 
+	python normalization.py --imagefile=$(@D)/Art.raw.nii.gz  --output=$@
 # Data set with a valid size for 3-D U-Net (multiple of 8)
-%/Art.resize.nii.gz: %/Art.raw.nii.gz
+%/Art.crop.nii: %/Art.scaled.nii.gz
 	python resize.py --imagefile=$<  --output=$@
 
-%/Truth.resize.nii: %/Truth.raw.nii.gz
-	python resize.py --imagefile=$<  --output=$@ --datatype=uchar
+%/Truth.crop.nii: %/Truth.raw.nii.gz
+	python resize.py --imagefile=$<  --output=$@ --datatype=uchar --interpolation=nearest
 
-## pre processing
-%/Art.scaled.nii: %/Art.resize.nii.gz
-	python normalization.py --imagefile=$<  --output=$@
 %/Art.combined.nii.gz: %/Art.scaled.nii.gz %/Truth.nii.gz
 	c3d $^ -binarize  -omc $@
 
