@@ -16,7 +16,8 @@ trainedNN = load(mynetwork )
 
 %% apply trained network to nifti image
 tStart = tic;
-tempSeg = semanticseg(niivolume ,trainedNN.net,'ExecutionEnvironment','gpu');
+%tempSeg = semanticseg(niivolume ,trainedNN.net,'ExecutionEnvironment','gpu');
+tempSeg = segmentImagePatchwise(niivolume ,trainedNN.net, [256 256 64]);
 tEnd = toc(tStart)
 
 %% write output to disk as a nifti file

@@ -1,7 +1,20 @@
 SHELL := /bin/bash
 WORKDIR=anonymize
 DATADIR=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
-MATLABROOT      := /data/apps/MATLAB/R2019a/
+MATLABROOT      := /opt/apps/matlab/R2020a/
+#
+# Defaults
+#
+MEX=$(MATLABROOT)/bin/mex
+MCC=$(MATLABROOT)/bin/mcc
+applymodel: applymodel.m
+	$(MCC) -d './' -R -nodisplay -R '-logfile,./matlab.log' -S -v -m $^ $(CTF_ARCHIVE)  -o $@
+tags: 
+	ctags -R *
+
+CTF_ARCHIVE=$(addprefix -a ,$(SOURCE_FILES))
+SOURCE_FILES  = dicePixelClassification3dLayer.m segmentImagePatchwise.m
+
 
 PHILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
 COUNT := $(words $(PHILIST))
