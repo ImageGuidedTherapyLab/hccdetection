@@ -10,9 +10,6 @@ parser.add_option( "--initialize",
 parser.add_option( "--setuptestset",
                   action="store_true", dest="setuptestset", default=False,
                   help="cross validate test set", metavar="FILE")
-parser.add_option( "--trainingresample",
-                  type="int", dest="trainingresample", default=256,
-                  help="setup info", metavar="int")
 parser.add_option( "--kfolds",
                   type="int", dest="kfolds", default=5,
                   help="setup info", metavar="int")
@@ -214,35 +211,39 @@ elif (options.setuptestset):
   uiddictionary = {}
   modeltargetlist = []
   nnlist = ['densenet2d','densenet3d','unet2d','unet3d']
+  normalizationlist = ['scaled']
+  resolutionlist = [256,512]
 
-  makefilename = '%s%dkfold%03d.makefile' % (options.databaseid,options.trainingresample,options.kfolds) 
+  makefilename = '%skfold%03d.makefile' % (options.databaseid,options.kfolds) 
   # open makefile
   with open(makefilename ,'w') as fileHandle:
-   for nnid in nnlist:
-    for iii in range(options.kfolds):
-      (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
-      uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,options.trainingresample,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
-      setupconfig = {'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'delimiter':',', 'volCol':3, 'lblCol':4,'stoFoldername': '%slog' % options.databaseid,'fullFileName':options.dbfile, 'uidoutputdir':uidoutputdir}
-      modelprereq    = '%s/trained3DUNet.mat' % uidoutputdir
-      setupprereq    = '%s/setup.json' % uidoutputdir
-      os.system ('mkdir -p %s' % uidoutputdir)
-      with open(setupprereq, 'w') as json_file:
-        json.dump(setupconfig , json_file)
-      fileHandle.write('%s: %s \n\tcat $<\n' % (modelprereq,setupprereq )    )
-      modeltargetlist.append(modelprereq    )
-      uiddictionary[iii]=[]
-      for idtest in test_set:
-         # write target
-         imageprereq    = '$(TRAININGROOT)/%s' % databaseinfo[idtest]['image']
-         maskprereq     = 'anonymize/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], nnid)
-         segmaketarget  = 'anonymize/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], nnid)
-         uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
-         cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
-         fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
-         fileHandle.write('\t%s\n' % cvtestcmd)
-         fileHandle.write('%s: %s %s\n' % (maskprereq,imageprereq,modelprereq  ) )
-         cvtestcmd = "mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $^ $(@D)"  
-         fileHandle.write('\t%s\n' % cvtestcmd)
+    for normalizationid in normalizationlist :
+     for resolutionid in resolutionlist :
+      for nnid in nnlist:
+       for iii in range(options.kfolds):
+         (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
+         uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
+         setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir}
+         modelprereq    = '%s/trainedNet.mat' % uidoutputdir
+         setupprereq    = '%s/setup.json' % uidoutputdir
+         os.system ('mkdir -p %s' % uidoutputdir)
+         with open(setupprereq, 'w') as json_file:
+           json.dump(setupconfig , json_file)
+         fileHandle.write("""%s: %s \n\tmatlab -nodisplay -r "livermodel('$<');exit"\n""" % (modelprereq,setupprereq )    )
+         modeltargetlist.append(modelprereq    )
+         uiddictionary[iii]=[]
+         for idtest in test_set:
+            # write target
+            imageprereq    = 'anonymize/%s/%s/%s/Art.nii' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid)
+            maskprereq     = 'anonymize/%s/%s/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid)
+            segmaketarget  = 'anonymize/%s/%s/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid)
+            uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
+            cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
+            fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
+            fileHandle.write('\t%s\n' % cvtestcmd)
+            fileHandle.write('%s: %s %s\n' % (maskprereq,imageprereq,modelprereq  ) )
+            cvtestcmd = "mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $^ $(@D) 1 gpu"  
+            fileHandle.write('\t%s\n' % cvtestcmd)
 
 
   # build job list

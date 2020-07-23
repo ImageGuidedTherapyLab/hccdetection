@@ -1,38 +1,28 @@
 %% liver segmentation on MRI
-% Setting up the code: fresh start
-clear all
-close all
+function livermodel( jsonFilename  )
+  % load all configuration data
+  disp(jsonFilename  )
+  jsonText = fileread(jsonFilename);
+  jsonData = jsondecode(jsonText);
 
-%% instantiate class
-% TODO - load  multiple networks ? 
+  % https://www.mathworks.com/help/matlab/matlab_external/use-python-dict-type-in-matlab.html
+  % order = py.dict(pyargs('soup',ImageSegmentationUnet3D,'bread',2.29,'bacon',3.91,'salad',5.00))
+  
+  %% instantiate class
+  switch jsonData.nnmodel
+       case 'densenet2d' 
+         a = ImageSegmentationDensenet2D()
+       case 'densenet3d' 
+         a = ImageSegmentationDensenet3D()
+       case 'unet2d'     
+         a = ImageSegmentationUnet2D
+       case 'unet3d'    
+         a = ImageSegmentationUnet3D()
+       otherwise
+         disp('unknown')
+  end
 
-% https://www.mathworks.com/help/matlab/matlab_external/use-python-dict-type-in-matlab.html
-% order = py.dict(pyargs('soup',3.57,'bread',2.29,'bacon',3.91,'salad',5.00))
-
-trainingList = {...
-     ImageSegmentationUnet3D('Processed/hccmrilog/dscimg/unet3d/adadelta/256/run_a/005020/005/000/setup.json'),...
-     ImageSegmentationUnet3D('Processed/hccmrilog/dscimg/unet3d/adadelta/256/run_a/005020/005/001/setup.json'),...
-     ImageSegmentationUnet3D('Processed/hccmrilog/dscimg/unet3d/adadelta/256/run_a/005020/005/002/setup.json'),...
-     ImageSegmentationUnet3D('Processed/hccmrilog/dscimg/unet3d/adadelta/256/run_a/005020/005/003/setup.json'),...
-     ImageSegmentationUnet3D('Processed/hccmrilog/dscimg/unet3d/adadelta/256/run_a/005020/005/004/setup.json'),...
-     ImageSegmentationDensenet3D('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/run_a/005020/005/000/setup.json'),...
-     ImageSegmentationDensenet3D('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/run_a/005020/005/001/setup.json'),...
-     ImageSegmentationDensenet3D('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/run_a/005020/005/002/setup.json'),...
-     ImageSegmentationDensenet3D('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/run_a/005020/005/003/setup.json'),...
-     ImageSegmentationDensenet3D('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/run_a/005020/005/004/setup.json'),...
-     ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/256/run_a/005020/005/000/setup.json'),...
-     ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/256/run_a/005020/005/001/setup.json'),...
-     ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/256/run_a/005020/005/002/setup.json'),...
-     ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/256/run_a/005020/005/003/setup.json'),...
-     ImageSegmentationUnet2D('Processed/hccmrilog/dscimg/unet2d/adadelta/256/run_a/005020/005/004/setup.json'),...
-                };
-
-gpuDevice(1)
-
-for idtrain= 1: numel(trainingList )
-%for idtrain= 11:11
-  % walker - best way to parallelize ? 
-  a = trainingList{idtrain}  
+  gpuDevice(1)
   
   % before starting, need to define "n" which is the number of channels.
   NumberOfChannels = 1;
@@ -42,14 +32,14 @@ for idtrain= 1: numel(trainingList )
   procReader = @(x) niftiread(x);
   
   % read image volume data
-  trainData      = imageDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Art.resample256.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
-  validationData = imageDatastore(fullfile('anonymize',a.jsonData.validationset,'Art.resample256.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Art.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  validationData = imageDatastore(fullfile('anonymize',jsonData.validationset,jsonData.normalization,sprintf('%d',jsonData.resolution),'Art.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
   
   % read these into pixellabeldatastores
   classNames = ["background","liver"];
   pixelLabelID = [0 1];
-  trainMask      = pixelLabelDatastore(fullfile('anonymize',a.jsonData.trainset     ,'Truth.resample256.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
-  validationMask = pixelLabelDatastore(fullfile('anonymize',a.jsonData.validationset,'Truth.resample256.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  validationMask = pixelLabelDatastore(fullfile('anonymize',jsonData.validationset,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
   
   % Need Random Patch Extraction on testing and validation Data
   miniBatchSize = 8;
@@ -79,5 +69,5 @@ for idtrain= 1: numel(trainingList )
   modelDateTime = datestr(now,'dd-mmm-yyyy-HH-MM-SS')
   [net,info] = trainNetwork(trainPatch,a.lgraph,options);
   save([a.jsonData.uidoutputdir '/trainedNet.mat'],'net','options','modelDateTime');
-end
 
+end

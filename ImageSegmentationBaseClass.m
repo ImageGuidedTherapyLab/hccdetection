@@ -5,8 +5,6 @@ classdef ImageSegmentationBaseClass  < handle
    properties
       % Value {mustBeNumeric}
       lgraph %   NN data structure
-      tabledb  %  training database
-      jsonData %  configuration file
       patchSize
       patchPerImage 
    end
@@ -17,17 +15,8 @@ classdef ImageSegmentationBaseClass  < handle
    end
    methods
 
-      function obj = ImageSegmentationBaseClass(fname)
-        % constructor - load all configuration data
-        disp(fname)
-        jsonText = fileread(fname);
-        obj.jsonData = jsondecode(jsonText);
+      function obj = ImageSegmentationBaseClass()
         
-        % Read file pathways into table
-        fullFileName = obj.jsonData.fullFileName;
-        delimiter = obj.jsonData.delimiter;
-        obj.tabledb = readtable(fullFileName, 'Delimiter', delimiter);
-
         % initialize NN
         obj.lgraph = layerGraph();
       end

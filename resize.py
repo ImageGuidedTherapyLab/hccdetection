@@ -23,8 +23,8 @@ if (options.imagefile != None and options.output != None ):
   # Data set with a valid size for 3-D U-Net (multiple of 8)
   pyimg = nib.load(options.imagefile)
   cropoutput = options.output
-  resample256output = options.output.replace('crop','resample256')
-  resample512output = options.output.replace('crop','resample512')
+  resample256output = options.output.replace('crop','256')
+  resample512output = options.output.replace('crop','512')
   print(cropoutput,resample256output, resample512output )
   print(pyimg.shape )
   cropind = map(lambda x : x/8 * 8, pyimg.shape )
