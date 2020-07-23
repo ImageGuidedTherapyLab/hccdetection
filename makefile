@@ -62,9 +62,11 @@ resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(UIDLIST)))   \
         $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Art.nii,$(UIDLIST)))  
 scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/Art.nii.gz,$(UIDLIST)))  
 
-mask:        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/label.nii.gz,$(UIDLIST)))
-liver:       $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/liver.nii.gz,$(UIDLIST)))
-overlap:     $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/overlap.sql,$(UIDLIST)))
+MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
+
+mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(UIDLIST)))) 
+liver:    $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/liver.nii.gz,$(UIDLIST)))) 
+overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/overlap.sql,$(UIDLIST)))) 
 combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
 
 
