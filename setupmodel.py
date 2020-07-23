@@ -229,7 +229,7 @@ elif (options.setuptestset):
          os.system ('mkdir -p %s' % uidoutputdir)
          with open(setupprereq, 'w') as json_file:
            json.dump(setupconfig , json_file)
-         fileHandle.write("""%s: %s \n\tmatlab -nodisplay -r "livermodel('$<');exit"\n""" % (modelprereq,setupprereq )    )
+         fileHandle.write("""%s: %s \n\tmatlab -nodesktop -r "livermodel('$<');exit"\n""" % (modelprereq,setupprereq )    )
          modeltargetlist.append(modelprereq    )
          uiddictionary[iii]=[]
          for idtest in test_set:
