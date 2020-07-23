@@ -15,7 +15,7 @@ function livermodel( jsonFilename  )
        case 'densenet3d' 
          a = ImageSegmentationDensenet3D()
        case 'unet2d'     
-         a = ImageSegmentationUnet2D
+         a = ImageSegmentationUnet2D()
        case 'unet3d'    
          a = ImageSegmentationUnet3D()
        otherwise
