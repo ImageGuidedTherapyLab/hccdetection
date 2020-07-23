@@ -62,9 +62,9 @@ resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(UIDLIST)))   \
         $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Art.nii,$(UIDLIST)))  
 scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/Art.nii.gz,$(UIDLIST)))  
 
-mask:        $(addprefix $(WORKDIR)/,$(addsuffix scaled/256/unet3d/label.nii.gz,$(UIDLIST)))
-liver:       $(addprefix $(WORKDIR)/,$(addsuffix scaled/256/unet3d/liver.nii.gz,$(UIDLIST)))
-overlap:     $(addprefix $(WORKDIR)/,$(addsuffix scaled/256/unet3d/overlap.sql,$(UIDLIST)))
+mask:        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/label.nii.gz,$(UIDLIST)))
+liver:       $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/liver.nii.gz,$(UIDLIST)))
+overlap:     $(addprefix $(WORKDIR)/,$(addsuffix /scaled/256/unet3d/overlap.sql,$(UIDLIST)))
 combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
 
 
