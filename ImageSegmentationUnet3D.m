@@ -1,7 +1,8 @@
 classdef ImageSegmentationUnet3D  < ImageSegmentationBaseClass  
    methods
-      function obj = ImageSegmentationUnet3D()
+      function obj = ImageSegmentationUnet3D(pixelResolution)
         obj = obj@ImageSegmentationBaseClass();
+        obj.pixelResolution = pixelResolution;
         obj.patchSize = [64 64 64];
         obj.patchPerImage = 16;
       end

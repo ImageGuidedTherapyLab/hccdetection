@@ -87,8 +87,8 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))
 	c3d $^ -binarize  -omc $@
 
 %/view: 
-	c3d  $(@D)/Art.raw.nii.gz  -info   $(@D)/Truth.raw.nii.gz  -info
-	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s  $(@D)/Truth.raw.nii.gz 
+	c3d  $(@D)/Ven.raw.nii.gz  -info $(@D)/Art.raw.nii.gz  -info   $(@D)/Truth.raw.nii.gz  -info
+	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz 
 
 %/info: %/Art.raw.nii.gz  %/Art.scaled.nii
 	c3d $< -info $(word 2,$^) -info

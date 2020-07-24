@@ -1,13 +1,14 @@
 classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass  
    methods
-      function obj = ImageSegmentationUnet2D()
+      function obj = ImageSegmentationUnet2D(pixelResolution)
         obj = obj@ImageSegmentationBaseClass();
-        obj.patchSize = [256 256 1];
+        obj.pixelResolution = pixelResolution;
+        obj.patchSize = [obj.pixelResolution obj.pixelResolution 1];
         obj.patchPerImage = 80;
       end
       function loadneuralnet(obj,NumberChannels)
          tempLayers = [
-             imageInputLayer([256 256 NumberChannels],"Name","input","Normalization","none")
+             imageInputLayer([obj.pixelResolution obj.pixelResolution NumberChannels],"Name","input","Normalization","none")
              convolution2dLayer([3 3],32,"Name","conv_Module1_Level1","Padding","same","WeightsInitializer","narrow-normal")
              batchNormalizationLayer("Name","BN_Module1_Level1")
              reluLayer("Name","relu_Module1_Level1")

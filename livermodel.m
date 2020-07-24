@@ -11,13 +11,13 @@ function livermodel( jsonFilename  )
   %% instantiate class
   switch jsonData.nnmodel
        case 'densenet2d' 
-         a = ImageSegmentationDensenet2D()
+         a = ImageSegmentationDensenet2D(jsonData.resolution)
        case 'densenet3d' 
-         a = ImageSegmentationDensenet3D()
+         a = ImageSegmentationDensenet3D(jsonData.resolution)
        case 'unet2d'     
-         a = ImageSegmentationUnet2D()
+         a = ImageSegmentationUnet2D(jsonData.resolution)
        case 'unet3d'    
-         a = ImageSegmentationUnet3D()
+         a = ImageSegmentationUnet3D(jsonData.resolution)
        otherwise
          disp('unknown')
   end

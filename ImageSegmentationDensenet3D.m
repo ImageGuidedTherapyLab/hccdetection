@@ -1,7 +1,8 @@
 classdef ImageSegmentationDensenet3D  < ImageSegmentationBaseClass  
    methods
-      function obj = ImageSegmentationDensenet3D()
+      function obj = ImageSegmentationDensenet3D(pixelResolution)
         obj = obj@ImageSegmentationBaseClass();
+        obj.pixelResolution = pixelResolution;
         obj.patchSize = [64 64 64];
         obj.patchPerImage = 16;
       end

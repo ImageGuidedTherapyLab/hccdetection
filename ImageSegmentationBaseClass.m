@@ -7,6 +7,7 @@ classdef ImageSegmentationBaseClass  < handle
       lgraph %   NN data structure
       patchSize
       patchPerImage 
+      pixelResolution
    end
    % abstact base class methods
    methods (Abstract)
