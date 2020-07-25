@@ -68,6 +68,6 @@ function livermodel( jsonFilename  )
   % train and save 
   modelDateTime = datestr(now,'dd-mmm-yyyy-HH-MM-SS')
   [net,info] = trainNetwork(trainPatch,a.lgraph,options);
-  save([jsonData.uidoutputdir '/trainedNet.mat'],'net','options','modelDateTime');
+  save([jsonData.uidoutputdir '/trainedNet.mat'],'net','options','modelDateTime','info');
 
 end
