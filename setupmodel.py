@@ -13,9 +13,6 @@ parser.add_option( "--setuptestset",
 parser.add_option( "--kfolds",
                   type="int", dest="kfolds", default=5,
                   help="setup info", metavar="int")
-parser.add_option( "--trainingid",
-                  action="store", dest="trainingid", default='run_a',
-                  help="setup info", metavar="Path")
 parser.add_option( "--trainingloss",
                   action="store", dest="trainingloss", default='dscimg',
                   help="setup info", metavar="string")
@@ -43,11 +40,7 @@ trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/r
                       'hccct':{'dbfile':'datalocation/cthccdatakey.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse','delimiter':'\t'}}
 
 # options dependency 
-options.dbfile       = trainingdictionary[options.databaseid]['dbfile']
-options.rootlocation = trainingdictionary[options.databaseid]['rootlocation']
-options.delimiter    = trainingdictionary[options.databaseid]['delimiter']
 options.sqlitefile   = 'livermodel.sqlite'
-_globaldirectorytemplate = 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d'
 _xstr = lambda s: s or ""
 print(options.sqlitefile)
 
@@ -210,14 +203,13 @@ elif (options.setuptestset):
   hccmriids={ key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccmri' }
   crcids=   { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crc' }
   hccctids= { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccct' }
-  dataidsfull = list(hccmriids.keys()) 
 
   # setup partitions
   kfolddictionary = {}
   for iii in range(options.kfolds):
-    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
-    kfolddictionary[iii] ={'train_set':train_set,'validation_set':validation_set,'test_set':test_set}
-  kfolddictionary[5] ={'train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()}
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
+    kfolddictionary[iii] ={'kfolds':options.kfolds, 'dataid': 'run_a','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  kfolddictionary[5] ={'kfolds':1, 'dataid': 'crc','train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()+hccctids.keys()}
   #kfolddictionary[6] ={'train_set':hccctids.keys()[:100],'validation_set':hccctids.keys()[100:],'test_set':hccmriids.keys()}
 
   # initialize lists partitions
@@ -235,7 +227,7 @@ elif (options.setuptestset):
       for nnid in nnlist:
        for iii, kfoldset in kfolddictionary.items():
          (train_set,validation_set,test_set) = ( kfoldset['train_set'], kfoldset['validation_set'], kfoldset['test_set'])
-         uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
+         uidoutputdir= 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d' % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,kfoldset['dataid'],options.trainingbatch,options.validationbatch,kfoldset['kfolds'],iii)
          setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir}
          modelprereq    = '%s/trainedNet.mat' % uidoutputdir
          setupprereq    = '%s/setup.json' % uidoutputdir
@@ -262,7 +254,7 @@ elif (options.setuptestset):
   # build job list
   with open(makefilename , 'r') as original: datastream = original.read()
   with open(makefilename , 'w') as modified:
-     modified.write( 'TRAININGROOT=%s\n' % options.rootlocation +'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
+     modified.write( 'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
      for idkey in uiddictionary.keys():
         modified.write("UIDLIST%d=%s \n" % (idkey,' '.join(uiddictionary[idkey])))
      modified.write("UIDLIST=%s \n" % " ".join(map(lambda x : "$(UIDLIST%d)" % x, uiddictionary.keys()))    +datastream)
