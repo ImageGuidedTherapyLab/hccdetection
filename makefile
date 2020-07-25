@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 WORKDIR=anonymize
-DATADIR=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
+DATADIRMRI=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
 MATLABROOT      := /opt/apps/matlab/R2020a/
 #
 # Defaults
@@ -16,43 +16,56 @@ CTF_ARCHIVE=$(addprefix -a ,$(SOURCE_FILES))
 SOURCE_FILES  = dicePixelClassification3dLayer.m segmentImagePatchwise.m
 
 
-PHILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
-COUNT := $(words $(PHILIST))
+MRILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
+COUNT := $(words $(MRILIST))
 ANONLIST = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f1 )
 SEQUENCE = $(shell seq $(COUNT))
-art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(PHILIST)))  
-pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(PHILIST)))  
-ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(PHILIST)))  
-truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(PHILIST)))  
+art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(MRILIST)))  
+pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(MRILIST)))  
+ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(MRILIST)))  
+truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(MRILIST)))  
 
 
 anon:
-	$(foreach number, $(SEQUENCE), echo $(word $(number), $(PHILIST)) $(number); ln -sf ../Processed/$(word $(number), $(PHILIST)) anonymize/$(word $(number), $(ANONLIST));)
+	$(foreach number, $(SEQUENCE), echo $(word $(number), $(MRILIST)) $(number); ln -sf ../Processed/$(word $(number), $(MRILIST)) anonymize/$(word $(number), $(ANONLIST));)
+
+CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
+CRCIMAGELIST  = $(shell sed 1d crctrainingdata.csv | cut -f3 )
+CRCLABELLIST  = $(shell sed 1d crctrainingdata.csv | cut -f4 )
+DATADIRCRC=/rsrch1/ip/jacctor/LiTS/LiTS/
+CRCCOUNT := $(words $(CRCLIST))
+CRCSEQUENCE = $(shell seq $(CRCCOUNT))
+crcsetup:
+	$(foreach number, $(CRCSEQUENCE), echo $(word $(number), $(CRCLIST)) $(number); mkdir -p anonymize/$(word $(number), $(CRCLIST));cp $(DATADIRCRC)/$(word $(number), $(CRCIMAGELIST)) anonymize/$(word $(number), $(CRCLIST))/image.nii ;cp  $(DATADIRCRC)/$(word $(number), $(CRCLABELLIST)) anonymize/$(word $(number), $(CRCLIST))/label.nii;)
+
 
 # keep tmp files
 .SECONDARY: 
 
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
-	DicomSeriesReadImageWrite2 $(DATADIR)/$(word 2,$(subst /, ,$*))/ART $@
+	DicomSeriesReadImageWrite2 $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART $@
 %/Ven.raw.nii.gz:
 	mkdir -p $(@D)
-	DicomSeriesReadImageWrite2 $(DATADIR)/$(word 2,$(subst /, ,$*))/PV $@
+	DicomSeriesReadImageWrite2 $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/PV $@
 %/Pre.raw.nii.gz:
 	mkdir -p $(@D)
-	DicomSeriesReadImageWrite2 $(DATADIR)/$(word 2,$(subst /, ,$*))/PRE $@
+	DicomSeriesReadImageWrite2 $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/PRE $@
 %/Truth.raw.nii.gz: %/Art.raw.nii.gz
 	mkdir -p $(@D)
-	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIR)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
+	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
 
 -include hccmrikfold005.makefile
 
 print:
 	@echo $(SEQUENCE)
-	@echo $(PHILIST)
+	@echo $(MRILIST)
 	@echo $(UIDLIST)
 	@echo $(ANONLIST)
-	@echo $(join $(ANONLIST),$(addprefix /,$(PHILIST)))
+	@echo $(CRCLIST)
+	@echo $(CRCIMAGELIST)
+	@echo $(CRCLABELLIST)
+	@echo $(join $(ANONLIST),$(addprefix /,$(MRILIST)))
 
 view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(UIDLIST)))  
 info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(UIDLIST)))  

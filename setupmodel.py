@@ -34,7 +34,7 @@ parser.add_option( "--databaseid",
 (options, args) = parser.parse_args()
 
 # current datasets
-trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
+trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/','delimiter':','},
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'crc':{'dbfile':'./crctrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' ,'delimiter':'\t'},
                       'hccct':{'dbfile':'datalocation/cthccdatakey.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse','delimiter':'\t'}}
@@ -254,7 +254,7 @@ elif (options.setuptestset):
   # build job list
   with open(makefilename , 'r') as original: datastream = original.read()
   with open(makefilename , 'w') as modified:
-     modified.write( 'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
+     modified.write( 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
      for idkey in uiddictionary.keys():
         modified.write("UIDLIST%d=%s \n" % (idkey,' '.join(uiddictionary[idkey])))
      modified.write("UIDLIST=%s \n" % " ".join(map(lambda x : "$(UIDLIST%d)" % x, uiddictionary.keys()))    +datastream)
