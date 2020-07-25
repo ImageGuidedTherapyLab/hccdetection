@@ -37,21 +37,16 @@ parser.add_option( "--databaseid",
 (options, args) = parser.parse_args()
 
 # current datasets
-trainingdictionary = {'hcc':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/trainingdata.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
+trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/trainingnorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccvol':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumordata.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccmri':{'dbfile':'/rsrch2/ip/dtfuentes/github/hccdetection/trainingdata.csv','rootlocation':'/rsrch2/ip/dtfuentes/github/hccdetection','delimiter':','},
-                      'hccvolnorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumornorm.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'hccroinorm':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/tumorroi.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
-                      'dbg':{'dbfile':'/home/fuentes/dbgtrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' },
-                      'crc':{'dbfile':'/home/fuentes/crctrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' }}
+                      'crc':{'dbfile':'./crctrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' ,'delimiter':'\t'},
+                      'hccct':{'dbfile':'datalocation/cthccdatakey.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse','delimiter':'\t'}}
 
 # options dependency 
 options.dbfile       = trainingdictionary[options.databaseid]['dbfile']
 options.rootlocation = trainingdictionary[options.databaseid]['rootlocation']
 options.delimiter    = trainingdictionary[options.databaseid]['delimiter']
-options.sqlitefile   = options.dbfile.replace('.csv','.sqlite' )
+options.sqlitefile   = 'livermodel.sqlite'
 _globaldirectorytemplate = 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d'
 _xstr = lambda s: s or ""
 print(options.sqlitefile)
@@ -64,8 +59,8 @@ def GetDataDictionary():
   cursor = tagsconn.execute(' SELECT aq.* from trainingdata aq ;' )
   names = [description[0] for description in cursor.description]
   sqlStudyList = [ dict(zip(names,xtmp)) for xtmp in cursor ]
-  for row in sqlStudyList :
-       CSVDictionary[int( row['dataid'])]  =  {'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid']}  
+  for rowid,row in enumerate(sqlStudyList) :
+       CSVDictionary[rowid]  =  {'dataid':row['dataid'],'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid']}  
   return CSVDictionary 
 
 # setup kfolds
@@ -82,7 +77,7 @@ def GetSetupKfolds(numfolds,idfold,dataidsfull ):
      (train_index,validation_index) = train_test_split(trainval_index,test_size =.125) # .125*.8 = .1
      test_index     = allkfolds[idfold][1]
   else:
-     train_index       = np.array(dataidsfull )
+     train_index       = dataidsfull 
      validation_index  = None  
      test_index        = None  
   return (train_index,validation_index,test_index)
@@ -197,7 +192,11 @@ if (options.initialize ):
   for sqlcmd in initializedb.split(";"):
      tagsconn.execute(sqlcmd );
   # load csv file
-  df = pandas.read_csv(options.dbfile,delimiter=options.delimiter)
+  df = pandas.read_csv(trainingdictionary['hccct']['dbfile'],delimiter=trainingdictionary['hccct']['delimiter'])
+  df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
+  df = pandas.read_csv(trainingdictionary['crc']['dbfile'],delimiter=trainingdictionary['crc']['delimiter'])
+  df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
+  df = pandas.read_csv(trainingdictionary['hccmri']['dbfile'],delimiter=trainingdictionary['hccmri']['delimiter'])
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
 
 ##########################
@@ -206,8 +205,22 @@ if (options.initialize ):
 elif (options.setuptestset):
   # get id from setupfiles
   databaseinfo = GetDataDictionary()
-  dataidsfull = list(databaseinfo.keys()) 
 
+  # get each data subset
+  hccmriids={ key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccmri' }
+  crcids=   { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crc' }
+  hccctids= { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccct' }
+  dataidsfull = list(hccmriids.keys()) 
+
+  # setup partitions
+  kfolddictionary = {}
+  for iii in range(options.kfolds):
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
+    kfolddictionary[iii] ={'train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  kfolddictionary[5] ={'train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()}
+  #kfolddictionary[6] ={'train_set':hccctids.keys()[:100],'validation_set':hccctids.keys()[100:],'test_set':hccmriids.keys()}
+
+  # initialize lists partitions
   uiddictionary = {}
   modeltargetlist = []
   nnlist = ['densenet2d','densenet3d','unet2d','unet3d']
@@ -220,8 +233,8 @@ elif (options.setuptestset):
     for normalizationid in normalizationlist :
      for resolutionid in resolutionlist :
       for nnid in nnlist:
-       for iii in range(options.kfolds):
-         (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
+       for iii, kfoldset in kfolddictionary.items():
+         (train_set,validation_set,test_set) = ( kfoldset['train_set'], kfoldset['validation_set'], kfoldset['test_set'])
          uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
          setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir}
          modelprereq    = '%s/trainedNet.mat' % uidoutputdir
