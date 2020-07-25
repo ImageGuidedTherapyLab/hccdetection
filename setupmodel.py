@@ -240,8 +240,8 @@ elif (options.setuptestset):
          for idtest in test_set:
             # write target
             imageprereq    = 'anonymize/%s/%s/%s/Art.nii' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid)
-            maskprereq     = 'anonymize/%s/%s/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid)
-            segmaketarget  = 'anonymize/%s/%s/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid)
+            maskprereq     = 'anonymize/%s/%s/%s/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
+            segmaketarget  = 'anonymize/%s/%s/%s/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
             uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
             cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
             fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
