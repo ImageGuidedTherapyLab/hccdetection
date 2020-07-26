@@ -11,11 +11,11 @@ applymodel: applymodel.m
 	$(MCC) -d './' -R -nodisplay -R '-logfile,./matlab.log' -S -v -m $^ $(CTF_ARCHIVE)  -o $@
 tags: 
 	ctags -R *
-
 CTF_ARCHIVE=$(addprefix -a ,$(SOURCE_FILES))
 SOURCE_FILES  = dicePixelClassification3dLayer.m segmentImagePatchwise.m
 
 
+# setup MRI data
 MRILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
 COUNT := $(words $(MRILIST))
 ANONLIST = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f1 )
@@ -24,24 +24,8 @@ art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(MRILIST)))
 pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(MRILIST)))  
 ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(MRILIST)))  
 truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(MRILIST)))  
-
-
 anon:
 	$(foreach number, $(SEQUENCE), echo $(word $(number), $(MRILIST)) $(number); ln -sf ../Processed/$(word $(number), $(MRILIST)) anonymize/$(word $(number), $(ANONLIST));)
-
-CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
-CRCIMAGELIST  = $(shell sed 1d crctrainingdata.csv | cut -f3 )
-CRCLABELLIST  = $(shell sed 1d crctrainingdata.csv | cut -f4 )
-DATADIRCRC=/rsrch1/ip/jacctor/LiTS/LiTS/
-CRCCOUNT := $(words $(CRCLIST))
-CRCSEQUENCE = $(shell seq $(CRCCOUNT))
-crcsetup:
-	$(foreach number, $(CRCSEQUENCE), echo $(word $(number), $(CRCLIST)) $(number); mkdir -p anonymize/$(word $(number), $(CRCLIST));cp $(DATADIRCRC)/$(word $(number), $(CRCIMAGELIST)) anonymize/$(word $(number), $(CRCLIST))/image.nii ;cp  $(DATADIRCRC)/$(word $(number), $(CRCLABELLIST)) anonymize/$(word $(number), $(CRCLIST))/label.nii;)
-
-
-# keep tmp files
-.SECONDARY: 
-
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
 	DicomSeriesReadImageWrite2 $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART $@
@@ -55,8 +39,43 @@ crcsetup:
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
 
+# setup CRC data
+CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
+CRCIMAGELIST  = $(shell sed 1d crctrainingdata.csv | cut -f3 )
+CRCLABELLIST  = $(shell sed 1d crctrainingdata.csv | cut -f4 )
+DATADIRCRC=/rsrch1/ip/jacctor/LiTS/LiTS/
+crcsetup: $(addprefix $(WORKDIR)/,$(addsuffix /image.nii,$(CRCLIST)))  $(addprefix $(WORKDIR)/,$(addsuffix /label.nii,$(CRCLIST)))  
+$(WORKDIR)/i%/image.nii:
+	mkdir -p $(@D)
+	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) $@
+$(WORKDIR)/i%/label.nii:
+	mkdir -p $(@D)
+	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) $@
+
+# setup CT HCC data
+HCCCTLIST       = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f2 )
+HCCCTIMAGELIST  = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f3 )
+HCCCTLABELLIST  = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f5 )
+DATADIRHCCCT=/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/
+hccctsetup: $(addprefix $(WORKDIR)/,$(addsuffix /image.nii,$(HCCCTLIST)))  $(addprefix $(WORKDIR)/,$(addsuffix /label.nii,$(HCCCTLIST)))  
+$(WORKDIR)/ct%/image.nii:
+	mkdir -p $(@D)
+	echo $*
+	cp $(DATADIRHCCCT)/$(word $*, $(HCCCTIMAGELIST)) $@
+$(WORKDIR)/ct%/label.nii:
+	mkdir -p $(@D)
+	echo $*
+	cp $(DATADIRHCCCT)/$(word $*, $(HCCCTLABELLIST)) $@
+
+# keep tmp files
+.SECONDARY: 
+
+
+
 -include hccmrikfold005.makefile
 
+printcrc:
+	@echo $(CRCSEQUENCE)
 print:
 	@echo $(SEQUENCE)
 	@echo $(MRILIST)
