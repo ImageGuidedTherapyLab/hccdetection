@@ -3,7 +3,7 @@ function livermodel( jsonFilename  )
   % load all configuration data
   disp(jsonFilename  )
   jsonText = fileread(jsonFilename);
-  jsonData = jsondecode(jsonText);
+  jsonData = jsondecode(jsonText)
 
   % https://www.mathworks.com/help/matlab/matlab_external/use-python-dict-type-in-matlab.html
   % order = py.dict(pyargs('soup',ImageSegmentationUnet3D,'bread',2.29,'bacon',3.91,'salad',5.00))
@@ -32,13 +32,13 @@ function livermodel( jsonFilename  )
   procReader = @(x) niftiread(x);
   
   % read image volume data
-  trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader)
   validationData = imageDatastore(fullfile('anonymize',jsonData.validationset,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
   
   % read these into pixellabeldatastores
   classNames = ["background","liver"];
   pixelLabelID = [0 1];
-  trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader )
   validationMask = pixelLabelDatastore(fullfile('anonymize',jsonData.validationset,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
   
   % Need Random Patch Extraction on testing and validation Data
