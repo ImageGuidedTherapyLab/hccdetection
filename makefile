@@ -1,10 +1,9 @@
 SHELL := /bin/bash
 WORKDIR=anonymize
-DATADIRMRI=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
-MATLABROOT      := /opt/apps/matlab/R2020a/
 #
 # Defaults
 #
+MATLABROOT      := /opt/apps/matlab/R2020a/
 MEX=$(MATLABROOT)/bin/mex
 MCC=$(MATLABROOT)/bin/mcc
 applymodel: applymodel.m
@@ -14,18 +13,24 @@ tags:
 CTF_ARCHIVE=$(addprefix -a ,$(SOURCE_FILES))
 SOURCE_FILES  = dicePixelClassification3dLayer.m segmentImagePatchwise.m
 
+IMAGEFILELIST = image.nii label.nii
 
 # setup MRI data
+DATADIRMRI=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
 MRILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
-COUNT := $(words $(MRILIST))
 ANONLIST = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f1 )
-SEQUENCE = $(shell seq $(COUNT))
 art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(MRILIST)))  
 pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(MRILIST)))  
 ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(MRILIST)))  
 truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(MRILIST)))  
-anon:
-	$(foreach number, $(SEQUENCE), echo $(word $(number), $(MRILIST)) $(number); ln -sf ../Processed/$(word $(number), $(MRILIST)) anonymize/$(word $(number), $(ANONLIST));)
+COUNT := $(words $(MRILIST))
+SEQUENCE = $(shell seq $(COUNT))
+anon: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idfile),$(ANONLIST)))) 
+$(WORKDIR)/hcc%/image.nii:
+	echo ln -sf ../Processed/$(word $*, $(MRILIST)) $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Art.raw.nii.gz  -o $@
+$(WORKDIR)/hcc%/label.nii:
+	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz  -o $@
 %/Art.raw.nii.gz:
 	mkdir -p $(@D)
 	DicomSeriesReadImageWrite2 $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART $@
@@ -38,6 +43,14 @@ anon:
 %/Truth.raw.nii.gz: %/Art.raw.nii.gz
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
+# art and ven input
+washout: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/washout,$(addsuffix /$(idfile),$(ANONLIST)))) 
+$(WORKDIR)/washouthcc%/image.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Art.raw.nii.gz Processed/$(word $*, $(MRILIST))/Ven.raw.nii.gz  -omc $@
+$(WORKDIR)/washouthcc%/label.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz -type uchar -o $@
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
@@ -74,46 +87,40 @@ $(WORKDIR)/ct%/label.nii:
 
 -include hccmrikfold005.makefile
 
-printcrc:
-	@echo $(CRCSEQUENCE)
+DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) 
 print:
-	@echo $(SEQUENCE)
-	@echo $(MRILIST)
-	@echo $(UIDLIST)
-	@echo $(ANONLIST)
-	@echo $(CRCLIST)
-	@echo $(CRCIMAGELIST)
-	@echo $(CRCLABELLIST)
-	@echo $(join $(ANONLIST),$(addprefix /,$(MRILIST)))
+	@echo $(DATALIST)
 
-view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(UIDLIST)))  
-info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(UIDLIST)))  
-lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(UIDLIST)))  
+view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(DATALIST)))  
+info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(DATALIST)))  
+lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(DATALIST)))  
 
-resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(UIDLIST)))   \
-        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Art.nii,$(UIDLIST)))  
-scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/Art.nii.gz,$(UIDLIST)))  
+resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(DATALIST)))   \
+        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Volume.nii,$(DATALIST)))  
+scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST)))  
 
-MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
+#MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
+APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
+MODELLIST = scaled/256/unet2d/run_a scaled/256/unet3d/run_a scaled/256/densenet2d/run_a scaled/256/densenet3d/run_a 
 
-mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(UIDLIST)))) 
-liver:    $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/liver.nii.gz,$(UIDLIST)))) 
-overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/overlap.sql,$(UIDLIST)))) 
-combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(UIDLIST)))  
+mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(APPLYLIST)))) 
+liver:    $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/liver.nii.gz,$(APPLYLIST)))) 
+overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/overlap.sql,$(APPLYLIST)))) 
+combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(APPLYLIST)))  
 
 
 ## pre processing
-%/scaled/Art.nii.gz: 
+%/scaled/normalize.nii: 
 	mkdir -p $(@D)
-	python normalization.py --imagefile=$*/Art.raw.nii.gz  --output=$@
+	python normalization.py --imagefile=$*/image.nii  --output=$@
 # Data set with a valid size for 3-D U-Net (multiple of 8)
-%/scaled/crop/Art.nii: %/scaled/Art.nii.gz
+%/scaled/crop/Volume.nii: %/scaled/normalize.nii
 	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
 	python resize.py --imagefile=$<  --output=$@
 
 %/crop/Truth.nii: 
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
-	python resize.py --imagefile=$*/Truth.raw.nii.gz  --output=$@ --datatype=uchar --interpolation=nearest
+	python resize.py --imagefile=$*/label.nii  --output=$@ --datatype=uchar --interpolation=nearest
 
 %/Art.combined.nii.gz: %/Art.scaled.nii.gz %/Truth.nii.gz
 	c3d $^ -binarize  -omc $@

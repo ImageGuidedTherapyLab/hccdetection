@@ -35,6 +35,7 @@ parser.add_option( "--databaseid",
 
 # current datasets
 trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/','delimiter':','},
+                      'washouthccmri':{'dbfile':'./trainingdatawashout.csv','rootlocation':'/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/','delimiter':','},
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'crc':{'dbfile':'./crctrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' ,'delimiter':'\t'},
                       'hccct':{'dbfile':'datalocation/cthccdatakey.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse','delimiter':'\t'}}
@@ -191,6 +192,8 @@ if (options.initialize ):
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
   df = pandas.read_csv(trainingdictionary['hccmri']['dbfile'],delimiter=trainingdictionary['hccmri']['delimiter'])
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
+  df = pandas.read_csv(trainingdictionary['washouthccmri']['dbfile'],delimiter=trainingdictionary['washouthccmri']['delimiter'])
+  df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
 
 ##########################
 # apply model to test set
@@ -200,17 +203,26 @@ elif (options.setuptestset):
   databaseinfo = GetDataDictionary()
 
   # get each data subset
-  hccmriids={ key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccmri' }
-  crcids=   { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crc' }
-  hccctids= { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccct' }
+  hccmriids= { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccmri' }
+  washoutids={ key:value for key, value in databaseinfo.items() if value['dataid'] == 'washouthccmri' }
+  crcids=    { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crc' }
+  hccctids=  { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccct' }
 
   # setup partitions
   kfolddictionary = {}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
-    kfolddictionary[iii] ={'kfolds':options.kfolds, 'dataid': 'run_a','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
-  kfolddictionary[5] ={'kfolds':1, 'dataid': 'crc','train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()+hccctids.keys()}
-  #kfolddictionary[6] ={'train_set':hccctids.keys()[:100],'validation_set':hccctids.keys()[100:],'test_set':hccmriids.keys()}
+    kfolddictionary[iii] ={'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'run_a','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  for iii in range(options.kfolds):
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,washoutids.keys())
+    kfolddictionary[5+iii] ={'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'washouthccmri','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  for iii in range(options.kfolds):
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,crcids.keys())
+    kfolddictionary[10+iii] ={'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crc','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  for iii in range(options.kfolds):
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccctids.keys())
+    kfolddictionary[15+iii] ={'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccct','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+  kfolddictionary[20] ={'foldidx':0,'kfolds':1, 'dataid': 'crc','train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()+hccctids.keys()}
 
   # initialize lists partitions
   uiddictionary = {}
@@ -227,7 +239,7 @@ elif (options.setuptestset):
       for nnid in nnlist:
        for iii, kfoldset in kfolddictionary.items():
          (train_set,validation_set,test_set) = ( kfoldset['train_set'], kfoldset['validation_set'], kfoldset['test_set'])
-         uidoutputdir= 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d' % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,kfoldset['dataid'],options.trainingbatch,options.validationbatch,kfoldset['kfolds'],iii)
+         uidoutputdir= 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d' % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,kfoldset['dataid'],options.trainingbatch,options.validationbatch,kfoldset['kfolds'],kfoldset['foldidx'])
          setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir}
          modelprereq    = '%s/trainedNet.mat' % uidoutputdir
          setupprereq    = '%s/setup.json' % uidoutputdir
@@ -239,7 +251,7 @@ elif (options.setuptestset):
          uiddictionary[iii]=[]
          for idtest in test_set:
             # write target
-            imageprereq    = 'anonymize/%s/%s/%s/Art.nii' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid)
+            imageprereq    = 'anonymize/%s/%s/%s/Volume.nii' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid)
             maskprereq     = 'anonymize/%s/%s/%s/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
             segmaketarget  = 'anonymize/%s/%s/%s/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
             uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
