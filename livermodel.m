@@ -25,15 +25,15 @@ function livermodel( jsonFilename  )
   gpuDevice(1)
   
   % before starting, need to define "n" which is the number of channels.
-  NumberOfChannels = 1;
+  NumberOfChannels = jsonData.NumberOfChannels;
   a.loadneuralnet(NumberOfChannels)
   
   % functiom point to load mat files
   procReader = @(x) niftiread(x);
   
   % read image volume data
-  trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Art.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
-  validationData = imageDatastore(fullfile('anonymize',jsonData.validationset,jsonData.normalization,sprintf('%d',jsonData.resolution),'Art.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  validationData = imageDatastore(fullfile('anonymize',jsonData.validationset,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
   
   % read these into pixellabeldatastores
   classNames = ["background","liver"];

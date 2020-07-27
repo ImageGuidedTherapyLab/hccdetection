@@ -64,6 +64,14 @@ $(WORKDIR)/i%/image.nii:
 $(WORKDIR)/i%/label.nii:
 	mkdir -p $(@D)
 	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) $@
+# mask the liver to segment the tumor
+crctumor: $(addprefix $(WORKDIR)/crctumor,$(addsuffix /image.nii,$(CRCLIST)))  $(addprefix $(WORKDIR)/crctumor,$(addsuffix /label.nii,$(CRCLIST)))  
+$(WORKDIR)/crctumori%/image.nii:
+	mkdir -p $(@D)
+	c3d -verbose $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) -info -as A $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) -info -copy-transform -info -binarize -push A -multiply -o $@
+$(WORKDIR)/crctumori%/label.nii:
+	mkdir -p $(@D)
+	c3d -verbose $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) -replace 1 0 2 1 -type uchar -o $@
 
 # setup CT HCC data
 HCCCTLIST       = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f2 )
@@ -87,26 +95,28 @@ $(WORKDIR)/ct%/label.nii:
 
 -include hccmrikfold005.makefile
 
-DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) 
+#DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
+DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
 print:
 	@echo $(DATALIST)
 
 view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(DATALIST)))  
 info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(DATALIST)))  
-lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.csv,$(DATALIST)))  
+lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.sql,$(DATALIST)))  
 
 resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(DATALIST)))   \
         $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Volume.nii,$(DATALIST)))  
 scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST)))  
 
 #MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
-APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
+#APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
+APPLYLIST=$(UIDLIST20) $(UIDLIST21) $(UIDLIST22) $(UIDLIST23) $(UIDLIST24) 
+#APPLYLIST=$(UIDLIST25) $(UIDLIST26) $(UIDLIST27) $(UIDLIST28) $(UIDLIST29) 
 MODELLIST = scaled/256/unet2d/run_a scaled/256/unet3d/run_a scaled/256/densenet2d/run_a scaled/256/densenet3d/run_a 
 
 mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(APPLYLIST)))) 
 liver:    $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/liver.nii.gz,$(APPLYLIST)))) 
 overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/overlap.sql,$(APPLYLIST)))) 
-combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(APPLYLIST)))  
 
 
 ## pre processing
@@ -122,12 +132,9 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(APPLYLIST))
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
 	python resize.py --imagefile=$*/label.nii  --output=$@ --datatype=uchar --interpolation=nearest
 
-%/Art.combined.nii.gz: %/Art.scaled.nii.gz %/Truth.nii.gz
-	c3d $^ -binarize  -omc $@
-
 %/view: 
-	c3d  $(@D)/Ven.raw.nii.gz  -info $(@D)/Art.raw.nii.gz  -info   $(@D)/Truth.raw.nii.gz  -info
-	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz 
+	c3d  $(@D)/image.nii -info   $(@D)/label.nii  -info
+	vglrun itksnap -g  $(@D)/image.nii  -s  $(@D)/label.nii
 
 %/info: %/Art.raw.nii.gz  %/Art.scaled.nii
 	c3d $< -info $(word 2,$^) -info
@@ -137,9 +144,12 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(APPLYLIST))
 	c3d -verbose $<  -thresh 2 2 1 0 -connected-components   -thresh 1 1 1 0 -o $@
 
 ## label statistics
-%/lstat.csv: %/Art.raw.nii.gz %/Truth.raw.nii.gz
-	c3d $^ -lstat > $(@D)/lstat.txt &&  sed "s/^\s\+/$(word 3 ,$(subst /, ,$*)),$(MODELID)$(word 7 ,$(subst /, ,$*)),$(word 5 ,$(subst /, ,$*)),/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/lstat.txt  > $@
+$(WORKDIR)/%/lstat.csv: $(WORKDIR)/%/image.nii $(WORKDIR)/%/label.nii
+	echo $*
+	c3d $^ -lstat > $(@D)/lstat.txt &&  sed "s/^\s\+/$*,label.nii,image.nii,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/lstat.txt  > $@
 
+$(WORKDIR)/%/lstat.sql: $(WORKDIR)/%/lstat.csv
+	-sqlite3 $(SQLITEDB)  -init .loadcsvsqliterc ".import $< lstat"
 
 ## dice statistics
 $(WORKDIR)/%/overlap.csv: $(WORKDIR)/%/liver.nii.gz
