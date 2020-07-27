@@ -142,10 +142,13 @@ combined: $(addprefix $(WORKDIR)/,$(addsuffix /Art.combined.nii.gz,$(APPLYLIST))
 
 
 ## dice statistics
-%/overlap.csv: %/liver.nii.gz
-	c3d $(dir $(<D))/Truth.resample256.nii $< -overlap 1 > $(@D)/overlap.txt 
-	grep "^OVL" $(@D)/overlap.txt  |sed "s/OVL: \([0-9]\),/\1,$(subst /,.,$*),/g;s/OVL: 1\([0-9]\),/1\1,$(subst /,.,$*),/g;s/^/Truth.resample256.nii,liver.nii.gz,/g;"  | sed "1 i FirstImage,SecondImage,LabelID,InstanceUID,MatchingFirst,MatchingSecond,SizeOverlap,DiceSimilarity,IntersectionRatio" > $@
+$(WORKDIR)/%/overlap.csv: $(WORKDIR)/%/liver.nii.gz
+	echo $*
+	c3d $(WORKDIR)/$(firstword $(subst /, ,$*))/$(word 3 ,$(subst /, ,$*))/Truth.nii $< -overlap 1 > $(@D)/overlap.txt 
+	grep "^OVL" $(@D)/overlap.txt  |sed "s/OVL: \([0-9]\),/\1,$(subst /,.,$*),/g;s/OVL: 1\([0-9]\),/1\1,$(subst /,.,$*),/g;s/^/Truth.nii,liver.nii.gz,/g;"  | sed "1 i FirstImage,SecondImage,LabelID,InstanceUID,MatchingFirst,MatchingSecond,SizeOverlap,DiceSimilarity,IntersectionRatio" > $@
 
 $(WORKDIR)/%/overlap.sql: $(WORKDIR)/%/overlap.csv
 	-sqlite3 $(SQLITEDB)  -init .loadcsvsqliterc ".import $< overlap"
 
+overlap.csv: 
+	-sqlite3 $(SQLITEDB)  -init .exportoverlap  ".quit"
