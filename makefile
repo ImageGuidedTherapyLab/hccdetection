@@ -96,7 +96,8 @@ $(WORKDIR)/ct%/label.nii:
 -include hccmrikfold005.makefile
 
 #DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
-DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
+#DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
+DATALIST = $(addprefix crctumor,$(CRCLIST)) 
 print:
 	@echo $(DATALIST)
 
@@ -124,6 +125,14 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 %/scaled/normalize.nii: 
 	mkdir -p $(@D)
 	python normalization.py --imagefile=$*/image.nii  --output=$@
+# FIXME - note this rule is repeated
+# https://www.gnu.org/software/make/manual/html_node/Multiple-Rules.html
+# If more than one rule gives a recipe for the same file, make uses the last one given
+# https://www.gnu.org/software/make/manual/html_node/Pattern-Match.html#Pattern-Match
+# It is possible that more than one pattern rule will meet these criteria. In that case, make will choose the rule with the shortest stem (that is, the pattern that matches most specifically). If more than one pattern rule has the shortest stem, make will choose the first one found in the makefile.
+$(WORKDIR)/crctumor%/scaled/normalize.nii: 
+	mkdir -p $(@D)
+	ln -sf ../image.nii $@
 # Data set with a valid size for 3-D U-Net (multiple of 8)
 %/scaled/crop/Volume.nii: %/scaled/normalize.nii
 	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
