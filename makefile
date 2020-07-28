@@ -113,7 +113,8 @@ scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST))
 #APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
 #MODELLIST = scaled/256/unet2d/run_a scaled/256/unet3d/run_a scaled/256/densenet2d/run_a scaled/256/densenet3d/run_a 
 APPLYLIST=$(UIDLIST20) $(UIDLIST21) $(UIDLIST22) $(UIDLIST23) $(UIDLIST24) 
-MODELLIST = scaled/256/unet2d/crctumor scaled/256/unet3d/crctumor scaled/256/densenet2d/crctumor scaled/256/densenet3d/crctumor 
+#MODELLIST = scaled/256/unet2d/crctumor scaled/256/unet3d/crctumor scaled/256/densenet2d/crctumor scaled/256/densenet3d/crctumor 
+MODELLIST = scaled/256/unet2d/crctumor 
 #APPLYLIST=$(UIDLIST25) $(UIDLIST26) $(UIDLIST27) $(UIDLIST28) $(UIDLIST29) 
 
 mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(APPLYLIST)))) 
@@ -144,7 +145,7 @@ $(WORKDIR)/crctumor%/scaled/normalize.nii:
 
 %/view: 
 	c3d  $(@D)/image.nii -info   $(@D)/label.nii  -info
-	vglrun itksnap -g  $(@D)/image.nii  -s  $(@D)/label.nii
+	vglrun itksnap -g  $(@D)/image.nii  -s  $(@D)/tumor.nii.gz
 
 %/info: %/Art.raw.nii.gz  %/Art.scaled.nii
 	c3d $< -info $(word 2,$^) -info

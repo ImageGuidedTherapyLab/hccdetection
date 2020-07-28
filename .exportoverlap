@@ -1,4 +1,6 @@
 .header on
 .mode csv
 .output overlap.csv
-SELECT * FROM overlap where InstanceUID != 'InstanceUID';
+SELECT ol.*, lt.* FROM overlap ol join lstat lt ON substr(ol.InstanceUID,1,13) =  lt.InstanceUID and ol.LabelID = lt.LabelID where ol.InstanceUID != 'InstanceUID';
+
+
