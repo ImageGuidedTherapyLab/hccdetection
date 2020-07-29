@@ -30,6 +30,7 @@ function livermodel( jsonFilename  )
   
   % functiom point to load mat files
   procReader = @(x) niftiread(x);
+  labelReader = @(x) niftiread(x);
   
   % read image volume data
   trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader)

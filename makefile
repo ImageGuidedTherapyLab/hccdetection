@@ -65,13 +65,10 @@ $(WORKDIR)/i%/label.nii:
 	mkdir -p $(@D)
 	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) $@
 # mask the liver to segment the tumor
-crctumor: $(addprefix $(WORKDIR)/crctumor,$(addsuffix /image.nii,$(CRCLIST)))  $(addprefix $(WORKDIR)/crctumor,$(addsuffix /label.nii,$(CRCLIST)))  
-$(WORKDIR)/crctumori%/image.nii:
+crctumor: $(addprefix $(WORKDIR)/crctumor,$(addsuffix /setup,$(CRCLIST)))
+$(WORKDIR)/crctumori%/setup:
 	mkdir -p $(@D)
-	c3d -verbose $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) -info -as A $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) -info -copy-transform -info -binarize -push A -multiply -o $@
-$(WORKDIR)/crctumori%/label.nii:
-	mkdir -p $(@D)
-	c3d -verbose $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) -replace 1 0 2 1 -type uchar -o $@
+	python liverboundingbox.py --imagefile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) --labelfile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST))  --output=$(@D)
 
 # setup CT HCC data
 HCCCTLIST       = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f2 )
