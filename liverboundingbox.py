@@ -48,8 +48,8 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     npimagebb = numpyimage[:,:, liverboundingbox[2] ]
     nptruthbb = numpyimage[:,:, liverboundingbox[2] ]
 
-    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -multiply -info -region 0x0x%dvox %dx%dx%dvox -info -type short -o %s/image.nii  ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
-    labelbbcmd = 'c3d -verbose %s -replace 1 0 2 1 -info -region 0x0x%dvox %dx%dx%dvox -info -type uchar -o %s/label.nii  ' % (options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
+    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region 0x0x%dvox %dx%dx%dvox -info -type short -endfor -omc %s/image.nii  ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
+    labelbbcmd = 'c3d -verbose %s -info -region 0x0x%dvox %dx%dx%dvox -info -type uchar -o %s/label.nii  ' % (options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
     print(imagebbcmd )
     os.system(imagebbcmd )
     print(labelbbcmd )

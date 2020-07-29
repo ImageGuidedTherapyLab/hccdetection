@@ -131,11 +131,13 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 $(WORKDIR)/crctumor%/scaled/normalize.nii: 
 	mkdir -p $(@D)
 	ln -sf ../image.nii $@
+$(WORKDIR)/crctumor%/scaled/crop/Volume.nii: $(WORKDIR)/crctumor%/scaled/normalize.nii
+	mkdir -p $(@D); mkdir -p $(dir $(@D))/256; mkdir -p $(dir $(@D))/512;
+	python resizemcs.py --imagefile=$<  --output=$@
 # Data set with a valid size for 3-D U-Net (multiple of 8)
 %/scaled/crop/Volume.nii: %/scaled/normalize.nii
 	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
 	python resize.py --imagefile=$<  --output=$@
-
 %/crop/Truth.nii: 
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
 	python resize.py --imagefile=$*/label.nii  --output=$@ --datatype=uchar --interpolation=nearest
