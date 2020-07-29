@@ -4,7 +4,7 @@ classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass
         obj = obj@ImageSegmentationBaseClass();
         obj.pixelResolution = pixelResolution;
         obj.patchSize = [obj.pixelResolution obj.pixelResolution 1];
-        obj.patchPerImage = 80;
+        obj.patchPerImage = 200;
       end
       function loadneuralnet(obj,NumberChannels)
          tempLayers = [
