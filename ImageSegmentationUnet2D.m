@@ -67,7 +67,7 @@ classdef ImageSegmentationUnet2D  < ImageSegmentationBaseClass
              reluLayer("Name","relu_Module7_Level1")
              convolution2dLayer([3 3],64,"Name","conv_Module7_Level2","Padding","same")
              reluLayer("Name","relu_Module7_Level2")
-             convolution2dLayer([1 1],2,"Name","ConvLast_Module7")
+             convolution2dLayer([1 1],NumberChannels+1,"Name","ConvLast_Module7")
              softmaxLayer("Name","softmax")
              dicePixelClassificationLayer('Name','output')];
          obj.lgraph = addLayers(obj.lgraph,tempLayers);

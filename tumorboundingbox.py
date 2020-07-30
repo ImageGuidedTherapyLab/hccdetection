@@ -37,7 +37,6 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     assert numpyimage.shape == numpytruth.shape
 
     # bounding box for each label
-    assert np.max(numpytruth) > 0 
     if( np.max(numpytruth) ==1 ) :
       (liverboundingbox,)  = ndimage.find_objects(numpytruth)
       tumorboundingbox  = None
@@ -49,12 +48,12 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     npimagebb = numpyimage[:,:, liverboundingbox[2] ]
     nptruthbb = numpyimage[:,:, liverboundingbox[2] ]
 
-    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region 0x0x%dvox %dx%dx%dvox -info -type short -endfor -omc %s/image.nii -multiply -o %s/maskimage.nii ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output,options.output )
-    labelbbcmd = 'c3d -verbose %s -info -region 0x0x%dvox %dx%dx%dvox -info -type uchar -o %s/label.nii  ' % (options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
-    print(imagebbcmd )
-    os.system(imagebbcmd )
-    print(labelbbcmd )
-    os.system(labelbbcmd )
+    #imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region 0x0x%dvox %dx%dx%dvox -info -type short -endfor -omc %s/image.nii -multiply -o %s/maskimage.nii ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output,options.output )
+    #labelbbcmd = 'c3d -verbose %s -info -region 0x0x%dvox %dx%dx%dvox -info -type uchar -o %s/label.nii  ' % (options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
+    #print(imagebbcmd )
+    #os.system(imagebbcmd )
+    #print(labelbbcmd )
+    #os.system(labelbbcmd )
 else:
   parser.print_help()
   print (options)

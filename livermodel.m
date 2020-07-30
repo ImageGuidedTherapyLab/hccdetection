@@ -1,6 +1,7 @@
 %% liver segmentation on MRI
 function livermodel( jsonFilename  )
   % load all configuration data
+  % jsonFilename = 'Processed/hccmrilog/dscimg/unet2d/adadelta/256/crctumor/005020/005/000/setup.json'
   disp(jsonFilename  )
   jsonText = fileread(jsonFilename);
   jsonData = jsondecode(jsonText)
@@ -25,22 +26,24 @@ function livermodel( jsonFilename  )
   gpuDevice(1)
   
   % before starting, need to define "n" which is the number of channels.
-  NumberOfChannels = jsonData.NumberOfChannels;
+  NumberOfChannels =  1; %jsonData.NumberOfChannels;
   a.loadneuralnet(NumberOfChannels)
   
   % functiom point to load mat files
-  procReader = @(x) niftiread(x);
-  labelReader = @(x) niftiread(x);
+  procReader  = @(x) (niftiread(x));
+  labelReader = @(x) (niftiread(x));
   
   % read image volume data
   trainData      = imageDatastore(fullfile('anonymize',jsonData.trainset     ,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader)
+  imdstrainReSz = transform(trainData,@(x) x(:,:,:,1));
   validationData = imageDatastore(fullfile('anonymize',jsonData.validationset,jsonData.normalization,sprintf('%d',jsonData.resolution),'Volume.nii') , 'FileExtensions','.nii','ReadFcn',procReader);
+  imdsvalidationReSz = transform(validationData,@(x) x(:,:,:,1));
   
   % read these into pixellabeldatastores
-  classNames = ["background","liver"];
-  pixelLabelID = [0 1];
-  trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader )
-  validationMask = pixelLabelDatastore(fullfile('anonymize',jsonData.validationset,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',procReader );
+  classNames = ["liver","tumor"];
+  pixelLabelID = [1 2];
+  trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',labelReader )
+  validationMask = pixelLabelDatastore(fullfile('anonymize',jsonData.validationset,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',labelReader );
   
   % Need Random Patch Extraction on testing and validation Data
   miniBatchSize = 8;
@@ -49,7 +52,7 @@ function livermodel( jsonFilename  )
       'PatchesPerImage',a.patchPerImage);
   trainPatch.MiniBatchSize = miniBatchSize;
     %validation patch datastore
-  validationPatch = randomPatchExtractionDatastore(validationData,validationMask,a.patchSize, ...
+  validationPatch = randomPatchExtractionDatastore(validationData ,validationMask,a.patchSize, ...
       'PatchesPerImage',a.patchPerImage);
   validationPatch.MiniBatchSize = miniBatchSize;
   
@@ -64,7 +67,18 @@ function livermodel( jsonFilename  )
       'ValidationFrequency',400, ...
       'Plots','training-progress', ...
       'Verbose',false, ...
-      'MiniBatchSize',miniBatchSize);
+      'MiniBatchSize',miniBatchSize)
+
+  options = trainingOptions('sgdm', ...
+    'MaxEpochs',10, ...
+    'LearnRateSchedule','piecewise', ...
+    'LearnRateDropFactor',0.2, ...
+    'LearnRateDropPeriod',5, ...
+    'ValidationData',validationPatch, ...
+    'ValidationFrequency',400, ...
+    'MiniBatchSize',miniBatchSize, ...
+    'Verbose',false, ...
+    'Plots','training-progress')
       
   % train and save 
   modelDateTime = datestr(now,'dd-mmm-yyyy-HH-MM-SS')

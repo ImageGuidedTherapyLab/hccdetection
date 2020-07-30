@@ -232,7 +232,7 @@ elif (options.setuptestset):
     kfolddictionary[15+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccct','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,crctumorids.keys())
-    kfolddictionary[20+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crctumor','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    kfolddictionary[20+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crctumor','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hcccttumorids.keys())
     kfolddictionary[25+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hcccttumor','train_set':train_set,'validation_set':validation_set,'test_set':test_set}

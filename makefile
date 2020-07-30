@@ -69,6 +69,8 @@ crctumor: $(addprefix $(WORKDIR)/crctumor,$(addsuffix /setup,$(CRCLIST)))
 $(WORKDIR)/crctumori%/setup:
 	mkdir -p $(@D)
 	python liverboundingbox.py --imagefile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) --labelfile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST))  --output=$(@D)
+	c3d -verbose $(@D)/label.nii -thresh 2 2 1 0 -connected-components -o  $(@D)/comp.nii.gz
+	python tumorboundingbox.py --imagefile=$(@D)/maskimage.nii --labelfile=$(@D)/comp.nii.gz --output=$(@D)
 
 # setup CT HCC data
 HCCCTLIST       = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f2 )
@@ -128,16 +130,26 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 # If more than one rule gives a recipe for the same file, make uses the last one given
 # https://www.gnu.org/software/make/manual/html_node/Pattern-Match.html#Pattern-Match
 # It is possible that more than one pattern rule will meet these criteria. In that case, make will choose the rule with the shortest stem (that is, the pattern that matches most specifically). If more than one pattern rule has the shortest stem, make will choose the first one found in the makefile.
-$(WORKDIR)/crctumor%/scaled/normalize.nii: 
+$(WORKDIR)/crctumor%/scaled/crop/Volume.nii: $(WORKDIR)/crctumor%/image.nii
 	mkdir -p $(@D)
-	ln -sf ../image.nii $@
-$(WORKDIR)/crctumor%/scaled/crop/Volume.nii: $(WORKDIR)/crctumor%/scaled/normalize.nii
-	mkdir -p $(@D); mkdir -p $(dir $(@D))/256; mkdir -p $(dir $(@D))/512;
-	python resizemcs.py --imagefile=$<  --output=$@
-# Data set with a valid size for 3-D U-Net (multiple of 8)
+	python crop.py --imagefile=$<  --output=$@
+
+$(WORKDIR)/crctumor%/scaled/256/Volume.nii: $(WORKDIR)/crctumor%/scaled/crop/Volume.nii
+	mkdir -p $(@D); 
+	python resample.py --imagefile=$<  --output=$@tmp
+	c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -type short -endfor -omc $@
+$(WORKDIR)/crctumor%/scaled/256/Volume.dir: $(WORKDIR)/crctumor%/scaled/crop/Volume.nii
+	python tumorboundingbox.py 
+
 %/scaled/crop/Volume.nii: %/scaled/normalize.nii
-	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
-	python resize.py --imagefile=$<  --output=$@
+	mkdir -p $(@D)
+	python crop.py --imagefile=$<  --output=$@
+%/scaled/256/Volume.nii: %/scaled/crop/Volume.nii
+	mkdir -p $(@D)
+	python resample.py --imagefile=$<  --output=$@
+%/scaled/512/Volume.nii: %/scaled/crop/Volume.nii
+	mkdir -p $(@D)
+	python resample.py --imagefile=$<  --output=$@
 %/crop/Truth.nii: 
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
 	python resize.py --imagefile=$*/label.nii  --output=$@ --datatype=uchar --interpolation=nearest
