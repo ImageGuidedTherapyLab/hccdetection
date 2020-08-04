@@ -1,7 +1,7 @@
 
 Export slicer DB as nifti 
 ==============
-vglrun /opt/apps/slicer/Slicer-4.10.2-linux-amd64/Slicer --no-main-window --python-script ./sliceroutput.py
+vglrun /opt/apps/slicer/Slicer-4.10.2-linux-amd64/Slicer --no-main-window --python-script ./anonymize.py
 
 
 Matlab example 
