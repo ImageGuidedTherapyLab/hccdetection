@@ -28,12 +28,18 @@ tags['patientBirthDate'] = "0010,0030"
 db = slicer.dicomDatabase
 print(db.databaseFilename)
 
+patientDict = {}
+studyDict = {}
+fileDict = {}
 
 with open('datakey.csv', 'w') as csvfile:
   csvwrite = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+  fileHeader =  ['PatientID','Study','StudyDate','Series','dcmfile','HCCDate','DiagnosticInterval','PatientNumber','SeriesDescription','SeriesModality','seriesanonuid']
+  csvwrite.writerow(fileHeader )
 
   for patientnumber in db.patients():
-    for study in db.studiesForPatient(patientnumber):
+    for idstudy,study in enumerate(db.studiesForPatient(patientnumber)):
+      studyList = []
       for series in db.seriesForStudy(study):
         serieslist = [myfile for myfile in db.filesForSeries(series)]
         seriesDescription = slicer.dicomDatabase.fileValue(serieslist[0],tags['seriesDescription'])
@@ -42,15 +48,20 @@ with open('datakey.csv', 'w') as csvfile:
         studyDate= slicer.dicomDatabase.fileValue(serieslist[0],tags['studyDate'])
         diagnosistimedifference = days_between('20000101',studyDate )
         seriesanonuid = uuid.uuid4()
-        print(patientID,study,studyDate,series,patientnumber,seriesDescription,seriesModality,diagnosistimedifference,seriesanonuid  )
-        csvwrite.writerow( [patientID,study,studyDate,series,patientnumber,seriesDescription,seriesModality,diagnosistimedifference,seriesanonuid  ])
-        if ( seriesModality == 'MR'):
-          node=slicer.util.loadVolume(serieslist[0],returnNode=True);
-          # TODO - note full path output directory
-          outputdir = '/rsrch2/ip/dtfuentes/github/hccdetection/tmpconvert/BCM_%04d/%05d/' % (int(patientnumber) , diagnosistimedifference )
-          print( outputdir )
-          os.system('mkdir -p %s ' % outputdir  )
-          slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,seriesanonuid )  )
+        patientDict[patientnumber] = patientID 
+        studyList.append(studyDate) 
+        fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription,'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid  }
+        print  fileDict[seriesanonuid]
+        csvwrite.writerow( [ fileDict[seriesanonuid][headerID] for headerID in fileHeader] )
+      studyDict [study]  = studyList
 
 
+for key,value in fileDict.items():
+  if ( value['SeriesModality'] == 'MR'):
+    node=slicer.util.loadVolume(value['dcmfile'],returnNode=True);
+    # TODO - note full path output directory
+    outputdir = '/rsrch2/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+    print( outputdir )
+    os.system('mkdir -p %s ' % outputdir  )
+    slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,value['seriesanonuid'] )  )
 exit()
