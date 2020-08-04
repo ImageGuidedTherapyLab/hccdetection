@@ -34,7 +34,7 @@ fileDict = {}
 
 with open('datakey.csv', 'w') as csvfile:
   csvwrite = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-  fileHeader =  ['PatientID','Study','StudyDate','Series','dcmfile','HCCDate','DiagnosticInterval','PatientNumber','SeriesDescription','SeriesModality','seriesanonuid']
+  fileHeader =  ['PatientID','Study','StudyDate','Series','dcmfile','HCCDate','DiagnosticInterval','StudyNumber','PatientNumber','SeriesDescription','SeriesModality','seriesanonuid']
   csvwrite.writerow(fileHeader )
 
   for patientnumber in db.patients():
