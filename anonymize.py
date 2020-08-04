@@ -34,7 +34,7 @@ fileDict = {}
 
 with open('datakey.csv', 'w') as csvfile:
   csvwrite = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-  fileHeader =  ['PatientID','Study','StudyDate','Series','dcmfile','HCCDate','DiagnosticInterval','StudyNumber','PatientNumber','SeriesDescription','SeriesModality','seriesanonuid']
+  fileHeader =  ['PatientID','Study','StudyDate','Series','dcmfile','HCCDate','DiagnosticInterval','StudyNumber','PatientNumber','SeriesDescription','SeriesModality','seriesanonuid','niftifile']
   csvwrite.writerow(fileHeader )
 
   for patientnumber in db.patients():
@@ -50,7 +50,8 @@ with open('datakey.csv', 'w') as csvfile:
         seriesanonuid = uuid.uuid4()
         patientDict[patientnumber] = patientID 
         studyList.append(studyDate) 
-        fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription,'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid  }
+        niftifile = 'BCM%04d%03d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
+        fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription,'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid, 'niftifile':niftifile   }
         print  fileDict[seriesanonuid]
         csvwrite.writerow( [ fileDict[seriesanonuid][headerID] for headerID in fileHeader] )
       studyDict [study]  = studyList
