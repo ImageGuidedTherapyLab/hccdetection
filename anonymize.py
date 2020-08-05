@@ -38,8 +38,9 @@ with open('datakey.csv', 'w') as csvfile:
   csvwrite.writerow(fileHeader )
 
   for patientnumber in db.patients():
+    studyList = []
+    # TODO - is the idstudy chronological ? 
     for idstudy,study in enumerate(db.studiesForPatient(patientnumber)):
-      studyList = []
       for series in db.seriesForStudy(study):
         serieslist = [myfile for myfile in db.filesForSeries(series)]
         seriesDescription = slicer.dicomDatabase.fileValue(serieslist[0],tags['seriesDescription'])
@@ -48,13 +49,15 @@ with open('datakey.csv', 'w') as csvfile:
         studyDate= slicer.dicomDatabase.fileValue(serieslist[0],tags['studyDate'])
         diagnosistimedifference = days_between('20000101',studyDate )
         seriesanonuid = uuid.uuid4()
-        patientDict[patientnumber] = patientID 
-        studyList.append(studyDate) 
-        niftifile = 'BCM%04d%03d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
+        patientDict[patientnumber] = {'mrn':patientID }
+        studyDict [study]  = studyDate
+        niftifile = 'BCM%04d%02d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
         fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription,'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid, 'niftifile':niftifile   }
         print  fileDict[seriesanonuid]
         csvwrite.writerow( [ fileDict[seriesanonuid][headerID] for headerID in fileHeader] )
-      studyDict [study]  = studyList
+      studyList.append((study,studyDate,idstudy )) 
+    if( len(studyList) > 0 ):
+      patientDict[patientnumber]['studyList'] = studyList
 
 
 for key,value in fileDict.items():
