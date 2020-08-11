@@ -3,6 +3,18 @@ import os
 from datetime import datetime
 import uuid
 import csv
+import random
+
+# -------------------------------------------
+# Remove this block to generate different
+# UUIDs everytime you run this code.
+# This block should be right below the uuid
+# import.
+rd = random.Random()
+rd.seed(0)
+uuid.uuid4 = lambda: uuid.UUID(int=rd.getrandbits(128))
+# -------------------------------------------
+
 
 
 def days_between(d1, d2):
@@ -58,7 +70,6 @@ with open('datakey.csv', 'w') as csvfile:
       studyList.append((study,studyDate,idstudy )) 
     if( len(studyList) > 0 ):
       patientDict[patientnumber]['studyList'] = studyList
-
 
 for key,value in fileDict.items():
   if ( value['SeriesModality'] == 'MR'):
