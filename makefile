@@ -17,12 +17,14 @@ IMAGEFILELIST = image.nii label.nii
 
 # setup MRI data
 DATADIRMRI=/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/
+include datalocation/dependencies
 MRILIST  = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f2 )
 ANONLIST = $(shell sed 1d datalocation/trainingdatakey.csv | cut -d, -f1 )
 art:   $(addprefix Processed/,$(addsuffix /Art.raw.nii.gz,$(MRILIST)))  
 pre:   $(addprefix Processed/,$(addsuffix /Pre.raw.nii.gz,$(MRILIST)))  
 ven:   $(addprefix Processed/,$(addsuffix /Ven.raw.nii.gz,$(MRILIST)))  
 truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(MRILIST)))  
+viewraw: $(addprefix Processed/,$(addsuffix /viewraw,$(MRILIST)))  
 COUNT := $(words $(MRILIST))
 SEQUENCE = $(shell seq $(COUNT))
 anon: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idfile),$(ANONLIST)))) 
@@ -43,6 +45,9 @@ $(WORKDIR)/hcc%/label.nii:
 %/Truth.raw.nii.gz: %/Art.raw.nii.gz
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
+%/viewraw: 
+	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Truth.raw.nii.gz  -info
+	vglrun itksnap -g  $(@D)/Art.raw.nii.gz -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz
 # art and ven input
 washout: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/washout,$(addsuffix /$(idfile),$(ANONLIST)))) 
 $(WORKDIR)/washouthcc%/image.nii:

@@ -35,7 +35,6 @@ parser.add_option( "--databaseid",
 
 # current datasets
 trainingdictionary = {'hccmri':{'dbfile':'./trainingdata.csv','rootlocation':'/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/','delimiter':','},
-                      'washouthccmri':{'dbfile':'./trainingdatawashout.csv','rootlocation':'/Radonc/Cancer\ Physics\ and\ Engineering\ Lab/Matthew\ Cagley/HCC\ MRI\ Cases/','delimiter':','},
                       'hccfollowup':{'dbfile':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse/datalocation/TACE_final_2_2.csv','rootlocation':'/rsrch1/ip/dtfuentes/github/RandomForestHCCResponse'},
                       'crc':{'dbfile':'./crctrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' ,'delimiter':'\t'},
                       'crctumor':{'dbfile':'./crctumortrainingdata.csv','rootlocation':'/rsrch1/ip/jacctor/LiTS/LiTS' ,'delimiter':'\t'},
@@ -198,8 +197,6 @@ if (options.initialize ):
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
   df = pandas.read_csv(trainingdictionary['hccmri']['dbfile'],delimiter=trainingdictionary['hccmri']['delimiter'])
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
-  df = pandas.read_csv(trainingdictionary['washouthccmri']['dbfile'],delimiter=trainingdictionary['washouthccmri']['delimiter'])
-  df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
 
 ##########################
 # apply model to test set
@@ -210,7 +207,6 @@ elif (options.setuptestset):
 
   # get each data subset
   hccmriids=      { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccmri' }
-  washoutids=     { key:value for key, value in databaseinfo.items() if value['dataid'] == 'washouthccmri' }
   crcids=         { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crc' }
   crctumorids=    { key:value for key, value in databaseinfo.items() if value['dataid'] == 'crctumor' }
   hccctids=       { key:value for key, value in databaseinfo.items() if value['dataid'] == 'hccct' }
@@ -220,28 +216,32 @@ elif (options.setuptestset):
   kfolddictionary = {}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
-    kfolddictionary[iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'run_a','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    kfolddictionary[iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'run_a', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
+  modalitylist = ['pre','art','ven']
   for iii in range(options.kfolds):
-    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,washoutids.keys())
-    kfolddictionary[5+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'washouthccmri','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
+    kfolddictionary[5+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccmrima', 'test_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in test_set for idmodality in modalitylist], 'validation_set': [ "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtrain in validation_set for idmodality in modalitylist], 'train_set': [   "%s%s" % (idmodality,databaseinfo[idtest]['uid'])  for idtrain in train_set for idmodality in modalitylist]}
+  for iii in range(options.kfolds):
+    (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
+    kfolddictionary[10+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'washouthccmri', 'test_set':[  "washout%s" % databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  "washout%s" %  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  "washout%s" %  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,crcids.keys())
-    kfolddictionary[10+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crc','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    kfolddictionary[15+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crc', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccctids.keys())
-    kfolddictionary[15+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccct','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    kfolddictionary[20+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccct', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,crctumorids.keys())
-    kfolddictionary[20+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crctumor','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
+    kfolddictionary[25+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'crctumor', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hcccttumorids.keys())
-    kfolddictionary[25+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hcccttumor','train_set':train_set,'validation_set':validation_set,'test_set':test_set}
-  kfolddictionary[30] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'crc','train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()+hccctids.keys()}
+    kfolddictionary[30+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hcccttumor', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
+#  kfolddictionary[30] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'crc','train_set':crcids.keys()[:100],'validation_set':crcids.keys()[100:],'test_set':hccmriids.keys()+hccctids.keys()}
 
   # initialize lists partitions
   uiddictionary = {}
   modeltargetlist = []
-  nnlist = ['densenet2d','densenet3d','unet2d','unet3d']
+  nnlist = ['densenet2d','densenet3d','resunet2d','resunet3d','unet2d','unet3d']
   normalizationlist = ['scaled']
   resolutionlist = [256,512]
 
@@ -254,7 +254,7 @@ elif (options.setuptestset):
        for iii, kfoldset in kfolddictionary.items():
          (train_set,validation_set,test_set) = ( kfoldset['train_set'], kfoldset['validation_set'], kfoldset['test_set'])
          uidoutputdir= 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d' % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,kfoldset['dataid'],options.trainingbatch,options.validationbatch,kfoldset['kfolds'],kfoldset['foldidx'])
-         setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validationset': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set],'trainset': [  databaseinfo[idtrain]['uid'] for idtrain in train_set], 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir, 'NumberOfChannels': kfoldset['NumberOfChannels']}
+         setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':test_set, 'validationset': validation_set, 'trainset': train_set, 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir, 'NumberOfChannels': kfoldset['NumberOfChannels']}
          modelprereq    = '%s/trainedNet.mat' % uidoutputdir
          setupprereq    = '%s/setup.json' % uidoutputdir
          os.system ('mkdir -p %s' % uidoutputdir)
@@ -265,10 +265,10 @@ elif (options.setuptestset):
          uiddictionary[iii]=[]
          for idtest in test_set:
             # write target
-            imageprereq    = 'anonymize/%s/%s/%s/Volume.nii' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid)
-            maskprereq     = 'anonymize/%s/%s/%s/%s/%s/label.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
-            segmaketarget  = 'anonymize/%s/%s/%s/%s/%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], normalizationid,resolutionid, nnid,kfoldset['dataid'])
-            uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
+            imageprereq    = 'anonymize/%s/%s/%s/Volume.nii' % (idtest, normalizationid,resolutionid)
+            maskprereq     = 'anonymize/%s/%s/%s/%s/%s/label.nii.gz' % (idtest, normalizationid,resolutionid, nnid,kfoldset['dataid'])
+            segmaketarget  = 'anonymize/%s/%s/%s/%s/%s/tumor.nii.gz' % (idtest, normalizationid,resolutionid, nnid,kfoldset['dataid'])
+            uiddictionary[iii].append(idtest )
             cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
             fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
             fileHandle.write('\t%s\n' % cvtestcmd)
