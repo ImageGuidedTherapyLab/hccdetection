@@ -27,7 +27,28 @@ truth: $(addprefix Processed/,$(addsuffix /Truth.raw.nii.gz,$(MRILIST)))
 viewraw: $(addprefix Processed/,$(addsuffix /viewraw,$(MRILIST)))  
 COUNT := $(words $(MRILIST))
 SEQUENCE = $(shell seq $(COUNT))
-anon: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idfile),$(ANONLIST)))) 
+anon: $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idfile),$(ANONLIST))))  \
+      $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/pre,$(addsuffix /$(idfile),$(ANONLIST))))  \
+      $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/art,$(addsuffix /$(idfile),$(ANONLIST))))  \
+      $(foreach idfile,$(IMAGEFILELIST),$(addprefix $(WORKDIR)/ven,$(addsuffix /$(idfile),$(ANONLIST)))) 
+$(WORKDIR)/prehcc%/image.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Pre.raw.nii.gz  -o $@
+$(WORKDIR)/prehcc%/label.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz  -o $@
+$(WORKDIR)/venhcc%/image.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Ven.raw.nii.gz  -o $@
+$(WORKDIR)/venhcc%/label.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz  -o $@
+$(WORKDIR)/arthcc%/image.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Art.raw.nii.gz  -o $@
+$(WORKDIR)/arthcc%/label.nii:
+	mkdir -p $(@D)
+	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz  -o $@
 $(WORKDIR)/hcc%/image.nii:
 	echo ln -sf ../Processed/$(word $*, $(MRILIST)) $(@D)
 	c3d Processed/$(word $*, $(MRILIST))/Art.raw.nii.gz  -o $@
@@ -101,7 +122,8 @@ $(WORKDIR)/ct%/label.nii:
 
 #DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
 #DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
-DATALIST = $(addprefix crctumor,$(CRCLIST)) 
+#DATALIST = $(addprefix crctumor,$(CRCLIST)) 
+DATALIST = $(addprefix pre,$(ANONLIST)) $(addprefix ven,$(ANONLIST)) $(addprefix art,$(ANONLIST))
 print:
 	@echo $(DATALIST)
 
@@ -116,10 +138,10 @@ scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST))
 #MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
 #APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
 #MODELLIST = scaled/256/unet2d/run_a scaled/256/unet3d/run_a scaled/256/densenet2d/run_a scaled/256/densenet3d/run_a 
-APPLYLIST=$(UIDLIST20) $(UIDLIST21) $(UIDLIST22) $(UIDLIST23) $(UIDLIST24) 
+#APPLYLIST=$(UIDLIST20) $(UIDLIST21) $(UIDLIST22) $(UIDLIST23) $(UIDLIST24) 
 #MODELLIST = scaled/256/unet2d/crctumor scaled/256/unet3d/crctumor scaled/256/densenet2d/crctumor scaled/256/densenet3d/crctumor 
-MODELLIST = scaled/256/unet2d/crctumor 
-#APPLYLIST=$(UIDLIST25) $(UIDLIST26) $(UIDLIST27) $(UIDLIST28) $(UIDLIST29) 
+MODELLIST = scaled/256/densenet3d/hccmrima 
+APPLYLIST=$(UIDLIST5) $(UIDLIST6) $(UIDLIST7) $(UIDLIST8) $(UIDLIST9) 
 
 mask:     $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/label.nii.gz,$(APPLYLIST)))) 
 liver:    $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(idmodel)/liver.nii.gz,$(APPLYLIST)))) 
@@ -147,14 +169,8 @@ $(WORKDIR)/crctumor%/scaled/256/Volume.dir: $(WORKDIR)/crctumor%/scaled/crop/Vol
 	python tumorboundingbox.py 
 
 %/scaled/crop/Volume.nii: %/scaled/normalize.nii
-	mkdir -p $(@D)
-	python crop.py --imagefile=$<  --output=$@
-%/scaled/256/Volume.nii: %/scaled/crop/Volume.nii
-	mkdir -p $(@D)
-	python resample.py --imagefile=$<  --output=$@
-%/scaled/512/Volume.nii: %/scaled/crop/Volume.nii
-	mkdir -p $(@D)
-	python resample.py --imagefile=$<  --output=$@
+	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
+	python resize.py --imagefile=$<  --output=$@
 %/crop/Truth.nii: 
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
 	python resize.py --imagefile=$*/label.nii  --output=$@ --datatype=uchar --interpolation=nearest
