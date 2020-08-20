@@ -40,8 +40,8 @@ function livermodel( jsonFilename  )
   imdsvalidationReSz = transform(validationData,@(x) x(:,:,:,1));
   
   % read these into pixellabeldatastores
-  classNames = ["background","liver","tumor"]
-  pixelLabelID = [0 1 2]
+  classNames = ["background","liver"]
+  pixelLabelID = [0 1]
   trainMask      = pixelLabelDatastore(fullfile('anonymize',jsonData.trainset     ,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',labelReader )
   validationMask = pixelLabelDatastore(fullfile('anonymize',jsonData.validationset,sprintf('%d',jsonData.resolution),'Truth.nii'),classNames,pixelLabelID, 'FileExtensions','.nii','ReadFcn',labelReader );
   
