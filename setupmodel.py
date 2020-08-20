@@ -236,7 +236,7 @@ elif (options.setuptestset):
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hcccttumorids.keys())
     kfolddictionary[30+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hcccttumor', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
-  kfolddictionary[35] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist], 'validation_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist], 'test_set':hccmriids.keys()}
+  kfolddictionary[35] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist], 'validation_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
 
 
   # initialize lists partitions
