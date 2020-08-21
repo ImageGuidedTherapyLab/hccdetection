@@ -110,6 +110,11 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/slictest.nii.gz $@ 10 1
 	echo vglrun itksnap -g $(@D)/slictest.nii.gz -s $@ 
 
+resizebcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst.crop.nii.gz,$(BCMLISTUID)))  
+$(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
+	python normalization.py --imagefile=$<  --output=$@
+$(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
+	python resize.py --imagefile=$<  --output=$@
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
