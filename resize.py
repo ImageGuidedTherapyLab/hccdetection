@@ -28,6 +28,7 @@ if (options.imagefile != None and options.output != None ):
   print(cropoutput,resample256output, resample512output )
   print(pyimg.shape )
   cropind = map(lambda x : x/8 * 8, pyimg.shape )
+  cropind[2] = max(64,cropind[2])
   cropcmd = 'c3d -verbose %s  -info -region 0x0x0vox %dx%dx%dvox -info -type %s -o %s  ' % (options.imagefile, cropind[0],cropind[1],cropind[2],options.datatype,cropoutput )
   print( cropcmd )
   os.system( cropcmd )
