@@ -115,6 +115,11 @@ $(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
 	python normalization.py --imagefile=$<  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
+labelbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst/label.nii.gz,$(BCMLISTUID)))  
+bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
+	echo applymodel('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu')
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
+	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
@@ -224,6 +229,12 @@ $(WORKDIR)/crctumor%/scaled/256/Volume.dir: $(WORKDIR)/crctumor%/scaled/crop/Vol
 ## clean up mask 
 %/liver.nii.gz: %/label.nii.gz 
 	c3d -verbose $<  -thresh 2 2 1 0 -connected-components   -thresh 1 1 1 0 -o $@
+
+bcmdata/BCM0001000/Pre/label.nii.gz: bcmdata/BCM0001000/Pre.256.nii.gz
+	echo applymodel('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu')
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
+	echo vglrun itksnap -g bcmdata/BCM0001000/Pre.256.nii.gz -s bcmdata/BCM0001000/Pre/label.nii.gz -o bcmdata/BCM0001000/Pre/score.nii.gz
+
 
 ## label statistics
 $(WORKDIR)/%/lstat.csv: $(WORKDIR)/%/image.nii $(WORKDIR)/%/label.nii
