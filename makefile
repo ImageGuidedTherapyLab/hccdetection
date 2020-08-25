@@ -105,6 +105,10 @@ viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))
 %/viewbcm: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Del.raw.nii.gz  -info $(@D)/Pst.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz   -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz $(@D)/Del.raw.nii.gz $(@D)/Pst.raw.nii.gz
+	vglrun itksnap -g  $(@D)/Pre.256.nii.gz   -o $(@D)/Pre/score.nii.gz -s  $(@D)/Pre/label.nii.gz
+	vglrun itksnap -g  $(@D)/Art.256.nii.gz   -o $(@D)/Art/score.nii.gz -s  $(@D)/Art/label.nii.gz
+	vglrun itksnap -g  $(@D)/Ven.256.nii.gz   -o $(@D)/Ven/score.nii.gz -s  $(@D)/Ven/label.nii.gz
+	vglrun itksnap -g  $(@D)/Del.256.nii.gz   -o $(@D)/Del/score.nii.gz -s  $(@D)/Del/label.nii.gz
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Art.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info  $(@D)/Del.raw.nii.gz  -info $(@D)/Pst.raw.nii.gz  -info -omc $(@D)/slictest.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/slictest.nii.gz $@ 10 1
@@ -117,9 +121,17 @@ $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
 labelbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst/label.nii.gz,$(BCMLISTUID)))  
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
-	echo applymodel('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu')
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
+bcmdata/BCM0002002/Pre.mask.nii.gz: 
+	c3d -verbose bcmdata/BCM0002002/Pre/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -dilate 1 15x15x15vox -o $@
+bcmdata/BCM0002002/Art.mask.nii.gz: 
+	c3d -verbose bcmdata/BCM0002002/Art/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -dilate 1 15x15x15vox -o $@
+bcmdata/BCM0002002/Pre.regcc.nii.gz: bcmdata/BCM0002002/Art.256.nii.gz bcmdata/BCM0002002/Pre.256.nii.gz
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=12; /opt/apps/ANTS/dev/install/bin//antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(subst 256,mask,$<),$(subst 256,mask,$(word 2,$^))] --transform Rigid[ 0.1 ] --metric MI[ $<,$(word 2,$^),1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $<,$(word 2,$^),1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $<,$(word 2,$^),1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
+bcmdata/BCM0002002/Pre.regmi.nii.gz: bcmdata/BCM0002002/Art.256.nii.gz bcmdata/BCM0002002/Pre.256.nii.gz
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=12; /opt/apps/ANTS/dev/install/bin//antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(subst 256,mask,$<),$(subst 256,mask,$(word 2,$^))] --transform Rigid[ 0.1 ] --metric MI[ $<,$(word 2,$^),1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $<,$(word 2,$^),1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric MI[ $<,$(word 2,$^),1,32] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
