@@ -146,7 +146,7 @@ bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
 	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 03:00 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
 clusterrsync:
-	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/         dtfuentes@seadragon:/rsrch3/home/imag_phy-rsrch/dtfuentes/github/hccdetection/bcmdata
+	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
