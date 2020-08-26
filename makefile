@@ -89,17 +89,22 @@ BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
 BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
 BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f7 )
 BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f8 )
-rawbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst.raw.nii.gz,$(BCMLISTUID)))  
+BCMLISTFIX  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f12)
+BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
+
+rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Ven.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Del.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Pst.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+$(BCMWORKDIR)/%/fixed.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
 
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
 %/viewbcm: 
@@ -114,21 +119,31 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/slictest.nii.gz $@ 10 1
 	echo vglrun itksnap -g $(@D)/slictest.nii.gz -s $@ 
 
-resizebcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del.crop.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst.crop.nii.gz,$(BCMLISTUID)))  
+# preprocess data
+resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
 	python normalization.py --imagefile=$<  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
-labelbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del/label.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst/label.nii.gz,$(BCMLISTUID)))  
+# label data
+labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc)/label.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
-regbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.mask.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre.regcc.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven.regcc.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del.regcc.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst.regcc.nii.gz,$(BCMLISTUID)))  
+# register study
+regbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.mask.nii.gz,$(BCMLISTUID))) $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
 	c3d -verbose bcmdata/$*/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -dilate 1 15x15x15vox -o $@
 bcmdata/%.regcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
 	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
+# register longitudinal
+longregbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.mask.nii.gz,$(BCMLISTUID))) $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).longregcc.nii.gz,$(BCMLISTUID)))) 
+bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
+
+taccrsync:
+	rsync -n -v -avz  --include '*/*mask.nii.gz'--include '*/*256.nii.gz' --exclude '*/*reg*' --exclude '*/*/'  --exclude '*/*512.nii.gz' --exclude '*/*crop.nii.gz' --exclude '*/*raw.nii.gz' --exclude '*/*normalize.nii.gz'  bcmdata/         /tmp/bcmdata/
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
@@ -177,8 +192,9 @@ $(WORKDIR)/ct%/label.nii:
 #DATALIST = $(addprefix crctumor,$(CRCLIST)) 
 DATALIST = $(addprefix pre,$(ANONLIST)) $(addprefix ven,$(ANONLIST)) $(addprefix art,$(ANONLIST))
 print:
-	@echo $(BCMLIST)
-	@echo $(addprefix $(BCMWORKDIR),$(addsuffix /Art.raw.nii.gz,$(BCMLIST)))  
+	@echo $(BCMCONTRASTLIST)
+	@echo $(filter-out fixed,$(BCMCONTRASTLIST))
+	@echo $(filter-out Art fixed,$(BCMCONTRASTLIST))
 
 view: $(addprefix $(WORKDIR)/,$(addsuffix /view,$(DATALIST)))  
 info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(DATALIST)))  

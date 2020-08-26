@@ -15,23 +15,29 @@ CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription 
        im.SeriesModality,im.seriesanonuid,im.niftifile 
 from datekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
 
-
 -- select count(Status) from datekey   where Status == 'case';
 -- select count(status) from hccimaging where Status == 'case' group by patientnumber, studynumber;
 -- FIXME - missing - select * from hccimaging   where patientnumber = 9;
 -- FIXME - missing - select * from hccimaging   where patientnumber = 12;
 
 create table widestudy  as
-SELECT   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID, Status, ifnull(diagnosticinterval,"inf") diagnosticinterval,
+SELECT   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  Status, ifnull(diagnosticinterval,"inf") diagnosticinterval,
             max(CASE WHEN ImageType = 'Pre' THEN seriesanonuid ELSE NULL END)  Pre,
             max(CASE WHEN ImageType = 'Art' THEN seriesanonuid ELSE NULL END)  Art,
             max(CASE WHEN ImageType = 'Ven' THEN seriesanonuid ELSE NULL END)  Ven,
             max(CASE WHEN ImageType = 'Del' THEN seriesanonuid ELSE NULL END)  Del,
-            max(CASE WHEN ImageType = 'Pst' THEN seriesanonuid ELSE NULL END)  Post 
+            max(CASE WHEN ImageType = 'Pst' THEN seriesanonuid ELSE NULL END)  Post,
+            PatientNumber, cast(StudyNumber as int) studynumber 
 FROM        hccimaging
 where       ImageType is not null 
 GROUP BY    PatientNumber, StudyNumber
 ORDER BY    cast(PatientNumber as int) ASC, cast(StudyNumber as int) ASC;
+
+-- update min
+create table minwidestudy  as 
+select PatientNumber, min(StudyNumber) MinStudyNumber from widestudy group by Patientnumber;
+create table baselineart  as 
+select w1.PatientNumber, w1.Art from widestudy w1  join minwidestudy w2 on  w1.PatientNumber = w2.PatientNumber and w1.StudyNumber = w2.MinStudyNumber;
 
 -- error check missing data
 select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art) ,count(Ven),count(Del),count(Post)  from widestudy;
@@ -40,7 +46,10 @@ select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art)
 
 -- output wide format
 .output LiverMRIProjectData/wideanon.csv 
-select * from widestudy;
+select w1.*,w2.MinStudyNumber,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed
+from widestudy    w1
+join minwidestudy w2 on w1.PatientNumber = w2.PatientNumber 
+join baselineart  w3 on w1.PatientNumber = w3.PatientNumber;
 
 -- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
