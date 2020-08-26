@@ -21,7 +21,7 @@ from datekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
 -- FIXME - missing - select * from hccimaging   where patientnumber = 9;
 -- FIXME - missing - select * from hccimaging   where patientnumber = 12;
 
-.output LiverMRIProjectData/wideanon.csv 
+create table widestudy  as
 SELECT   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID, Status, ifnull(diagnosticinterval,"inf") diagnosticinterval,
             max(CASE WHEN ImageType = 'Pre' THEN seriesanonuid ELSE NULL END)  Pre,
             max(CASE WHEN ImageType = 'Art' THEN seriesanonuid ELSE NULL END)  Art,
@@ -33,5 +33,15 @@ where       ImageType is not null
 GROUP BY    PatientNumber, StudyNumber
 ORDER BY    cast(PatientNumber as int) ASC, cast(StudyNumber as int) ASC;
 
+-- error check missing data
+select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art) ,count(Ven),count(Del),count(Post)  from widestudy;
+UPDATE widestudy SET Post = Del WHERE Post is Null;
+select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art) ,count(Ven),count(Del),count(Post)  from widestudy;
+
+-- output wide format
+.output LiverMRIProjectData/wideanon.csv 
+select * from widestudy;
+
+-- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
 .quit

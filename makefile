@@ -84,23 +84,23 @@ LiverMRIProjectData/wideanon.csv:
 BCMDATADIR=LiverMRIProjectData/tmpconvert/
 BCMWORKDIR=bcmdata
 BCMLISTUID  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 )
-BCMLISTPRE  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f2 )
-BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f3 )
-BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f4 )
-BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
-BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
-BCMCOUNT := $(words $(BCMLISTUID))
-BCMSEQUENCE = $(shell seq $(BCMCOUNT))
-prebcm:
-	$(foreach number, $(BCMSEQUENCE), echo $(number) $(word $(number), $(BCMLISTUID)) ; mkdir -p $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/; c3d $(BCMDATADIR)/$(word $(number), $(BCMLISTUID))/$(word $(number), $(BCMLISTPRE)).nii.gz -o $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/Pre.raw.nii.gz;)
-artbcm:
-	$(foreach number, $(BCMSEQUENCE), echo $(number) $(word $(number), $(BCMLISTUID)) ; mkdir -p $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/; c3d $(BCMDATADIR)/$(word $(number), $(BCMLISTUID))/$(word $(number), $(BCMLISTART)).nii.gz -o $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/Art.raw.nii.gz;)
-venbcm:
-	$(foreach number, $(BCMSEQUENCE), echo $(number) $(word $(number), $(BCMLISTUID)) ; mkdir -p $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/; c3d $(BCMDATADIR)/$(word $(number), $(BCMLISTUID))/$(word $(number), $(BCMLISTVEN)).nii.gz -o $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/Ven.raw.nii.gz;)
-delbcm:
-	$(foreach number, $(BCMSEQUENCE), echo $(number) $(word $(number), $(BCMLISTUID)) ; mkdir -p $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/; c3d $(BCMDATADIR)/$(word $(number), $(BCMLISTUID))/$(word $(number), $(BCMLISTDEL)).nii.gz -o $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/Del.raw.nii.gz;)
-pstbcm:
-	$(foreach number, $(BCMSEQUENCE), echo $(number) $(word $(number), $(BCMLISTUID)) ; mkdir -p $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/; c3d $(BCMDATADIR)/$(word $(number), $(BCMLISTUID))/$(word $(number), $(BCMLISTPST)).nii.gz -o $(BCMWORKDIR)/$(word $(number), $(BCMLISTUID))/Pst.raw.nii.gz;)
+BCMLISTPRE  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f4 )
+BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
+BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
+BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f7 )
+BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f8 )
+rawbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pre.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Art.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Ven.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Del.raw.nii.gz,$(BCMLISTUID)))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /Pst.raw.nii.gz,$(BCMLISTUID)))  
+$(BCMWORKDIR)/%/Pre.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
+$(BCMWORKDIR)/%/Art.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
+$(BCMWORKDIR)/%/Ven.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
+$(BCMWORKDIR)/%/Del.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
+$(BCMWORKDIR)/%/Pst.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv	| grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
 %/viewbcm: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Del.raw.nii.gz  -info $(@D)/Pst.raw.nii.gz  -info
