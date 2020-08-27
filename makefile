@@ -114,6 +114,16 @@ viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))
 	vglrun itksnap -g  $(@D)/Art.256.nii.gz   -o $(@D)/Art/score.nii.gz -s  $(@D)/Art/label.nii.gz
 	vglrun itksnap -g  $(@D)/Ven.256.nii.gz   -o $(@D)/Ven/score.nii.gz -s  $(@D)/Ven/label.nii.gz
 	vglrun itksnap -g  $(@D)/Del.256.nii.gz   -o $(@D)/Del/score.nii.gz -s  $(@D)/Del/label.nii.gz
+viewbcmlong: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcmlong,$(BCMLISTUID)))  
+%/viewbcmlong: 
+	c3d -verbose $(@D)/fixed.256.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
+	c3d -verbose $(@D)/Art.256.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pre.256.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Art.256.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Ven.256.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Del.256.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pst.256.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
+	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.mask.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >>  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Art.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info  $(@D)/Del.raw.nii.gz  -info $(@D)/Pst.raw.nii.gz  -info -omc $(@D)/slictest.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/slictest.nii.gz $@ 10 1
@@ -131,19 +141,23 @@ bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
-# register study
+# dilate mask
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
-regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
 	c3d -verbose bcmdata/$*/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -dilate 1 15x15x15vox -o $@
+# register study
+regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.regcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
 	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
 # register longitudinal
 CLUSTERDIR = /rsrch3/home/imag_phy-rsrch/dtfuentes/github/hccdetection
 longregbcm: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).longregcc.nii.gz,$(BCMLISTUID)))) 
-bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
+# debug initialization
+bcmdata/%.longregdbginitial.nii.gz: bcmdata/%.256.nii.gz 
+	/opt/apps/ANTS/dev/install/bin/antsRegistration  --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.256.nii.gz,$<,2] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 0x0x0x0,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz 
 	echo "bsub -Is -q interactive -W 6:00 -M 32 -R rusage[mem=32] -n 28 /usr/bin/bash"
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:45 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:45 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz]  -r [ $(@D)/fixed.256.nii.gz,$<,2] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
