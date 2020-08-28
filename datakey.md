@@ -12,4 +12,4 @@
   *  \*.256.nii.gz        : z-score and resample to 256x256 
   *  \*.longregcc.nii.gz  : z-score, resample to 256x256 , register to arterial image at time point 0
   *  \*.regcc.nii.gz      : z-score, resample to 256x256 , register within study to Arterial
-  *  \*/label.nii.gz       : densenet3d segmentation of the liver
+  *  \*.liver.nii.gz      : densenet3d segmentation of the liver

@@ -123,7 +123,7 @@ viewbcmlong: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcmlong,$(BCMLISTUID)))
 	c3d -verbose $(@D)/Ven.256.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
 	c3d -verbose $(@D)/Del.256.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
 	c3d -verbose $(@D)/Pst.256.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
-	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.mask.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >>  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
+	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >>  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.longregcc.nii.gz  -info $(@D)/Art.longregcc.nii.gz  -info  $(@D)/Ven.longregcc.nii.gz  -info $(@D)/Del.longregcc.nii.gz  -info   $(@D)/Pst.longregcc.nii.gz  -info -omc $(@D)/liverprotocol.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/liverprotocol.nii.gz $@ 10 1
@@ -143,7 +143,7 @@ bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 # dilate mask
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
-	c3d -verbose bcmdata/$*/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -dilate 1 15x15x15vox -o $@
+	c3d -verbose bcmdata/$*/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
 # register study
 regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.regcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
