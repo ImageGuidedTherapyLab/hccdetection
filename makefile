@@ -123,7 +123,7 @@ viewbcmlong: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcmlong,$(BCMLISTUID)))
 	c3d -verbose $(@D)/Ven.256.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
 	c3d -verbose $(@D)/Del.256.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
 	c3d -verbose $(@D)/Pst.256.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
-	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >>  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
+	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.longregcc.nii.gz  -info $(@D)/Art.longregcc.nii.gz  -info  $(@D)/Ven.longregcc.nii.gz  -info $(@D)/Del.longregcc.nii.gz  -info   $(@D)/Pst.longregcc.nii.gz  -info -omc $(@D)/liverprotocol.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/liverprotocol.nii.gz $@ 10 1
@@ -298,3 +298,14 @@ $(WORKDIR)/%/overlap.sql: $(WORKDIR)/%/overlap.csv
 overlap.csv: 
 	-sqlite3 $(SQLITEDB)  -init .exportoverlap  ".quit"
 
+
+###########################################################################
+.SECONDEXPANSION:
+#https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html#Secondary-Expansion
+###########################################################################
+#https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
+# dilate mask
+biasbcm: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
+#bias correction
+bcmdata/%.bias.nii.gz: bcmdata/%.longregcc.nii.gz bcmdata/$$(*D)/fixed.liver.nii.gz
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -x $(word 2,$^)  -i $< -o $@
