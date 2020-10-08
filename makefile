@@ -79,6 +79,9 @@ $(WORKDIR)/washouthcc%/label.nii:
 	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz -type uchar -o $@
 
 # setup BCM data
+LiverMRIProjectData/dataqa.csv:
+	echo StudyUID,Status > $@
+	for idfile in  bcmdata/BCM*/reviewsolution.txt ; do STUDYUID=$$(echo $$idfile | cut -d '/' -f2); sed "s/^/$$STUDYUID,/g" $$idfile; done >> $@
 LiverMRIProjectData/wideanon.csv:
 	 cat wide.sql  | sqlite3
 BCMDATADIR=LiverMRIProjectData/tmpconvert/

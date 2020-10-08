@@ -1,6 +1,7 @@
 .mode csv
 .import LiverMRIProjectData/datakeyANON.csv  imaging
 .import LiverMRIProjectData/LiverMRIAnonymizationKey.csv  datekey
+.import LiverMRIProjectData/dataqa.csv  qadata
 -- select HCCDate from datekey;
 .headers on
 create table hccimaging  as
@@ -59,10 +60,11 @@ select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art)
 
 -- output wide format
 .output LiverMRIProjectData/wideanon.csv 
-select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed
+select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed,qa.Status
 from widestudy    w1
 join minwidestudy w2 on w1.PatientNumber = w2.PatientNumber 
-join baselineart  w3 on w1.PatientNumber = w3.PatientNumber;
+join baselineart  w3 on w1.PatientNumber = w3.PatientNumber 
+left join qadata       qa on w1.UID = qa.StudyUID;
 
 -- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
