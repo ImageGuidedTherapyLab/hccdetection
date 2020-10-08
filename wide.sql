@@ -60,7 +60,7 @@ select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art)
 
 -- output wide format
 .output LiverMRIProjectData/wideanon.csv 
-select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed,qa.Status
+select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed,qa.Status QA
 from widestudy    w1
 join minwidestudy w2 on w1.PatientNumber = w2.PatientNumber 
 join baselineart  w3 on w1.PatientNumber = w3.PatientNumber 

@@ -164,6 +164,8 @@ bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz
 
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
+radoncsync:
+	rsync    -v -avz  --include={'*bias.nii.gz','*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
