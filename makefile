@@ -223,8 +223,12 @@ info: $(addprefix $(WORKDIR)/,$(addsuffix /info,$(DATALIST)))
 lstat: $(addprefix $(WORKDIR)/,$(addsuffix /lstat.sql,$(DATALIST)))  
 
 resize: $(addprefix $(WORKDIR)/,$(addsuffix /crop/Truth.nii,$(DATALIST)))   \
-        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Volume.nii,$(DATALIST)))  
-scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST)))  
+        $(addprefix $(WORKDIR)/,$(addsuffix /scaled/crop/Volume.nii,$(DATALIST)))   \
+        $(addprefix $(WORKDIR)/,$(addsuffix /zscore/crop/Volume.nii,$(DATALIST)))   \
+        $(addprefix $(WORKDIR)/,$(addsuffix /bias/crop/Volume.nii,$(DATALIST)))    
+scaled:   $(addprefix $(WORKDIR)/,$(addsuffix /scaled/normalize.nii,$(DATALIST)))   \
+          $(addprefix $(WORKDIR)/,$(addsuffix /zscore/normalize.nii,$(DATALIST)))   \
+          $(addprefix $(WORKDIR)/,$(addsuffix /bias/normalize.nii,$(DATALIST)))  
 
 #MODELLIST = scaled/256/unet2d scaled/256/unet3d scaled/256/densenet2d scaled/256/densenet3d scaled/512/densenet2d scaled/512/unet2d
 #APPLYLIST=$(UIDLIST0) $(UIDLIST1) $(UIDLIST2) $(UIDLIST3) $(UIDLIST4) 
@@ -242,7 +246,17 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 ## pre processing
 %/scaled/normalize.nii: 
 	mkdir -p $(@D)
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ TruncateImageIntensity $*/image.nii 0.01  0.99 200 
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
+%/zscore/normalize.nii: 
+	mkdir -p $(@D)
 	python normalization.py --imagefile=$*/image.nii  --output=$@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
+%/bias/normalize.nii: 
+	mkdir -p $(@D)
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $*/image.nii  -o  $@
+	python normalization.py --imagefile=$@  --output=$@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 # FIXME - note this rule is repeated
 # https://www.gnu.org/software/make/manual/html_node/Multiple-Rules.html
 # If more than one rule gives a recipe for the same file, make uses the last one given
@@ -259,8 +273,8 @@ $(WORKDIR)/crctumor%/scaled/256/Volume.nii: $(WORKDIR)/crctumor%/scaled/crop/Vol
 $(WORKDIR)/crctumor%/scaled/256/Volume.dir: $(WORKDIR)/crctumor%/scaled/crop/Volume.nii
 	python tumorboundingbox.py 
 
-%/scaled/crop/Volume.nii: %/scaled/normalize.nii
-	mkdir -p $*/scaled/crop; mkdir -p $*/scaled/256; mkdir -p $*/scaled/512;
+%/crop/Volume.nii: %/normalize.nii
+	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;
 	python resize.py --imagefile=$<  --output=$@
 %/crop/Truth.nii: 
 	mkdir -p $*/crop; mkdir -p $*/256; mkdir -p $*/512;

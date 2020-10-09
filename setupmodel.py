@@ -219,16 +219,20 @@ elif (options.setuptestset):
     kfolddictionary[iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'run_a', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
   # data augmentation by normalization
   # https://intensity-normalization.readthedocs.io/en/latest/normalization.html
+  # scaled: raw -> [0,1]
   # bias: raw -> bias -> zscore -> clip -> [0,1]
   # zscore: raw -> zscore -> clip -> [0,1]
   # ravel: raw -> ravel  -> [0,1]
   # nyul: raw -> nyul  -> [0,1]
   # gmm: raw -> gmm  -> [0,1]
-  #modalitylist = ['pre','art','ven']
-  modalitylist = [ '%s%s'  % (idc,idn) for idc in ['pre','art','ven'] for idn in ['bias','zscore','ravel','nyul','gmm']]
+  # modalitylist = ['pre','art','ven']
+  # modalitylist = [ '%s%s'  % (idc,idnorm) for idc in ['pre','art','ven'] for idnorm in ['scaled','bias','zscore','ravel','nyul','gmm']]
+  # modalitylist = [ '%s%s'  % (idnorm,idc) for idc in ['pre','art','ven'] for idnorm in ['scaled','bias','zscore']]
+  modalitylist = ['pre','art','ven']
+  normalizationlist = ['scaled','bias','zscore']
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
-    kfolddictionary[5+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccmrima', 'test_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in test_set for idmodality in modalitylist], 'validation_set': [ "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtrain in validation_set for idmodality in modalitylist], 'train_set': [   "%s%s" % (idmodality,databaseinfo[idtest]['uid'])  for idtrain in train_set for idmodality in modalitylist]}
+    kfolddictionary[5+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccmrima', 'test_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in test_set for idmodality in modalitylist for idnorm in normalizationlist ], 'validation_set': [ "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtrain in validation_set for idmodality in modalitylist for idnorm in normalizationlist], 'train_set': [   "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm)  for idtrain in train_set for idmodality in modalitylist for idnorm in normalizationlist]}
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
     kfolddictionary[10+iii] ={'NumberOfChannels':2,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'washouthccmri', 'test_set':[  "washout%s" % databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  "washout%s" %  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  "washout%s" %  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
@@ -251,19 +255,17 @@ elif (options.setuptestset):
   uiddictionary = {}
   modeltargetlist = []
   nnlist = ['densenet2d','densenet3d','resunet2d','resunet3d','unet2d','unet3d']
-  normalizationlist = ['scaled']
   resolutionlist = [256,512]
 
   makefilename = '%skfold%03d.makefile' % (options.databaseid,options.kfolds) 
   # open makefile
   with open(makefilename ,'w') as fileHandle:
-    for normalizationid in normalizationlist :
      for resolutionid in resolutionlist :
       for nnid in nnlist:
        for iii, kfoldset in kfolddictionary.items():
          (train_set,validation_set,test_set) = ( kfoldset['train_set'], kfoldset['validation_set'], kfoldset['test_set'])
          uidoutputdir= 'Processed/%slog/%s/%s/%s/%d/%s/%03d%03d/%03d/%03d' % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),nnid ,options.trainingsolver,resolutionid,kfoldset['dataid'],options.trainingbatch,options.validationbatch,kfoldset['kfolds'],kfoldset['foldidx'])
-         setupconfig = {'normalization':normalizationid,'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':test_set, 'validationset': validation_set, 'trainset': train_set, 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir, 'NumberOfChannels': kfoldset['NumberOfChannels']}
+         setupconfig = {'resolution':resolutionid,'nnmodel':nnid, 'kfold':iii, 'testset':test_set, 'validationset': validation_set, 'trainset': train_set, 'stoFoldername': '%slog' % options.databaseid, 'uidoutputdir':uidoutputdir, 'NumberOfChannels': kfoldset['NumberOfChannels']}
          modelprereq    = '%s/trainedNet.mat' % uidoutputdir
          setupprereq    = '%s/setup.json' % uidoutputdir
          os.system ('mkdir -p %s' % uidoutputdir)
@@ -274,9 +276,9 @@ elif (options.setuptestset):
          uiddictionary[iii]=[]
          for idtest in test_set:
             # write target
-            imageprereq    = 'anonymize/%s/%s/%s/Volume.nii' % (idtest, normalizationid,resolutionid)
-            maskprereq     = 'anonymize/%s/%s/%s/%s/%s/label.nii.gz' % (idtest, normalizationid,resolutionid, nnid,kfoldset['dataid'])
-            segmaketarget  = 'anonymize/%s/%s/%s/%s/%s/tumor.nii.gz' % (idtest, normalizationid,resolutionid, nnid,kfoldset['dataid'])
+            imageprereq    = 'anonymize/%s/%s/Volume.nii'         % (idtest, resolutionid)
+            maskprereq     = 'anonymize/%s/%s/%s/%s/label.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
+            segmaketarget  = 'anonymize/%s/%s/%s/%s/tumor.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
             uiddictionary[iii].append(idtest )
             cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
             fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
