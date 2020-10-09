@@ -217,7 +217,15 @@ elif (options.setuptestset):
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
     kfolddictionary[iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'run_a', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
-  modalitylist = ['pre','art','ven']
+  # data augmentation by normalization
+  # https://intensity-normalization.readthedocs.io/en/latest/normalization.html
+  # bias: raw -> bias -> zscore -> clip -> [0,1]
+  # zscore: raw -> zscore -> clip -> [0,1]
+  # ravel: raw -> ravel  -> [0,1]
+  # nyul: raw -> nyul  -> [0,1]
+  # gmm: raw -> gmm  -> [0,1]
+  #modalitylist = ['pre','art','ven']
+  modalitylist = [ '%s%s'  % (idc,idn) for idc in ['pre','art','ven'] for idn in ['bias','zscore','ravel','nyul','gmm']]
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hccmriids.keys())
     kfolddictionary[5+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hccmrima', 'test_set':[  "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtest in test_set for idmodality in modalitylist], 'validation_set': [ "%s%s" % (idmodality,databaseinfo[idtest]['uid']) for idtrain in validation_set for idmodality in modalitylist], 'train_set': [   "%s%s" % (idmodality,databaseinfo[idtest]['uid'])  for idtrain in train_set for idmodality in modalitylist]}
