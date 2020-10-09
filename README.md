@@ -19,13 +19,13 @@ make art truth
 make anon
 
 
+## preprocess - intensity normalize  
+
+make scaled
+
 ## preprocess - resize - Data set with a valid size for 3-D U-Net is multiple of 8
 
 make resize
-
-## preprocess - normalize  - zscore intensity
-
-make scaled
 
 ## preprocess - python code is used to setup the kfold fold  
 ## preprocess - each fold is configured with a json file to be read by matlab
