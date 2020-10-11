@@ -134,7 +134,9 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 # preprocess data
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
-	python normalization.py --imagefile=$<  --output=$@
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $<  -o  $@
+	python normalization.py --imagefile=$@  --output=$@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
 # label data

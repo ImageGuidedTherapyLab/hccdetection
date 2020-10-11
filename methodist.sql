@@ -14,6 +14,7 @@ CASE WHEN (im.seriesDescription like 'DYN%VIBE' or im.seriesDescription like 'VI
      ELSE NULL END AS ImageType from series im 
 where im.seriesDescription not like '%SUB%';
 -- select * from tmp.flagdata where ImageType is not NULL;
+-- select StudyInstanceUID,seriesDescription,Vendor,ImageType from tmp.flagdata where ImageType is not NULL;
 
 create table tmp.widestudy  as
 select fg.StudyInstanceUID StudyInstanceUID,max(fg.Vendor) Vendor,
@@ -31,7 +32,9 @@ select count(ws.StudyInstanceUID),count(ws.Dyn),count(ws.Pst)  from tmp.widestud
 -- cat methodist.sql  | sqlite3 BerettaLab/ctkDICOM.sql
 .mode csv
 .output BerettaLab/wideformat.csv 
-select ws.*,dn.seriesDescription DynDescription , pt.seriesDescription PstDescription,di.Filename DynFilename,pi.Filename PstFilename
+select ws.*,dn.seriesDescription DynDescription , pt.seriesDescription PstDescription,
+rtrim(di.Filename, replace(di.Filename, '/', '')) DynFilename,
+rtrim(pi.Filename, replace(pi.Filename, '/', '')) PstFilename
 from tmp.widestudy ws 
 join images        di on di.SeriesInstanceUID= ws.Dyn
 join images        pi on pi.SeriesInstanceUID= ws.Pst
