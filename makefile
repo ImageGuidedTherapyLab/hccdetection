@@ -140,15 +140,17 @@ $(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
 # label data
-labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc)/label.nii.gz,$(BCMLISTUID)))) 
+labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
+bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
+	c3d -verbose bcmdata/$*.raw.nii.gz $< -reslice-identity -o $@
 # dilate mask
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
-	c3d -verbose bcmdata/$*/label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
+	c3d -verbose bcmdata/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
 # register study
 regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.regcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
