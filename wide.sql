@@ -59,13 +59,15 @@ UPDATE widestudy SET Post = Del WHERE Post is Null;
 select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art) ,count(Ven),count(Del),count(Post)  from widestudy;
 
 -- output wide format
-.output LiverMRIProjectData/wideanon.csv 
+create table widejoinqa  as 
 select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed,qa.Status QA
 from widestudy    w1
 join minwidestudy w2 on w1.PatientNumber = w2.PatientNumber 
 join baselineart  w3 on w1.PatientNumber = w3.PatientNumber 
 left join qadata       qa on w1.UID = qa.StudyUID;
 
+.output LiverMRIProjectData/wideanon.csv 
+select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,MinStudyNumber,daysincebaseline,Fixed,QA from  widejoinqa  where Pre is not null; 
 -- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
 .quit

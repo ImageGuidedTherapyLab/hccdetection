@@ -45,6 +45,10 @@ make mask
 
 make overlap
 
+# detection 
+
+make -f methodist.makefile -j 4 rawmethodist resizemth
+
 # matlab code structure
 
 ImageSegmentationBaseClass.m  - ABC defining the interface

@@ -28,8 +28,8 @@ viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
 methodist/%.normalize.nii.gz: methodist/%.raw.nii.gz
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $<  -o  $@
-	python normalization.py --imagefile=$@  --output=$@
+	python normalization.py --imagefile=$<  --output=$@
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@  -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 methodist/%.crop.nii.gz: methodist/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
@@ -47,18 +47,18 @@ methodist/%.mask.nii.gz:
 	c3d -verbose methodist/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  methodist/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
 # register study
 regmth:  $(foreach idc,$(filter-out Art fixed,$(MTHCONTRASTLIST)),$(addprefix methodist/,$(addsuffix /$(idc).regcc.nii.gz,$(MTHLISTUID)))) 
-methodist/%.regcc.nii.gz: methodist/%.256.nii.gz methodist/%.mask.nii.gz
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
+methodist/%.regcc.nii.gz: methodist/%.normalize.nii.gz methodist/%.mask.nii.gz
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.normalize.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
 # register longitudinal
 CLUSTERDIR = /rsrch3/home/imag_phy-rsrch/dtfuentes/github/hccdetection
 longregmth: $(foreach idc,$(filter-out fixed,$(MTHCONTRASTLIST)),$(addprefix methodist/,$(addsuffix /$(idc).longregcc.nii.gz,$(MTHLISTUID)))) 
 # debug initialization
-methodist/%.longregdbginitial.nii.gz: methodist/%.256.nii.gz 
-	/opt/apps/ANTS/dev/install/bin/antsRegistration  --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 0x0x0x0,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
-	vglrun itksnap -g $(@D)/fixed.256.nii.gz -o $@
-methodist/%.longregcc.nii.gz: methodist/%.256.nii.gz 
+methodist/%.longregdbginitial.nii.gz: methodist/%.normalize.nii.gz 
+	/opt/apps/ANTS/dev/install/bin/antsRegistration  --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 0x0x0x0,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	vglrun itksnap -g $(@D)/fixed.normalize.nii.gz -o $@
+methodist/%.longregcc.nii.gz: methodist/%.normalize.nii.gz 
 	echo "bsub -Is -q interactive -W 6:00 -M 32 -R rusage[mem=32] -n 4 /usr/bin/bash"
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:25 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:25 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,methodist/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.normalize.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='MTH*/' --exclude='*'  methodist/  /rsrch3/ip/dtfuentes/github/hccdetection/methodist/

@@ -87,12 +87,12 @@ LiverMRIProjectData/wideanon.csv:
 BCMDATADIR=LiverMRIProjectData/tmpconvert/
 BCMWORKDIR=bcmdata
 BCMLISTUID  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 )
-BCMLISTPRE  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f4 )
-BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
-BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
-BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f7 )
-BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f8 )
-BCMLISTFIX  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f12)
+BCMLISTPRE  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
+BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
+BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f7 )
+BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f8 )
+BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f9 )
+BCMLISTFIX  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f14)
 BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
@@ -113,20 +113,19 @@ viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))
 %/viewbcm: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Del.raw.nii.gz  -info $(@D)/Pst.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz   -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz $(@D)/Del.raw.nii.gz $(@D)/Pst.raw.nii.gz
-	vglrun itksnap -g  $(@D)/Pre.256.nii.gz   -o $(@D)/Pre/score.nii.gz -s  $(@D)/Pre/label.nii.gz
-	vglrun itksnap -g  $(@D)/Art.256.nii.gz   -o $(@D)/Art/score.nii.gz -s  $(@D)/Art/label.nii.gz
-	vglrun itksnap -g  $(@D)/Ven.256.nii.gz   -o $(@D)/Ven/score.nii.gz -s  $(@D)/Ven/label.nii.gz
-	vglrun itksnap -g  $(@D)/Del.256.nii.gz   -o $(@D)/Del/score.nii.gz -s  $(@D)/Del/label.nii.gz
+	vglrun itksnap -g  $(@D)/Pre.raw.nii.gz   -o $(@D)/Pre/score.nii.gz -s  $(@D)/Pre/label.nii.gz
+	vglrun itksnap -g  $(@D)/Art.raw.nii.gz   -o $(@D)/Art/score.nii.gz -s  $(@D)/Art/label.nii.gz
+	vglrun itksnap -g  $(@D)/Ven.raw.nii.gz   -o $(@D)/Ven/score.nii.gz -s  $(@D)/Ven/label.nii.gz
+	vglrun itksnap -g  $(@D)/Del.raw.nii.gz   -o $(@D)/Del/score.nii.gz -s  $(@D)/Del/label.nii.gz
 viewbcmlong: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcmlong,$(BCMLISTUID)))  
 %/viewbcmlong: 
-	c3d -verbose $(@D)/fixed.256.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
-	c3d -verbose $(@D)/Art.256.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Pre.256.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Art.256.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Ven.256.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Del.256.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Pst.256.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
-	vglrun itksnap -g  $(@D)/fixed.256.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.256.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.256.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.256.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.256.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.256.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
+	c3d -verbose $(@D)/fixed.raw.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
+	c3d -verbose $(@D)/Pre.raw.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Art.raw.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Ven.raw.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Del.raw.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pst.raw.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
+	vglrun itksnap -g  $(@D)/fixed.raw.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.longregcc.nii.gz  -info $(@D)/Art.longregcc.nii.gz  -info  $(@D)/Ven.longregcc.nii.gz  -info $(@D)/Del.longregcc.nii.gz  -info   $(@D)/Pst.longregcc.nii.gz  -info -omc $(@D)/liverprotocol.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/liverprotocol.nii.gz $@ 10 1
@@ -134,8 +133,8 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 # preprocess data
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $<  -o  $@
-	python normalization.py --imagefile=$@  --output=$@
+	python normalization.py --imagefile=$<  --output=$@
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@  -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
 	python resize.py --imagefile=$<  --output=$@
@@ -153,18 +152,18 @@ bcmdata/%.mask.nii.gz:
 	c3d -verbose bcmdata/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
 # register study
 regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
-bcmdata/%.regcc.nii.gz: bcmdata/%.256.nii.gz bcmdata/%.mask.nii.gz
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
+bcmdata/%.regcc.nii.gz: bcmdata/%.normalize.nii.gz bcmdata/%.mask.nii.gz
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/Art.mask.nii.gz,$(word 2,$^)] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/Art.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/Art.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/Art.normalize.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > $(basename $(basename $@)).log  2>&1
 # register longitudinal
 CLUSTERDIR = /rsrch3/home/imag_phy-rsrch/dtfuentes/github/hccdetection
 longregbcm: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).longregcc.nii.gz,$(BCMLISTUID)))) 
 # debug initialization
-bcmdata/%.longregdbginitial.nii.gz: bcmdata/%.256.nii.gz 
-	/opt/apps/ANTS/dev/install/bin/antsRegistration  --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 0x0x0x0,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
-	vglrun itksnap -g $(@D)/fixed.256.nii.gz -o $@
-bcmdata/%.longregcc.nii.gz: bcmdata/%.256.nii.gz 
+bcmdata/%.longregdbginitial.nii.gz: bcmdata/%.normalize.nii.gz 
+	/opt/apps/ANTS/dev/install/bin/antsRegistration  --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 0x0x0x0,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	vglrun itksnap -g $(@D)/fixed.normalize.nii.gz -o $@
+bcmdata/%.longregcc.nii.gz: bcmdata/%.normalize.nii.gz 
 	echo "bsub -Is -q interactive -W 6:00 -M 32 -R rusage[mem=32] -n 4 /usr/bin/bash"
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:25 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.256.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ $(@D)/fixed.256.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:25 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.normalize.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.normalize.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
@@ -258,8 +257,8 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 %/bias/normalize.nii: 
 	mkdir -p $(@D)
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $*/image.nii  -o  $@
-	python normalization.py --imagefile=$@  --output=$@
+	python normalization.py --imagefile=$*/image.nii   --output=$@
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@ -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 # FIXME - note this rule is repeated
 # https://www.gnu.org/software/make/manual/html_node/Multiple-Rules.html
