@@ -325,13 +325,13 @@ overlap.csv:
 	-sqlite3 $(SQLITEDB)  -init .exportoverlap  ".quit"
 
 
-###########################################################################
-.SECONDEXPANSION:
-#https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html#Secondary-Expansion
-###########################################################################
-#https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
-# dilate mask
-biasbcm: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
-#bias correction
-bcmdata/%.bias.nii.gz: bcmdata/%.longregcc.nii.gz bcmdata/$$(*D)/fixed.liver.nii.gz
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -x $(word 2,$^)  -i $< -o $@
+## ###########################################################################
+## .SECONDEXPANSION:
+## #https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html#Secondary-Expansion
+## ###########################################################################
+## #https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
+## # dilate mask
+## biasbcm: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
+## #bias correction
+## bcmdata/%.bias.nii.gz: bcmdata/%.longregcc.nii.gz bcmdata/$$(*D)/fixed.liver.nii.gz
+## 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -x $(word 2,$^)  -i $< -o $@

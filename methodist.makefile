@@ -16,10 +16,11 @@ methodist/%/Del.raw.nii.gz:
 methodist/%/Pst.raw.nii.gz:
 	mkdir -p $(@D)
 	DicomSeriesReadImageWrite2 $(shell sed 1d BerettaLab/wideformat.csv | grep $* | cut -d, -f8 )  $@
+rawmethodistfixed: $(addprefix methodist/,$(addsuffix /fixed.raw.nii.gz,$(MTHLISTUID)))
 methodist/%/fixed.raw.nii.gz:
 	ln -snf Art.raw.nii.gz $@
-methodist/%HCC/fixed.raw.nii.gz:
-	ln -snf ../$*Pre/Art.raw.nii.gz $@
+methodist/%Pre/fixed.raw.nii.gz:
+	ln -snf ../$*HCC/Art.raw.nii.gz $@
 viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))  
 %/viewraw: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info  $(@D)/Del.raw.nii.gz -info  $(@D)/Pst.raw.nii.gz -info

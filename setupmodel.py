@@ -248,16 +248,16 @@ elif (options.setuptestset):
   for iii in range(options.kfolds):
     (train_set,validation_set,test_set) = GetSetupKfolds(options.kfolds,iii,hcccttumorids.keys())
     kfolddictionary[30+iii] ={'NumberOfChannels':1,'foldidx':iii,'kfolds':options.kfolds, 'dataid': 'hcccttumor', 'test_set':[  databaseinfo[idtest]['uid'] for idtest in test_set], 'validation_set': [  databaseinfo[idtrain]['uid'] for idtrain in validation_set], 'train_set': [  databaseinfo[idtrain]['uid'] for idtrain in train_set]}
-  kfolddictionary[35] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
+  kfolddictionary[35] ={'NumberOfChannels':1,'foldidx':0,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':None}
   # FIXME - hack overwrite normalizationlist
   normalizationlist = ['scaled']
-  kfolddictionary[36] ={'NumberOfChannels':1,'foldidx':1,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
+  kfolddictionary[36] ={'NumberOfChannels':1,'foldidx':1,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':None}
   normalizationlist = ['bias','zscore']
-  kfolddictionary[37] ={'NumberOfChannels':1,'foldidx':2,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
+  kfolddictionary[37] ={'NumberOfChannels':1,'foldidx':2,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':None}
   normalizationlist = ['bias']
-  kfolddictionary[38] ={'NumberOfChannels':1,'foldidx':3,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
+  kfolddictionary[38] ={'NumberOfChannels':1,'foldidx':3,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':None}
   normalizationlist = ['zscore']
-  kfolddictionary[39] ={'NumberOfChannels':1,'foldidx':4,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':[  databaseinfo[idtest]['uid'] for idtest in hccmriids.keys()]}
+  kfolddictionary[39] ={'NumberOfChannels':1,'foldidx':4,'kfolds':1, 'dataid': 'hccmrima', 'train_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[:30] for idmodality in modalitylist   for idnorm in normalizationlist ], 'validation_set':[  "%s%s/%s" % (idmodality,databaseinfo[idtest]['uid'],idnorm) for idtest in hccmriids.keys()[30:] for idmodality in modalitylist for idnorm in normalizationlist ], 'test_set':None}
 
 
   # initialize lists partitions
@@ -283,18 +283,19 @@ elif (options.setuptestset):
          fileHandle.write("""%s: \n\tmatlab -nodesktop -softwareopengl -r "livermodel('%s');exit"\n""" % (modelprereq,setupprereq )    )
          modeltargetlist.append(modelprereq    )
          uiddictionary[iii]=[]
-         for idtest in test_set:
-            # write target
-            imageprereq    = 'anonymize/%s/%s/Volume.nii'         % (idtest, resolutionid)
-            maskprereq     = 'anonymize/%s/%s/%s/%s/label.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
-            segmaketarget  = 'anonymize/%s/%s/%s/%s/tumor.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
-            uiddictionary[iii].append(idtest )
-            cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
-            fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
-            fileHandle.write('\t%s\n' % cvtestcmd)
-            fileHandle.write('%s: %s %s\n' % (maskprereq,imageprereq,modelprereq  ) )
-            cvtestcmd = "mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $^ $(@D) 1 gpu"  
-            fileHandle.write('\t%s\n' % cvtestcmd)
+         if test_set is not None:
+           for idtest in test_set:
+              # write target
+              imageprereq    = 'anonymize/%s/%s/Volume.nii'         % (idtest, resolutionid)
+              maskprereq     = 'anonymize/%s/%s/%s/%s/label.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
+              segmaketarget  = 'anonymize/%s/%s/%s/%s/tumor.nii.gz' % (idtest, resolutionid, nnid,kfoldset['dataid'])
+              uiddictionary[iii].append(idtest )
+              cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
+              fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
+              fileHandle.write('\t%s\n' % cvtestcmd)
+              fileHandle.write('%s: %s %s\n' % (maskprereq,imageprereq,modelprereq  ) )
+              cvtestcmd = "mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $^ $(@D) 1 gpu"  
+              fileHandle.write('\t%s\n' % cvtestcmd)
 
 
   # build job list
