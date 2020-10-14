@@ -132,12 +132,14 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 
 # preprocess data
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
-$(BCMWORKDIR)/%.normalize.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
+$(BCMWORKDIR)/%.zscore.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
 	python normalization.py --imagefile=$<  --output=$@
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@  -o  $@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
-$(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.normalize.nii.gz
-	python resize.py --imagefile=$<  --output=$@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
+$(BCMWORKDIR)/%.bias.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $<  -o  $@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
+$(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.bias.nii.gz
+	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
 labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
@@ -256,10 +258,9 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 	mkdir -p $(@D)
 	python normalization.py --imagefile=$*/image.nii  --output=$@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
-%/bias/normalize.nii: 
+%/bias/normalize.nii: %/zscore/normalize.nii
 	mkdir -p $(@D)
-	python normalization.py --imagefile=$*/image.nii   --output=$@
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@ -o  $@
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $< -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 # FIXME - note this rule is repeated
 # https://www.gnu.org/software/make/manual/html_node/Multiple-Rules.html

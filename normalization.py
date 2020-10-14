@@ -29,7 +29,7 @@ if (options.imagefile != None and options.output != None ):
   #print labeldictionary 
   # zscore = (image - mean) / std
   # zscore and make positive for bias correction
-  rescalecmd = 'c3d -verbose %s -shift %12.5e -scale %12.5e -clip -5 5 -shift 5  -type float -o %s ' % (options.imagefile,-labeldictionary[0]['Mean'],1./labeldictionary[0]['StdD'],options.output )
+  rescalecmd = 'c3d -verbose %s -shift %12.5e -scale %12.5e -clip -5 5  -type float -o %s ' % (options.imagefile,-labeldictionary[0]['Mean'],1./labeldictionary[0]['StdD'],options.output )
   print(rescalecmd )
   os.system(rescalecmd)
   verifyrescalecmd = 'c3d %s -info -dup -scale 0.0 -lstat  ' % (options.output )

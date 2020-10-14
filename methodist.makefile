@@ -4,7 +4,7 @@ SHELL := /bin/bash
 MATLABROOT      := /opt/apps/matlab/R2020a/
 
 MTHLISTUID  = $(shell sed 1d BerettaLab/wideformat.csv | cut -d, -f7 | cut -d/ -f9)
-MTHCONTRASTLIST = Pre Art Ven Del Pst fixed
+MTHCONTRASTLIST = Del Pre Art Ven Pst fixed
 rawmethodist: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).raw.nii.gz,$(MTHLISTUID)))) 
 methodist/%/Pre.raw.nii.gz: ;
 methodist/%/Art.raw.nii.gz: ;
@@ -27,17 +27,19 @@ viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
-methodist/%.normalize.nii.gz: methodist/%.raw.nii.gz
+methodist/%.zscore.nii.gz: methodist/%.raw.nii.gz
 	python normalization.py --imagefile=$<  --output=$@
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@  -o  $@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
-methodist/%.crop.nii.gz: methodist/%.normalize.nii.gz
-	python resize.py --imagefile=$<  --output=$@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
+methodist/%.bias.nii.gz: methodist/%.zscore.nii.gz
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $<  -o  $@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
+methodist/%.crop.nii.gz: methodist/%.bias.nii.gz
+	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@
 # label data
-labelmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc)/label.nii.gz,$(MTHLISTUID)))) 
+labelmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).label.nii.gz,$(MTHLISTUID)))) 
 methodist/%/label.nii.gz: methodist/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/trainedNet.mat','$(@D)','1','gpu'\)
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s methodist/$*/label.nii.gz -o methodist/$*/score.nii.gz
 methodist/%.label.nii.gz: methodist/%/label.nii.gz
 	c3d -verbose methodist/$*.raw.nii.gz $< -reslice-identity -o $@
