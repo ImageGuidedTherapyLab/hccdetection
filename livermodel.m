@@ -99,6 +99,6 @@ function livermodel( jsonFilename  )
   [net,info] = trainNetwork(trainPatch,a.lgraph,options);
   save([jsonData.uidoutputdir '/trainedNet.mat'],'net','options','modelDateTime','info');
   handle = findall(groot, 'Type', 'Figure')
-  saveas(handle,[jsonData.uidoutputdir  '/info'],'png')
+  saveas(handle(2),[jsonData.uidoutputdir  '/info'],'png')
 
 end
