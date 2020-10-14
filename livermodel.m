@@ -2,6 +2,7 @@
 %function livermodel( jsonFilename  )
   % load all configuration data
   jsonFilename = 'Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/setup.json'
+  jsonFilename = 'Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/setup.json'
   disp(jsonFilename  )
   jsonText = fileread(jsonFilename);
   jsonData = jsondecode(jsonText)
