@@ -31,7 +31,8 @@ methodist/%.zscore.nii.gz: methodist/%.raw.nii.gz
 	python normalization.py --imagefile=$<  --output=$@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
 methodist/%.bias.nii.gz: methodist/%.zscore.nii.gz
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $<  -o  $@
+	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
+	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
 methodist/%.crop.nii.gz: methodist/%.bias.nii.gz
 	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@
