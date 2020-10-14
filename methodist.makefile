@@ -27,8 +27,8 @@ viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
-methodist/%.zscore.nii.gz: methodist/%.raw.nii.gz
-	python normalization.py --imagefile=$<  --output=$@
+methodist/%.zscore.nii.gz: 
+	python normalization.py --imagefile=methodist/$*.raw.nii.gz  --output=$@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
 methodist/%.bias.nii.gz: methodist/%.zscore.nii.gz
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100

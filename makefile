@@ -132,8 +132,8 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 
 # preprocess data
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
-$(BCMWORKDIR)/%.zscore.nii.gz: $(BCMWORKDIR)/%.raw.nii.gz
-	python normalization.py --imagefile=$<  --output=$@
+$(BCMWORKDIR)/%.zscore.nii.gz: 
+	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
 $(BCMWORKDIR)/%.bias.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
