@@ -1,0 +1,23 @@
+mkdir  Case1HCC; unzip "Case 1 - HCC.zip"           -d  Case1HCC
+mkdir  Case1Pre; unzip "Case 1 - Pre HCC.zip"       -d  Case1Pre
+mkdir  Case2HCC; echo  "Case 2 - HCC.zip"           
+mkdir  Case2HCC; unzip "Case 2 - HCC 2.zip"         -d  Case2HCC
+mkdir  Case2Pre; unzip "Case 2 - Pre HCC.zip"       -d  Case2Pre
+mkdir  Case3HCC; unzip "Case 3 - HCC.zip"           -d  Case3HCC
+mkdir  Case3Pre; unzip "Case 3 - Pre HCC.zip"       -d  Case3Pre
+mkdir  Case4HCC; unzip "Case 4 - HCC.zip"           -d  Case4HCC
+mkdir  Case4Pre; unzip "Case 4 - Pre HCC.zip"       -d  Case4Pre
+mkdir  Case5HCC; unzip "Case 5 - HCC.zip"           -d  Case5HCC
+mkdir  Case5Pre; unzip "Case 5 - Pre HCC.zip"       -d  Case5Pre
+mkdir  Case6HCC; unzip "Case 6 - HCC.zip"           -d  Case6HCC
+mkdir  Case6Pre; unzip "Case 6 - Pre HCC.zip"       -d  Case6Pre
+mkdir  Case7HCC; unzip "Case 7 - HCC.zip"           -d  Case7HCC
+mkdir  Case7Pre; unzip "Case 7 - Pre HCC.zip"       -d  Case7Pre
+mkdir  Control1; unzip "Control 1.zip"              -d  Control1
+mkdir  Control2; unzip "Control 2.zip"              -d  Control2
+mkdir  Control3; unzip "Control 3.zip"              -d  Control3
+mkdir  Control4; unzip "Control 4.zip"              -d  Control4
+mkdir  Control5; unzip "Control 5.zip"              -d  Control5
+mkdir  Control6; unzip "Control 6.zip"              -d  Control6
+mkdir  Control7; unzip "Control 7.zip"              -d  Control7
+mkdir  Control8; unzip "Control 8.zip"              -d  Control8
