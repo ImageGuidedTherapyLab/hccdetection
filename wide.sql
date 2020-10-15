@@ -76,7 +76,7 @@ from widestudy    w1
 join baselineart  w3 on w1.PatientNumber = w3.PatientNumber 
 left join qadata       qa on w1.UID = qa.StudyUID;
 
--- .output LiverMRIProjectData/wideanon.csv 
+.output LiverMRIProjectData/wideanon.csv 
 select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,FixedNumber,daysincebaseline,Fixed,QA from  widejoinqa  where Pre is not null; 
 -- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
