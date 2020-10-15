@@ -26,6 +26,7 @@ function livermodel( jsonFilename  )
   % load all configuration data
   %jsonFilename = 'Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/setup.json'
   %jsonFilename = 'Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/setup.json'
+  %jsonFilename = 'Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/004/setup.json'
   disp(jsonFilename  )
   jsonText = fileread(jsonFilename);
   jsonData = jsondecode(jsonText)
@@ -47,7 +48,7 @@ function livermodel( jsonFilename  )
          disp('unknown')
   end
 
-  gpuDevice(2)
+  gpuDevice(1)
   
   % before starting, need to define "n" which is the number of channels.
   NumberOfChannels =  1; %jsonData.NumberOfChannels;
