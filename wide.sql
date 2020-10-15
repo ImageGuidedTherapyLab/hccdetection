@@ -47,10 +47,21 @@ ORDER BY    cast(PatientNumber as int) ASC, cast(StudyNumber as int) ASC;
 -- select diagnosticinterval from widestudy  ;
 
 -- update min
+create table hccstudy  as 
+select PatientNumber, StudyNumber  HCCStudyNumber  from hccimaging where HCCDate == StudyDate group by Patientnumber;
 create table minwidestudy  as 
 select PatientNumber, min(StudyNumber) MinStudyNumber from widestudy group by Patientnumber;
+-- use hcc date if not then the min study
+create table fixedstudy  as 
+select w2.PatientNumber, ifnull(w3.HCCStudyNumber,w2.MinStudyNumber) FixedNumber 
+from minwidestudy w2 
+left join hccstudy     w3 on  w2.PatientNumber = w3.PatientNumber;
+
+-- joing with hcc date if not then the min study
 create table baselineart  as 
-select w1.PatientNumber, w1.Art, w1.StudyDate from widestudy w1  join minwidestudy w2 on  w1.PatientNumber = w2.PatientNumber and w1.StudyNumber = w2.MinStudyNumber;
+select w1.PatientNumber, w1.Art, w1.StudyDate, w2.FixedNumber
+from widestudy w1 
+join fixedstudy w2 on  w1.PatientNumber = w2.PatientNumber and w1.StudyNumber = w2.FixedNumber;
 -- select * from baselineart  ;
 
 -- error check missing data
@@ -60,14 +71,13 @@ select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art)
 
 -- output wide format
 create table widejoinqa  as 
-select w1.*,w2.MinStudyNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w2.MinStudyNUmber as int),w3.Art) Fixed,qa.Status QA
+select w1.*,w3.FixedNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w3.FixedNumber as int),w3.Art) Fixed,qa.Status QA
 from widestudy    w1
-join minwidestudy w2 on w1.PatientNumber = w2.PatientNumber 
 join baselineart  w3 on w1.PatientNumber = w3.PatientNumber 
 left join qadata       qa on w1.UID = qa.StudyUID;
 
-.output LiverMRIProjectData/wideanon.csv 
-select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,MinStudyNumber,daysincebaseline,Fixed,QA from  widejoinqa  where Pre is not null; 
+-- .output LiverMRIProjectData/wideanon.csv 
+select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,FixedNumber,daysincebaseline,Fixed,QA from  widejoinqa  where Pre is not null; 
 -- cat wide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;
 .quit
