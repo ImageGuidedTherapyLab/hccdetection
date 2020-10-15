@@ -23,6 +23,7 @@ CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription 
        im.SeriesModality,im.seriesanonuid,im.niftifile 
 from datekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
 
+-- select * from hccimaging where seriesdescription == 'Ax LAVA BH' ;
 -- select count(Status) from datekey   where Status == 'case';
 -- select count(status) from hccimaging where Status == 'case' group by patientnumber, studynumber;
 -- FIXME - missing - select * from hccimaging   where patientnumber = 9;
@@ -46,6 +47,11 @@ ORDER BY    cast(PatientNumber as int) ASC, cast(StudyNumber as int) ASC;
 -- select HCCDate, StudyDate from hccimaging;
 -- select diagnosticinterval from widestudy  ;
 
+-- HACK
+UPDATE widestudy  
+SET Pre = '4bf41e10-1c62-2f82-d081-3d923aca43f2'
+WHERE UID = 'BCM0015002';
+
 -- update min
 create table hccstudy  as 
 select PatientNumber, StudyNumber  HCCStudyNumber  from hccimaging where HCCDate == StudyDate group by Patientnumber;
@@ -56,6 +62,11 @@ create table fixedstudy  as
 select w2.PatientNumber, ifnull(w3.HCCStudyNumber,w2.MinStudyNumber) FixedNumber 
 from minwidestudy w2 
 left join hccstudy     w3 on  w2.PatientNumber = w3.PatientNumber;
+-- HACK
+UPDATE fixedstudy  
+SET FixedNumber = 0 
+WHERE PatientNumber  = 24;
+-- select * from fixedstudy;
 
 -- joing with hcc date if not then the min study
 create table baselineart  as 
