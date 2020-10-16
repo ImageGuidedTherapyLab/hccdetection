@@ -131,21 +131,22 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/liverprotocol.nii.gz $@ 10 1
 
 # preprocess data
+zscorebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).zscore.nii.gz,$(BCMLISTUID)))) 
+biasbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%.zscore.nii.gz: 
 	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
 $(BCMWORKDIR)/%.bias.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
-$(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.bias.nii.gz
+$(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
 labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 	c3d -verbose bcmdata/$*.raw.nii.gz $< -reslice-identity -o $@
@@ -297,12 +298,6 @@ $(WORKDIR)/crctumor%/scaled/256/Volume.dir: $(WORKDIR)/crctumor%/scaled/crop/Vol
 ## clean up mask 
 %/liver.nii.gz: %/label.nii.gz 
 	c3d -verbose $<  -thresh 2 2 1 0 -connected-components   -thresh 1 1 1 0 -o $@
-
-bcmdata/BCM0001000/Pre/label.nii.gz: bcmdata/BCM0001000/Pre.256.nii.gz
-	echo applymodel('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat','$(@D)','1','gpu')
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat $(@D) 1 gpu
-	echo vglrun itksnap -g bcmdata/BCM0001000/Pre.256.nii.gz -s bcmdata/BCM0001000/Pre/label.nii.gz -o bcmdata/BCM0001000/Pre/score.nii.gz
-
 
 ## label statistics
 $(WORKDIR)/%/lstat.csv: $(WORKDIR)/%/image.nii $(WORKDIR)/%/label.nii

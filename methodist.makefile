@@ -34,15 +34,15 @@ viewlbl: $(addprefix methodist/,$(addsuffix /viewlbl,$(MTHLISTUID)))
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
+biasmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).bias.nii.gz,$(MTHLISTUID)))) 
 resizemthfixed: $(addprefix methodist/,$(addsuffix /fixed.crop.nii.gz,$(MTHLISTUID))) 
 methodist/%.zscore.nii.gz: 
 	python normalization.py --imagefile=methodist/$*.raw.nii.gz  --output=$@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@  0 1
 methodist/%.bias.nii.gz: methodist/%.zscore.nii.gz
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
-methodist/%.crop.nii.gz: methodist/%.bias.nii.gz
+methodist/%.crop.nii.gz: methodist/%.zscore.nii.gz
 	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@
 # label data
 labelmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).label.nii.gz,$(MTHLISTUID)))) 
