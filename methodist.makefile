@@ -25,6 +25,12 @@ viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))
 %/viewraw: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info  $(@D)/Del.raw.nii.gz -info  $(@D)/Pst.raw.nii.gz -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz  $(@D)/Del.raw.nii.gz $(@D)/Pst.raw.nii.gz 
+viewlbl: $(addprefix methodist/,$(addsuffix /viewlbl,$(MTHLISTUID)))  
+%/viewlbl: 
+	vglrun itksnap -g $(@D)/Pre.raw.nii.gz -s $(@D)/Pre.label.nii.gz &
+	vglrun itksnap -g $(@D)/Art.raw.nii.gz -s $(@D)/Art.label.nii.gz &
+	vglrun itksnap -g $(@D)/Ven.raw.nii.gz -s $(@D)/Ven.label.nii.gz &
+	vglrun itksnap -g $(@D)/Del.raw.nii.gz -s $(@D)/Del.label.nii.gz ; pkill -9 ITK-SNAP
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
@@ -41,8 +47,8 @@ methodist/%.crop.nii.gz: methodist/%.bias.nii.gz
 # label data
 labelmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).label.nii.gz,$(MTHLISTUID)))) 
 methodist/%/label.nii.gz: methodist/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/trainedNet.mat $(@D) 1 gpu
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/004/trainedNet.mat','$(@D)','1','gpu'\)
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/004/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s methodist/$*/label.nii.gz -o methodist/$*/score.nii.gz
 methodist/%.label.nii.gz: methodist/%/label.nii.gz
 	c3d -verbose methodist/$*.raw.nii.gz $< -reslice-identity -o $@
