@@ -144,6 +144,7 @@ $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
 labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
+labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
