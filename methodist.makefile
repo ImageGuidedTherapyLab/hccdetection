@@ -33,13 +33,13 @@ viewlbl: $(addprefix methodist/,$(addsuffix /viewlbl,$(MTHLISTUID)))
 	vglrun itksnap -g $(@D)/Del.raw.nii.gz -s $(@D)/Del.liver.nii.gz-s $(@D)/Del.liver.nii.gz ; pkill -9 ITK-SNAP
 viewmthlong: $(addprefix methodist/,$(addsuffix /viewmthlong,$(MTHLISTUID)))  
 %/viewmthlong: 
-	c3d -verbose $(@D)/fixed.raw.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
-	c3d -verbose $(@D)/Pre.raw.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Art.raw.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Ven.raw.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Del.raw.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Pst.raw.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
-	vglrun itksnap -g  $(@D)/fixed.raw.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
+	c3d -verbose $(@D)/fixed.bias.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
+	c3d -verbose $(@D)/Pre.bias.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Art.bias.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Ven.bias.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Del.bias.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pst.bias.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
+	vglrun itksnap -g  $(@D)/fixed.bias.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.bias.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.bias.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.bias.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.bias.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.bias.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
