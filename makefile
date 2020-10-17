@@ -256,16 +256,15 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 %/scaled/normalize.nii: 
 	mkdir -p $(@D)
 	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ TruncateImageIntensity $*/image.nii 0.01  0.99 200 
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
+	python normalization.py --imagefile=$@ --output=$@
 %/zscore/normalize.nii: 
 	mkdir -p $(@D)
 	python normalization.py --imagefile=$*/image.nii  --output=$@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
 %/bias/normalize.nii: %/zscore/normalize.nii
 	mkdir -p $(@D)
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $< 10 100
+	c3d -verbose $*/image.nii  -shift 1  -o  $@
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@ -o  $@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage           $@ 0 1
+	python normalization.py --imagefile=$@ --output=$@
 # FIXME - note this rule is repeated
 # https://www.gnu.org/software/make/manual/html_node/Multiple-Rules.html
 # If more than one rule gives a recipe for the same file, make uses the last one given

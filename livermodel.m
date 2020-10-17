@@ -48,7 +48,7 @@ function livermodel( jsonFilename  )
          disp('unknown')
   end
 
-  gpuDevice(2)
+  gpuDevice(1)
   
   % before starting, need to define "n" which is the number of channels.
   NumberOfChannels =  1; %jsonData.NumberOfChannels;
