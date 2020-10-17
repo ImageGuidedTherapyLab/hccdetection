@@ -30,6 +30,7 @@ function livermodel( jsonFilename  )
   disp(jsonFilename  )
   jsonText = fileread(jsonFilename);
   jsonData = jsondecode(jsonText)
+  myversion = strrep(version,' ','')
 
   % https://www.mathworks.com/help/matlab/matlab_external/use-python-dict-type-in-matlab.html
   % order = py.dict(pyargs('soup',ImageSegmentationUnet3D,'bread',2.29,'bacon',3.91,'salad',5.00))
@@ -48,7 +49,7 @@ function livermodel( jsonFilename  )
          disp('unknown')
   end
 
-  gpuDevice(1)
+  gpuDevice(2)
   
   % before starting, need to define "n" which is the number of channels.
   NumberOfChannels =  1; %jsonData.NumberOfChannels;
@@ -97,10 +98,11 @@ function livermodel( jsonFilename  )
 
   % train and save 
   modelDateTime = datestr(now,'dd-mmm-yyyy-HH-MM-SS')
+  myversion = strrep(strrep(strrep(version,' ',''),'(',''),')','')
   [net,info] = trainNetwork(trainPatch,a.lgraph,options);
-  save([jsonData.uidoutputdir '/trainedNet.mat'],'net','options','modelDateTime','info');
+  save([jsonData.uidoutputdir '/trainedNet' myversion '.mat'],'net','options','modelDateTime','info');
   handle = findall(groot, 'Type', 'Figure')
-  saveas(handle(1),[jsonData.uidoutputdir  '/info1'],'png')
-  saveas(handle(2),[jsonData.uidoutputdir  '/info2'],'png')
+  saveas(handle(1),[jsonData.uidoutputdir  '/info1' myversion ],'png')
+  saveas(handle(2),[jsonData.uidoutputdir  '/info2' myversion ],'png')
 
 end
