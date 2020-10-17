@@ -217,7 +217,7 @@ $(WORKDIR)/ct%/label.nii:
 
 -include hccmrikfold005.makefile
 
-comparemodels: Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/004/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/001/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/002/trainedNet.mat 
+comparemodels: Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/004/trainedNet.mat  Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/003/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/001/trainedNet.mat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/002/trainedNet.mat 
 #DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(HCCCTLIST) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
 #DATALIST = $(ANONLIST) $(addprefix washout,$(ANONLIST)) $(CRCLIST) $(addprefix crctumor,$(CRCLIST)) 
 #DATALIST = $(addprefix crctumor,$(CRCLIST)) 
