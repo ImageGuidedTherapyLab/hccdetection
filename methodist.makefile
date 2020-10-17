@@ -27,10 +27,10 @@ viewraw: $(addprefix methodist/,$(addsuffix /viewraw,$(MTHLISTUID)))
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz  $(@D)/Del.raw.nii.gz $(@D)/Pst.raw.nii.gz 
 viewlbl: $(addprefix methodist/,$(addsuffix /viewlbl,$(MTHLISTUID)))  
 %/viewlbl: 
-	vglrun itksnap -g $(@D)/Pre.raw.nii.gz -s $(@D)/Pre.label.nii.gz &
-	vglrun itksnap -g $(@D)/Art.raw.nii.gz -s $(@D)/Art.label.nii.gz &
-	vglrun itksnap -g $(@D)/Ven.raw.nii.gz -s $(@D)/Ven.label.nii.gz &
-	vglrun itksnap -g $(@D)/Del.raw.nii.gz -s $(@D)/Del.label.nii.gz ; pkill -9 ITK-SNAP
+	vglrun itksnap -g $(@D)/Pre.raw.nii.gz -s $(@D)/Pre.liver.nii.gz-s $(@D)/Pre.liver.nii.gz &
+	vglrun itksnap -g $(@D)/Art.raw.nii.gz -s $(@D)/Art.liver.nii.gz-s $(@D)/Art.liver.nii.gz &
+	vglrun itksnap -g $(@D)/Ven.raw.nii.gz -s $(@D)/Ven.liver.nii.gz-s $(@D)/Ven.liver.nii.gz &
+	vglrun itksnap -g $(@D)/Del.raw.nii.gz -s $(@D)/Del.liver.nii.gz-s $(@D)/Del.liver.nii.gz ; pkill -9 ITK-SNAP
 
 # preprocess data
 resizemth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).crop.nii.gz,$(MTHLISTUID)))) 
@@ -38,10 +38,10 @@ biasmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(
 resizemthfixed: $(addprefix methodist/,$(addsuffix /fixed.crop.nii.gz,$(MTHLISTUID))) 
 methodist/%.zscore.nii.gz: 
 	python normalization.py --imagefile=methodist/$*.raw.nii.gz  --output=$@
-methodist/%.bias.nii.gz: methodist/%.zscore.nii.gz
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
+methodist/%.bias.nii.gz: 
+	c3d -verbose methodist/$*.raw.nii.gz  -shift 1  -o  $@
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
+	python normalization.py --imagefile=$@  --output=$@
 methodist/%.crop.nii.gz: methodist/%.zscore.nii.gz
 	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@
 # label data

@@ -136,10 +136,10 @@ biasbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 $(BCMWORKDIR)/%.zscore.nii.gz: 
 	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
-$(BCMWORKDIR)/%.bias.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $< 10 100
+$(BCMWORKDIR)/%.bias.nii.gz: 
+	c3d -verbose $(BCMWORKDIR)/$*.raw.nii.gz  -shift 1  -o  $@
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
-	/opt/apps/ANTS/dev/install/bin/ImageMath 3 $@ RescaleImage $@ 0 1
+	python normalization.py --imagefile=$@  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
