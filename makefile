@@ -260,7 +260,7 @@ overlap:  $(foreach idmodel,$(MODELLIST),$(addprefix $(WORKDIR)/,$(addsuffix /$(
 %/zscore/normalize.nii: 
 	mkdir -p $(@D)
 	python normalization.py --imagefile=$*/image.nii  --output=$@
-%/bias/normalize.nii: %/zscore/normalize.nii
+%/bias/normalize.nii: 
 	mkdir -p $(@D)
 	c3d -verbose $*/image.nii  -shift 1  -o  $@
 	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i $@ -o  $@
