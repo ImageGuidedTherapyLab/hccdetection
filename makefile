@@ -96,6 +96,7 @@ BCMLISTFIX  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f14)
 BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
+rawbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.raw.nii.gz,$(BCMLISTUID)))
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
 	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
@@ -134,6 +135,7 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 zscorebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).zscore.nii.gz,$(BCMLISTUID)))) 
 biasbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
+resizebcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.crop.nii.gz,$(BCMLISTUID))) $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.bias.nii.gz,$(BCMLISTUID)))
 $(BCMWORKDIR)/%.zscore.nii.gz: 
 	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
 $(BCMWORKDIR)/%.bias.nii.gz: 
