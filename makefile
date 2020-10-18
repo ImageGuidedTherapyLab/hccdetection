@@ -119,13 +119,13 @@ viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))
 	vglrun itksnap -g  $(@D)/Del.raw.nii.gz   -o $(@D)/Del/score.nii.gz -s  $(@D)/Del/label.nii.gz
 viewbcmlong: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcmlong,$(BCMLISTUID)))  
 %/viewbcmlong: 
-	c3d -verbose $(@D)/fixed.raw.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
-	c3d -verbose $(@D)/Pre.raw.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Art.raw.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Ven.raw.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Del.raw.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
-	c3d -verbose $(@D)/Pst.raw.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
-	vglrun itksnap -g  $(@D)/fixed.raw.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
+	c3d -verbose $(@D)/fixed.bias.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
+	c3d -verbose $(@D)/Pre.bias.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Art.bias.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Ven.bias.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Del.bias.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pst.bias.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
+	vglrun itksnap -g  $(@D)/fixed.bias.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 $(BCMWORKDIR)/%/slic.nii.gz:
 	c3d $(@D)/Pre.longregcc.nii.gz  -info $(@D)/Art.longregcc.nii.gz  -info  $(@D)/Ven.longregcc.nii.gz  -info $(@D)/Del.longregcc.nii.gz  -info   $(@D)/Pst.longregcc.nii.gz  -info -omc $(@D)/liverprotocol.nii.gz
 	/rsrch1/ip/dtfuentes/github/ExLib/SLICImageFilter/itkSLICImageFilterTest $(@D)/liverprotocol.nii.gz $@ 10 1
