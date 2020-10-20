@@ -1,0 +1,51 @@
+c3d -verbose bcmdata/BCM0019002/Art.raw.nii.gz -info bcmdata/BCM0019002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0019002/Segmentations/Segment_Arterial_reg.nii.gz 
+c3d -verbose bcmdata/BCM0023000/Art.raw.nii.gz -info bcmdata/BCM0023000/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0023000/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0001000/Art.raw.nii.gz -info bcmdata/BCM0001002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0001002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0001002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0001000/fixed.raw.nii.gz -t bcmdata/BCM0001000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0001000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0001002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0016000/Art.raw.nii.gz -info bcmdata/BCM0016002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0016002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0016002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0016000/fixed.raw.nii.gz -t bcmdata/BCM0016000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0016000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0016002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0017000/Art.raw.nii.gz -info bcmdata/BCM0017002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0017002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0017002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0017000/fixed.raw.nii.gz -t bcmdata/BCM0017000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0017000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0017002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0018000/Art.raw.nii.gz -info bcmdata/BCM0018004/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0018004/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0018004/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0018000/fixed.raw.nii.gz -t bcmdata/BCM0018000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0018000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0018004/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0020000/Art.raw.nii.gz -info bcmdata/BCM0020002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0020002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0020002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0020000/fixed.raw.nii.gz -t bcmdata/BCM0020000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0020000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0020002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0021000/Art.raw.nii.gz -info bcmdata/BCM0021003/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0021003/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0021003/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0021000/fixed.raw.nii.gz -t bcmdata/BCM0021000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0021000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0021003/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0022000/Art.raw.nii.gz -info bcmdata/BCM0022002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0022002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0022002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0022000/fixed.raw.nii.gz -t bcmdata/BCM0022000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0022000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0022002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0024000/Art.raw.nii.gz -info bcmdata/BCM0024003/Segmentations/Segment_Arterial_Registered_Bias.nii.gz  -info -reslice-identity  -o bcmdata/BCM0024003/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0024003/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0024000/fixed.raw.nii.gz -t bcmdata/BCM0024000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0024000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz 
+
+c3d -verbose bcmdata/BCM0025000/Art.raw.nii.gz -info bcmdata/BCM0025002/Segmentations/Segment_Arterial_Registered_Bias.nii.gz -info -reslice-identity -type char -o bcmdata/BCM0025002/Segmentations/Segment_Arterial_reslice.nii.gz 
+/opt/apps/ANTS/dev/install/bin/antsApplyTransforms -v -d 3 -n NearestNeighbor -u char -i bcmdata/BCM0025002/Segmentations/Segment_Arterial_reslice.nii.gz  -r bcmdata/BCM0025000/fixed.raw.nii.gz -t bcmdata/BCM0025000/Art.longregcc1Warp.nii.gz -t bcmdata/BCM0025000/Art.longregcc0GenericAffine.mat -o bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz 
+
+
+     
+ 
+
+
+c3d bcmdata/BCM0025000/Art.raw.nii.gz bcmdata/BCM0025002/Segmentations/Segment_Arterial_reslice.nii.gz  -lstat
+
+c3d bcmdata/BCM0025000/fixed.raw.nii.gz bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz  -lstat
+
+echo vglrun itksnap -g  bcmdata/BCM0025000/fixed.raw.nii.gz -s bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz -o  bcmdata/BCM0025000/Art.longregcc.nii.gz 
+
+
+
+
+c3d bcmdata/BCM0024000/Art.raw.nii.gz bcmdata/BCM0024003/Segmentations/Segment_Arterial_reslice.nii.gz  -lstat
+
+c3d bcmdata/BCM0024000/fixed.raw.nii.gz bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz  -lstat
+
+echo vglrun itksnap -g  bcmdata/BCM0024000/fixed.raw.nii.gz -s bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz -o  bcmdata/BCM0024000/Art.longregcc.nii.gz 
+
+
