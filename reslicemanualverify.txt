@@ -1,0 +1,31 @@
+
+
+c3d bcmdata/BCM0025000/Art.raw.nii.gz bcmdata/BCM0025002/Segmentations/Segment_Arterial_reslice.nii.gz  -lstat
+
+c3d bcmdata/BCM0025000/fixed.raw.nii.gz bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz  -lstat
+
+echo vglrun itksnap -g  bcmdata/BCM0025000/fixed.raw.nii.gz -s bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz -o  bcmdata/BCM0025000/Art.longregcc.nii.gz 
+
+
+
+
+c3d bcmdata/BCM0024000/Art.raw.nii.gz bcmdata/BCM0024003/Segmentations/Segment_Arterial_reslice.nii.gz  -lstat
+
+c3d bcmdata/BCM0024000/fixed.raw.nii.gz bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz  -lstat
+
+echo vglrun itksnap -g  bcmdata/BCM0024000/fixed.raw.nii.gz -s bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz -o  bcmdata/BCM0024000/Art.longregcc.nii.gz 
+
+
+vglrun itksnap -g bcmdata/BCM0001002/fixed.raw.nii.gz -s bcmdata/BCM0001002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0016002/fixed.raw.nii.gz -s bcmdata/BCM0016002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0017002/fixed.raw.nii.gz -s bcmdata/BCM0017002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0018004/fixed.raw.nii.gz -s bcmdata/BCM0018004/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0019002/fixed.raw.nii.gz -s bcmdata/BCM0019002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0020002/fixed.raw.nii.gz -s bcmdata/BCM0020002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0021003/fixed.raw.nii.gz -s bcmdata/BCM0021003/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0022002/fixed.raw.nii.gz -s bcmdata/BCM0022002/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0023000/fixed.raw.nii.gz -s bcmdata/BCM0023000/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0024003/fixed.raw.nii.gz -s bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz
+vglrun itksnap -g bcmdata/BCM0025002/fixed.raw.nii.gz -s bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz
+
+make -i -k bcmdata/BCM0001002/viewbcmlong bcmdata/BCM0016002/viewbcmlong bcmdata/BCM0017002/viewbcmlong bcmdata/BCM0018004/viewbcmlong bcmdata/BCM0019002/viewbcmlong bcmdata/BCM0020002/viewbcmlong bcmdata/BCM0021003/viewbcmlong bcmdata/BCM0022002/viewbcmlong bcmdata/BCM0023000/viewbcmlong bcmdata/BCM0024003/viewbcmlong bcmdata/BCM0025002/viewbcmlong
