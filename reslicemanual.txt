@@ -61,4 +61,4 @@ vglrun itksnap -g bcmdata/BCM0023000/fixed.raw.nii.gz -s bcmdata/BCM0023000/Segm
 vglrun itksnap -g bcmdata/BCM0024003/fixed.raw.nii.gz -s bcmdata/BCM0024003/Segmentations/Segment_Arterial_reg.nii.gz
 vglrun itksnap -g bcmdata/BCM0025002/fixed.raw.nii.gz -s bcmdata/BCM0025002/Segmentations/Segment_Arterial_reg.nii.gz
 
-make bcmdata/BCM0001002/viewbcmlong bcmdata/BCM0016002/viewbcmlong bcmdata/BCM0017002/viewbcmlong bcmdata/BCM0018004/viewbcmlong bcmdata/BCM0019002/viewbcmlong bcmdata/BCM0020002/viewbcmlong bcmdata/BCM0021003/viewbcmlong bcmdata/BCM0022002/viewbcmlong bcmdata/BCM0023000/viewbcmlong bcmdata/BCM0024003/viewbcmlong bcmdata/BCM0025002/viewbcmlong
+make -i -k bcmdata/BCM0001002/viewbcmlong bcmdata/BCM0016002/viewbcmlong bcmdata/BCM0017002/viewbcmlong bcmdata/BCM0018004/viewbcmlong bcmdata/BCM0019002/viewbcmlong bcmdata/BCM0020002/viewbcmlong bcmdata/BCM0021003/viewbcmlong bcmdata/BCM0022002/viewbcmlong bcmdata/BCM0023000/viewbcmlong bcmdata/BCM0024003/viewbcmlong bcmdata/BCM0025002/viewbcmlong
