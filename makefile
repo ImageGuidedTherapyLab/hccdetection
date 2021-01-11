@@ -1,4 +1,8 @@
 SHELL := /bin/bash
+methods:
+	pdflatex methods.tex; bibtex methods; pdflatex methods.tex; pdflatex methods.tex
+doc:
+	latex2rtf -M12 -D 600 -o methods.doc methods.tex
 WORKDIR=anonymize
 #
 # Defaults

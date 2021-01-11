@@ -1,0 +1,194 @@
+%  pdflatex methods.tex; bibtex methods; pdflatex methods.tex; pdflatex methods.tex
+%  This simple example illustrates how documents can be
+%  split into smaller segments, each segment processed
+%  by latex2html separately.  This document can be
+%  processed through latex and latex2html with the
+%  corresponding makefile.
+%
+
+\documentclass{article}         % Must use LaTeX 2e
+\usepackage[plainpages=false, colorlinks=true, citecolor=black, filecolor=black, linkcolor=black, urlcolor=black]{hyperref}		
+\usepackage[left=.75in,right=.75in,top=.75in,bottom=.75in]{geometry}
+\usepackage{makeidx,color,boxedminipage}
+\usepackage{graphicx,float}
+\usepackage{amsmath,amsthm,amsfonts,amscd,amssymb} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Some math support.					     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%	Theorem environments (these need the amsthm package)
+%
+%% \theoremstyle{plain} %% This is the default
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{ax}{Axiom}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+
+\theoremstyle{remark}
+\newtheorem{rem}{Remark}[section]
+\newtheorem*{notation}{Notation}
+\newtheorem*{exrcs}{Exercise}
+\newtheorem*{exmple}{Example}
+
+%\numberwithin{equation}{section}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Macros.							     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%	Here some macros that are needed in this document:
+
+\newcommand{\motion}{\mathbf{\varphi}}
+\newcommand{\hmotion}{\mbox{\boldmath $\hat{\varphi}$}}
+\newcommand{\cauchy}{\mbox{\boldmath $\sigma$}}
+\newcommand{\eqn}[1]{(\ref{#1})}
+\newcommand{\hOmega}{\hat{\Omega}}
+\newcommand{\homega}{\hat{\omega}}
+\newcommand{\nphalf}{n+\frac{1}{2}}
+\newcommand{\nmhalf}{n-\frac{1}{2}}
+\newcommand{\kmhalf}{k-\frac{1}{2}}
+\newcommand{\kphalf}{k+\frac{1}{2}}
+\newcommand{\picdir}{pdffig/}
+
+\include{symbols}
+\title{Methods}
+\author{}
+\begin{document}                % The start of the document
+\maketitle
+
+\textbf{MR imaging data}.  Imaging was performed on 1.5T MR scanners:
+XXX scanner, GE Healthcare, Waukesha, WI, USA , YYY scanner  Siemens, and ZZZ scanner, Philips.
+Preoperative abdominal MR was obtained using a  liver protocol comprised of a
+precontrast phase, a venous phase (60-80 seconds after injection of intravenous contrast
+material), and a delayed phase (15 minutes after contrast injection).
+Each series was obtained in the axial plane with a
+phased‐array multicoil.
+An T1‐weighted spoiled gradient‐echo sequence 
+was performed (TR/TE = 4.6ms/2.3ms, flip angle = 15deg, breath‐hold = 20 sec,
+section thickness = 3 mm, intersection gap = 1.5 mm, field‐of‐view (FOV) = 36x40cm, and
+acquisition matrix, 320x255).
+{\color{red} @newsha - need BCM imaging protocol and scanner hardware/software version details here.}
+
+The multi-phase MR studies (obtained 60-80 seconds after contrast medium
+administration) were exported in DICOM format from the picture archiving and communication
+system to an independent server running Slicer~\cite{kikinis20143d}.
+The slicer scripting interface was use to iteratively anonymize all data and maintain
+orientation and resolution information as a compressed
+NifTI format recommended by the Neuroimaging Informatics Technology Initiative.
+
+
+
+\textbf{Image normalization}.
+Image intensity harmonization was achieved in two steps: bias correction followed by z-score normalization. 
+All protocol phases were considered independently.
+N4 bias correction~\cite{tustison2010n4itk} was applied  with  4 levels and a factor of two decrease in resolution
+at each level. 
+MR images where shifted by 1 to avoid logarithm errors for background pixels with intensity value equal 0.
+Z-score normalization was achieved by subtracting the volume-wise mean of the image and dividing by the 
+standard deviation of the image volume.
+Convert3D image-processing tool~\cite{yushkevich2006user} was used for image normalization.
+
+\textbf{Image registration}.
+All longitudinal data was deformably registered to a common time point for analysis.
+Cases were deformably registered to the diagnostic scan.
+Controls  were deformably registered to the first available scan.
+A symmetric normalization (SyN) approach \cite{fuentes2015morphometry}  is a popular
+variant of diffeomorphic image registration and is used in this study.
+SyN calculates image gradients only at the
+midpoint in time of the full diffeomorphic transformation and provides an explicit
+symmetry of the large deformation diffeomorphic metric mapping formulation~\cite{beg2005computing}.
+The registration consisted of a rigid registration step, an
+affine registration step, a diffeomorphic step. Multi-resolution is applied in all steps.
+The default gradient descent was used in
+the optimization of the affine and diffeomorphic registration. A Gaussian regularization
+kernel with an isotropic width of 3 voxels was used as an estimate of the Green's kernel
+for the deformation operator.
+Liver masks were used at all resolutions for both the fixed and moving image of the deformable image registration.
+
+
+\textbf{Liver mask}.
+A 3D neural network was used to generate liver masks to facilitate efficient deformable image
+registration. Our previous neural network implementations~\cite{Gates2018,Morshid2019} in
+computed tomography were adapted to MR data.  Briefly, network architecture follows a
+hybrid DenseNet and U-Net architecture~\cite{huang2017densely,ronneberger2015u,kamnitsas2016deepmedic}.  The
+architecture is constructed from a composition of convolution and down sampling operations
+that extract features along a contracting path.  Similarly, an expanding path consists of
+convolution and up-sampling operations with 'long skip' connections to integrate features
+from the corresponding down sampling operations. Four resolution levels are used.  At a
+given resolution, the feature-maps of all preceding layers are used as inputs, and its own
+feature-maps are used as inputs into all subsequent layers.  Each convolutional operation
+uses a 3x3 kernel size and is followed by a batch normalization and a ReLU activation function.
+
+An independent training set of N=34 multi-contrast MR image data sets were registered and
+labeled in Velocity.
+Each data set consisted of a pre-contrast, venous phase, and delayed phase image. A manual
+liver mask for each phase was created using semi-automated segmentation tools in velocity.
+{\color{red}(@matt - need a few sentences here - what was your labeling protocol ?)}
+
+
+Training was contrast agnostic \cite{thakur2020brain} and applied to all 102 images in the
+training set. The neural network was trained on 64x64x64 patches with a batch size of
+eight for both training and validation data. Sixteen random patches were selected  per
+image.  The Adam optimizer was used for 50 epochs with an intial learning rate of 5e-4 and
+learning rate drop factor of 0.95 every 5 epochs. Evaluation of the validation set was
+performed with a frequency of 180 iterations.
+
+Notably, although the patch size for training is 64\textsuperscript{3},
+convolution, ReLU, and Normalization layers are agnostic to image size. 
+Test set predictions are applied to the full data resolution.
+Linear resampling to 256x256 pixels in-plane resolution is needed to fit the entire image in the GPU RAM
+and CUDA intmax('int32') overflow restrictions.
+Image data  was resized to 256x256 pixels in-plane resolution prior to patch extraction for
+training as well as prior to the test set predictions.
+Segmentation predictions are resized back the original resolution.
+Liver mask predictions were dilated by 15voxels in all directions and used an a ROI for the deformable image registration
+All training and test set predictions were performed on an Nvidia Quadro RTX 8000 card with 4608 CUDA cores and 48GB RAM.
+
+\textbf{Discussion}.  Tas, what was our wishlist EPM improvements? objective selection of
+liver ROI? can you put this in the discussion please? 
+
+
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\begin{verbatim}
+maeda$ make -n -B bcmdata/BCM0025010/Pst.raw.nii.gz
+mkdir -p bcmdata/BCM0025010; c3d  LiverMRIProjectData/tmpconvert//BCM0025010/c9e93ebe-cc0a-fa36-6ca1-250d842f9c65.nii.gz  -o bcmdata/BCM0025010/Pst.raw.nii.gz
+
+python normalization.py --imagefile=bcmdata/BCM0025011/fixed.raw.nii.gz  --output=bcmdata/BCM0025011/fixed.zscore.nii.gz
+python resize.py --imagefile=bcmdata/BCM0025011/fixed.zscore.nii.gz  --output=bcmdata/BCM0025011/fixed.crop.nii.gz
+
+maeda$ make -n -B  Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/trainedNet.mat
+matlab -nodesktop -softwareopengl -r "livermodel('Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/setup.json');exit"
+maeda$ make -n -B bcmdata/BCM0025010/Pst.label.nii.gz
+echo applymodel\('bcmdata/BCM0025010/Pst.256.nii.gz','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','bcmdata/BCM0025010/Pst','1','gpu'\)
+mkdir -p bcmdata/BCM0025010/Pst;./run_applymodel.sh /opt/apps/matlab/R2020a/ bcmdata/BCM0025010/Pst.256.nii.gz Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat bcmdata/BCM0025010/Pst 1 gpu
+echo vglrun itksnap -g bcmdata/BCM0025010/Pst.256.nii.gz -s bcmdata/BCM0025010/Pst/label.nii.gz -o bcmdata/BCM0025010/Pst/score.nii.gz
+c3d -verbose bcmdata/BCM0025010/Pst.raw.nii.gz bcmdata/BCM0025010/Pst/label.nii.gz -reslice-identity -o bcmdata/BCM0025010/Pst.label.nii.gz
+maeda$ make -n -B bcmdata/BCM0025010/Pst.regcc.nii.gz
+c3d -verbose bcmdata/BCM0025010/Pst.raw.nii.gz  -shift 1  -o  bcmdata/BCM0025010/Pst.bias.nii.gz
+/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  bcmdata/BCM0025010/Pst.bias.nii.gz  -o  bcmdata/BCM0025010/Pst.bias.nii.gz
+python normalization.py --imagefile=bcmdata/BCM0025010/Pst.bias.nii.gz  --output=bcmdata/BCM0025010/Pst.bias.nii.gz
+c3d -verbose bcmdata/BCM0025010/Pst.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/BCM0025010/Pst.liver.nii.gz -dilate 1 15x15x15vox -o bcmdata/BCM0025010/Pst.mask.nii.gz
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=24; /opt/apps/ANTS/dev/install/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [bcmdata/BCM0025010/Pst.regcc,bcmdata/BCM0025010/Pst.regcc.nii.gz] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [bcmdata/BCM0025010/Art.mask.nii.gz,bcmdata/BCM0025010/Pst.mask.nii.gz] --transform Rigid[ 0.1 ] --metric MI[ bcmdata/BCM0025010/Art.bias.nii.gz,bcmdata/BCM0025010/Pst.bias.nii.gz,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ bcmdata/BCM0025010/Art.bias.nii.gz,bcmdata/BCM0025010/Pst.bias.nii.gz,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[ bcmdata/BCM0025010/Art.bias.nii.gz,bcmdata/BCM0025010/Pst.bias.nii.gz,1,4 ] --convergence [
+100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox > bcmdata/BCM0025010/Pst.regcc.log  2>&1
+
+
+
+maeda$ cat Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/setup.json
+{"stoFoldername": "hccmrilog", "testset": null, "nnmodel": "densenet3d", "validationset": ["prehcc0031/scaled", "prehcc0031/bias", "prehcc0031/zscore", "arthcc0031/scaled", "arthcc0031/bias", "arthcc0031/zscore", "venhcc0031/scaled", "venhcc0031/bias", "venhcc0031/zscore", "prehcc0032/scaled", "prehcc0032/bias", "prehcc0032/zscore", "arthcc0032/scaled", "arthcc0032/bias", "arthcc0032/zscore", "venhcc0032/scaled", "venhcc0032/bias", "venhcc0032/zscore", "prehcc0033/scaled", "prehcc0033/bias", "prehcc0033/zscore", "arthcc0033/scaled", "arthcc0033/bias", "arthcc0033/zscore", "venhcc0033/scaled", "venhcc0033/bias", "venhcc0033/zscore", "prehcc0034/scaled", "prehcc0034/bias", "prehcc0034/zscore", "arthcc0034/scaled", "arthcc0034/bias", "arthcc0034/zscore", "venhcc0034/scaled", "venhcc0034/bias", "venhcc0034/zscore"], "kfold": 35, "NumberOfChannels": 1, "uidoutputdir": "Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000", "resolution": 256, "trainset":
+["prehcc0001/scaled", "prehcc0001/bias", "prehcc0001/zscore", "arthcc0001/scaled", "arthcc0001/bias", "arthcc0001/zscore", "venhcc0001/scaled", "venhcc0001/bias", "venhcc0001/zscore", "prehcc0002/scaled", "prehcc0002/bias", "prehcc0002/zscore", "arthcc0002/scaled", "arthcc0002/bias", "arthcc0002/zscore", "venhcc0002/scaled", "venhcc0002/bias", "venhcc0002/zscore", "prehcc0003/scaled", "prehcc0003/bias", "prehcc0003/zscore", "arthcc0003/scaled", "arthcc0003/bias", "arthcc0003/zscore", "venhcc0003/scaled", "venhcc0003/bias", "venhcc0003/zscore", "prehcc0004/scaled", "prehcc0004/bias", "prehcc0004/zscore", "arthcc0004/scaled", "arthcc0004/bias", "arthcc0004/zscore", "venhcc0004/scaled", "venhcc0004/bias", "venhcc0004/zscore", "prehcc0005/scaled", "prehcc0005/bias", "prehcc0005/zscore", "arthcc0005/scaled", "arthcc0005/bias", "arthcc0005/zscore", "venhcc0005/scaled", "venhcc0005/bias", "venhcc0005/zscore", "prehcc0006/scaled", "prehcc0006/bias", "prehcc0006/zscore", "arthcc0006/scaled",
+"arthcc0006/bias", "arthcc0006/zscore", "venhcc0006/scaled", "venhcc0006/bias", "venhcc0006/zscore", "prehcc0007/scaled", "prehcc0007/bias", "prehcc0007/zscore", "arthcc0007/scaled", "arthcc0007/bias", "arthcc0007/zscore", "venhcc0007/scaled", "venhcc0007/bias", "venhcc0007/zscore", "prehcc0008/scaled", "prehcc0008/bias", "prehcc0008/zscore", "arthcc0008/scaled", "arthcc0008/bias", "arthcc0008/zscore", "venhcc0008/scaled", "venhcc0008/bias", "venhcc0008/zscore", "prehcc0009/scaled", "prehcc0009/bias", "prehcc0009/zscore", "arthcc0009/scaled", "arthcc0009/bias", "arthcc0009/zscore", "venhcc0009/scaled", "venhcc0009/bias", "venhcc0009/zscore", "prehcc0010/scaled", "prehcc0010/bias", "prehcc0010/zscore", "arthcc0010/scaled", "arthcc0010/bias", "arthcc0010/zscore", "venhcc0010/scaled", "venhcc0010/bias", "venhcc0010/zscore", "prehcc0011/scaled", "prehcc0011/bias", "prehcc0011/zscore", "arthcc0011/scaled", "arthcc0011/bias", "arthcc0011/zscore", "venhcc0011/scaled", "venhcc0011/bias",
+"venhcc0011/zscore", "prehcc0012/scaled", "prehcc0012/bias", "prehcc0012/zscore", "arthcc0012/scaled", "arthcc0012/bias", "arthcc0012/zscore", "venhcc0012/scaled", "venhcc0012/bias", "venhcc0012/zscore", "prehcc0013/scaled", "prehcc0013/bias", "prehcc0013/zscore", "arthcc0013/scaled", "arthcc0013/bias", "arthcc0013/zscore", "venhcc0013/scaled", "venhcc0013/bias", "venhcc0013/zscore", "prehcc0014/scaled", "prehcc0014/bias", "prehcc0014/zscore", "arthcc0014/scaled", "arthcc0014/bias", "arthcc0014/zscore", "venhcc0014/scaled", "venhcc0014/bias", "venhcc0014/zscore", "prehcc0015/scaled", "prehcc0015/bias", "prehcc0015/zscore", "arthcc0015/scaled", "arthcc0015/bias", "arthcc0015/zscore", "venhcc0015/scaled", "venhcc0015/bias", "venhcc0015/zscore", "prehcc0016/scaled", "prehcc0016/bias", "prehcc0016/zscore", "arthcc0016/scaled", "arthcc0016/bias", "arthcc0016/zscore", "venhcc0016/scaled", "venhcc0016/bias", "venhcc0016/zscore", "prehcc0017/scaled", "prehcc0017/bias", "prehcc0017/zscore",
+"arthcc0017/scaled", "arthcc0017/bias", "arthcc0017/zscore", "venhcc0017/scaled", "venhcc0017/bias", "venhcc0017/zscore", "prehcc0018/scaled", "prehcc0018/bias", "prehcc0018/zscore", "arthcc0018/scaled", "arthcc0018/bias", "arthcc0018/zscore", "venhcc0018/scaled", "venhcc0018/bias", "venhcc0018/zscore", "prehcc0019/scaled", "prehcc0019/bias", "prehcc0019/zscore", "arthcc0019/scaled", "arthcc0019/bias", "arthcc0019/zscore", "venhcc0019/scaled", "venhcc0019/bias", "venhcc0019/zscore", "prehcc0020/scaled", "prehcc0020/bias", "prehcc0020/zscore", "arthcc0020/scaled", "arthcc0020/bias", "arthcc0020/zscore", "venhcc0020/scaled", "venhcc0020/bias", "venhcc0020/zscore", "prehcc0021/scaled", "prehcc0021/bias", "prehcc0021/zscore", "arthcc0021/scaled", "arthcc0021/bias", "arthcc0021/zscore", "venhcc0021/scaled", "venhcc0021/bias", "venhcc0021/zscore", "prehcc0022/scaled", "prehcc0022/bias", "prehcc0022/zscore", "arthcc0022/scaled", "arthcc0022/bias", "arthcc0022/zscore", "venhcc0022/scaled",
+"venhcc0022/bias", "venhcc0022/zscore", "prehcc0023/scaled", "prehcc0023/bias", "prehcc0023/zscore", "arthcc0023/scaled", "arthcc0023/bias", "arthcc0023/zscore", "venhcc0023/scaled", "venhcc0023/bias", "venhcc0023/zscore", "prehcc0024/scaled", "prehcc0024/bias", "prehcc0024/zscore", "arthcc0024/scaled", "arthcc0024/bias", "arthcc0024/zscore", "venhcc0024/scaled", "venhcc0024/bias", "venhcc0024/zscore", "prehcc0025/scaled", "prehcc0025/bias", "prehcc0025/zscore", "arthcc0025/scaled", "arthcc0025/bias", "arthcc0025/zscore", "venhcc0025/scaled", "venhcc0025/bias", "venhcc0025/zscore", "prehcc0026/scaled", "prehcc0026/bias", "prehcc0026/zscore", "arthcc0026/scaled", "arthcc0026/bias", "arthcc0026/zscore", "venhcc0026/scaled", "venhcc0026/bias", "venhcc0026/zscore", "prehcc0027/scaled", "prehcc0027/bias", "prehcc0027/zscore", "arthcc0027/scaled", "arthcc0027/bias", "arthcc0027/zscore", "venhcc0027/scaled", "venhcc0027/bias", "venhcc0027/zscore", "prehcc0028/scaled", "prehcc0028/bias",
+"prehcc0028/zscore", "arthcc0028/scaled", "arthcc0028/bias", "arthcc0028/zscore", "venhcc0028/scaled", "venhcc0028/bias", "venhcc0028/zscore", "prehcc0029/scaled", "prehcc0029/bias", "prehcc0029/zscore", "arthcc0029/scaled", "arthcc0029/bias", "arthcc0029/zscore", "venhcc0029/scaled", "venhcc0029/bias", "venhcc0029/zscore", "prehcc0030/scaled", "prehcc0030/bias", "prehcc0030/zscore", "arthcc0030/scaled", "arthcc0030/bias", "arthcc0030/zscore", "venhcc0030/scaled", "venhcc0030/bias", "venhcc0030/zscore"]}
+\end{verbatim}
+\end{document}               
