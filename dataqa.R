@@ -2,7 +2,7 @@ library(shiny)
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
-  titlePanel("Basic DataTable"),
+  titlePanel("Training Data"),
   # Create a new row for the table.
   DT::dataTableOutput("table")
 )
@@ -12,18 +12,19 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   # @egates1 - best practices for scope ?
-  my.data <- read.csv("LiverMRIProjectData/wideanon.csv", header = TRUE)
+  my.data <- read.csv("./trainingdata.csv", header = TRUE)
 
   # Filter data based on selections
   output$table <- DT::renderDataTable(DT::datatable(
     my.data 
   ))
 
+
   # system call selection for QA
   observeEvent(input$table_rows_selected, 
-      system(paste0('echo amira  ',my.data$UID[input$table_rows_selected],'.nii.gz'),wait = T)
+      #system(shQuote(paste0('echo vglrun /opt/apps/Amira6.4/bin/start -tclcmd " load ',my.data$image[input$table_rows_selected],'; load ', my.data$image[input$table_rows_selected],'create HxCastField ConvertImage; ConvertImage data connect Truth.nii.gz; ConvertImage outputType setIndex 0 6; ConvertImage create result setLabel; Truth.nii.to-labelfield-8_bits ImageData connect Art.raw.nii.gz; "')),wait = T)
+      system(paste0('vglrun itksnap -g ',my.data$image[input$table_rows_selected],' -s ', my.data$label[input$table_rows_selected]),wait = T)
     )
-
 }
 
 # Create Shiny app ----
