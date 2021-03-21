@@ -1,3 +1,4 @@
+#install.packages("shiny",repos='http://cran.us.r-project.org')
 library(shiny)
 
 # Define UI for app that draws a histogram ----
