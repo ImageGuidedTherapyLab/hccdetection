@@ -70,6 +70,8 @@ $(WORKDIR)/hcc%/label.nii:
 %/Truth.raw.nii.gz: %/Art.raw.nii.gz
 	mkdir -p $(@D)
 	plastimatch convert --fixed $(@D)/Art.raw.nii.gz  --output-labelmap $@ --output-ss-img $(@D)/ss.nii.gz --output-ss-list $(@D)/ss.txt --output-dose-img $(@D)/dose.nii.gz --input $(DATADIRMRI)/$(word 2,$(subst /, ,$*))/ART/RTSTRUCT*.dcm 
+%/amiralabel: 
+	vglrun /opt/apps/Amira/2020.2/bin/start -tclcmd "load $(@D)/Pre.raw.nii.gz; load $(@D)/Ven.raw.nii.gz; load $(@D)/Art.raw.nii.gz; load $(@D)/Truth.raw.nii.gz; create HxCastField ConvertImage; ConvertImage data connect Truth.raw.nii.gz; ConvertImage outputType setIndex 0 6; ConvertImage create result setLabel; Truth.raw.nii.to-byte ImageData connect Art.raw.nii.gz; "
 %/viewraw: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Truth.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz

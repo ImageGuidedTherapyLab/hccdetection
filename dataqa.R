@@ -33,8 +33,8 @@ server <- function(input, output) {
 
   # system call selection for QA
   observeEvent(input$table_rows_selected, 
-      #system(shQuote(paste0('echo vglrun /opt/apps/Amira6.4/bin/start -tclcmd " load ',my.data$image[input$table_rows_selected],'; load ', my.data$image[input$table_rows_selected],'create HxCastField ConvertImage; ConvertImage data connect Truth.nii.gz; ConvertImage outputType setIndex 0 6; ConvertImage create result setLabel; Truth.nii.to-labelfield-8_bits ImageData connect Art.raw.nii.gz; "')),wait = T)
-      system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$image[input$table_rows_selected],' -s ', my.data$data$label[input$table_rows_selected],' -o ',  my.data$data$pre[input$table_rows_selected],' ', my.data$data$ven[input$table_rows_selected]),wait = F)
+      system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';make anonymize/',my.data$data$uid[input$table_rows_selected],'/amiralabel'),wait = F)
+      #system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$image[input$table_rows_selected],' -s ', my.data$data$label[input$table_rows_selected],' -o ',  my.data$data$pre[input$table_rows_selected],' ', my.data$data$ven[input$table_rows_selected]),wait = F)
     )
   
   observeEvent(input$savereview, {
