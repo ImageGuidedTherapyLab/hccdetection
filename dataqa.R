@@ -1,3 +1,5 @@
+#install.packages("shiny",repos='http://cran.us.r-project.org')
+#install.packages("DT",repos='http://cran.us.r-project.org')
 library(shiny)
 
 # @egates1 - best practices for scope ?
