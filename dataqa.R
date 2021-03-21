@@ -16,7 +16,7 @@ my.data <- reactiveValues(data=cbind(REVIEWED = F,csv.data))
 ui <- fluidPage(
   titlePanel("Training Data"),
   # Create a save button
-  actionButton("savereview","Save review + next case"),
+  actionButton("savereview","open next case"),
   # Create a new row for the table.
   DT::dataTableOutput("table")
 )
@@ -39,9 +39,9 @@ server <- function(input, output) {
   
   observeEvent(input$savereview, {
     current.row = input$table_rows_selected
-    my.data$data$reviewed[current.row] = TRUE
+    my.data$data$REVIEWED[current.row] = TRUE
     # select the next row in the table to open next case
-    selectRows(dataTableProxy('table'), min(current.row + 1, nrow(my.data$data)))
+    DT::selectRows(dataTableProxy('table'), min(current.row + 1, nrow(my.data$data)))
     # TODO: set displayed page correctly on save reviewd
   })
   
