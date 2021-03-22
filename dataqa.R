@@ -32,10 +32,10 @@ server <- function(input, output) {
   ))
 
   # system call selection for QA
-  observeEvent(input$table_rows_selected, 
+  observeEvent(input$table_rows_selected, {
+      system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$image[input$table_rows_selected],' -s ', my.data$data$label[input$table_rows_selected],' -o ',  my.data$data$pre[input$table_rows_selected],' ', my.data$data$ven[input$table_rows_selected]),wait = F)
       system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';make anonymize/',my.data$data$uid[input$table_rows_selected],'/amiralabel'),wait = F)
-      #system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$image[input$table_rows_selected],' -s ', my.data$data$label[input$table_rows_selected],' -o ',  my.data$data$pre[input$table_rows_selected],' ', my.data$data$ven[input$table_rows_selected]),wait = F)
-    )
+   })
   
   observeEvent(input$savereview, {
     current.row = input$table_rows_selected
