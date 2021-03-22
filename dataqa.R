@@ -38,8 +38,12 @@ server <- function(input, output) {
    })
   
   observeEvent(input$savereview, {
-    current.row = input$table_rows_selected
-    my.data$data$REVIEWED[current.row] = TRUE
+    if( is.null(input$table_rows_selected ) ) {
+        current.row = 0
+      } else {
+        current.row = input$table_rows_selected
+        my.data$data$REVIEWED[current.row] = TRUE
+      }
     # select the next row in the table to open next case
     DT::selectRows(DT::dataTableProxy('table'), min(current.row + 1, nrow(my.data$data)))
     # TODO: set displayed page correctly on save reviewd
@@ -49,6 +53,6 @@ server <- function(input, output) {
 
 # Create Shiny app ----
 app = shinyApp(ui = ui, server = server)
-runApp(app,host="127.0.0.1", port=2021, launch.browser = FALSE)
+runApp(app,host="127.0.0.1", port=2022, launch.browser = FALSE)
 # Rscript dataqa.R
 # source("dataqa.R")
