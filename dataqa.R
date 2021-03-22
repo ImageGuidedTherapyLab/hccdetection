@@ -41,7 +41,7 @@ server <- function(input, output) {
     current.row = input$table_rows_selected
     my.data$data$REVIEWED[current.row] = TRUE
     # select the next row in the table to open next case
-    DT::selectRows(dataTableProxy('table'), min(current.row + 1, nrow(my.data$data)))
+    DT::selectRows(DT::dataTableProxy('table'), min(current.row + 1, nrow(my.data$data)))
     # TODO: set displayed page correctly on save reviewd
   })
   
