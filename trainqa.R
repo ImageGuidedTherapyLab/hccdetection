@@ -34,7 +34,7 @@ server <- function(input, output) {
   # system call selection for QA
   observeEvent(input$table_rows_selected, {
       system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$raw[input$table_rows_selected],' -s ', my.data$data$liver[input$table_rows_selected]),wait = F)
-      if(!is.na(my.data$data$lesion[input$table_rows_selected])) { system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$raw[input$table_rows_selected],' -s ', my.data$data$lesion[input$table_rows_selected]),wait = F)}
+      if(!is.na(my.data$data$lesion[input$table_rows_selected])) { system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$fixed[input$table_rows_selected],' -s ', my.data$data$lesion[input$table_rows_selected]),wait = F)}
       #system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';make anonymize/',my.data$data$uid[input$table_rows_selected],'/amiralabel'),wait = F)
    })
   
