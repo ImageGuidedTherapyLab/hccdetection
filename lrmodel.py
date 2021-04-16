@@ -106,6 +106,7 @@ def GetDataDictionary():
   names = [description[0] for description in cursor.description]
   sqlStudyList = [ dict(zip(names,xtmp)) for xtmp in cursor ]
   for row in sqlStudyList :
+       print(row)
        CSVDictionary[int( row['dataid'])]  =  {'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid']}  
   return CSVDictionary 
 
@@ -955,7 +956,7 @@ if (options.initialize ):
   for sqlcmd in initializedb.split(";"):
      tagsconn.execute(sqlcmd )
   # load csv file
-  df = pandas.read_csv(options.dbfile,delimiter='\t')
+  df = pandas.read_csv(options.dbfile,delimiter=',')
   df.to_sql('trainingdata', tagsconn , if_exists='append', index=False)
 
 ##########################
