@@ -68,6 +68,6 @@ TF Usage
 python lrmodel.py --databaseid=lrbcm --initialize
 python lrmodel.py --databaseid=lrbcm --setuptestset
 python lrmodel.py --databaseid=lrbcm --builddb
-make -f hccstatistics.makefile models
-make -f hccstatistics.makefile labels
+make -f lrbcm256kfold005.makefile models
+make -f lrbcm256kfold005.makefile labels
 

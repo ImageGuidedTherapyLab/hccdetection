@@ -77,7 +77,7 @@ viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))
 trainlirads: $(addprefix bcmlirads/,$(addsuffix lrtrain.nii.gz,$(LIRADSLIST)))  
 multiphaselirads: $(addprefix bcmdata/,$(addsuffix /multiphase.nii.gz,$(LIRADSLIST)))  
 bcmlirads/%lrtrain.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%/fixed.liver.nii.gz
-	c3d $< $(word 2,$^) -add -binarize $< -add -replace 6 5 5 4 4 3 -o $@
+	c3d $< $(word 2,$^) -add -binarize $< -add -replace 6 5 5 4 4 3 3 1 2 1 -o $@
 bcmdata/%/viewlirads: 
 	echo $*
 	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat

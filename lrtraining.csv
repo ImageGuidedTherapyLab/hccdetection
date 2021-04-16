@@ -3,7 +3,6 @@ dataid,uid,label,image
 02,BCM0001002,bcmlirads/BCM0001002lrtrain.nii.gz,bcmdata/BCM0001002/EPM_3.nii
 03,BCM0002001,bcmlirads/BCM0002001lrtrain.nii.gz,bcmdata/BCM0002001/EPM_3.nii
 04,BCM0002002,bcmlirads/BCM0002002lrtrain.nii.gz,bcmdata/BCM0002002/EPM_3.nii
-05,BCM0015002,bcmlirads/BCM0015002lrtrain.nii.gz,bcmdata/BCM0015002/EPM_3.nii
 06,BCM0016002,bcmlirads/BCM0016002lrtrain.nii.gz,bcmdata/BCM0016002/EPM_3.nii
 07,BCM0017001,bcmlirads/BCM0017001lrtrain.nii.gz,bcmdata/BCM0017001/EPM_3.nii
 08,BCM0017002,bcmlirads/BCM0017002lrtrain.nii.gz,bcmdata/BCM0017002/EPM_3.nii

@@ -106,7 +106,6 @@ def GetDataDictionary():
   names = [description[0] for description in cursor.description]
   sqlStudyList = [ dict(zip(names,xtmp)) for xtmp in cursor ]
   for row in sqlStudyList :
-       print(row)
        CSVDictionary[int( row['dataid'])]  =  {'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid']}  
   return CSVDictionary 
 
@@ -275,25 +274,20 @@ class DataGenerator(keras.utils.Sequence):
         bx_train = self.images[indexes,:,:,np.newaxis]
         by_train = self.labels[indexes]
         y_train_one_hot = to_categorical(by_train , num_classes=self.n_classes).reshape((by_train.shape)+(self.n_classes,))
-        # The liver neuron should also be active for lesions within the liver
-        # FIXME - HACK - data nuances
-        if( options.databaseid == 'hcc'):
-          liver = np.max(y_train_one_hot[:,:,:,1:-1], axis=3)
-        elif( options.databaseid == 'hccnorm'):
-          liver = np.max(y_train_one_hot[:,:,:,1:-1], axis=3)
-        elif( options.databaseid == 'hccvol'):
-          liver = np.max(y_train_one_hot[:,:,:,1:-1], axis=3)
-        elif( options.databaseid == 'hccvolnorm'):
-          liver = np.max(y_train_one_hot[:,:,:,1:-1], axis=3)
-        elif( options.databaseid == 'crc' or options.databaseid == 'dbg'):
-          liver = np.max(y_train_one_hot[:,:,:,1:], axis=3)
-        else:
-          raise("unknown  dataset")
+
+        # Input both liver and lesions mask
+        liver  = np.max(y_train_one_hot[:,:,:,1:], axis=3)
+        lesion = np.max(y_train_one_hot[:,:,:,3:], axis=3)
+
         y_train_one_hot[:,:,:,1]=liver
+        y_train_one_hot[:,:,:,3]=lesion
+        y_train_one_hot[:,:,:,4]=lesion
+        y_train_one_hot[:,:,:,5]=lesion
         
         # vectorize input assume that liver mask is given
-        x_train_vector = np.repeat(bx_train,2,axis=3)
+        x_train_vector = np.repeat(bx_train,3,axis=3)
         x_train_vector[:,:,:,1]=liver
+        x_train_vector[:,:,:,2]=lesion
 
         ##print("X - Shape before: {}; Shape after: {}".format(bx_train.shape, x_train_vector.shape))
         ##print("Y - Shape before: {}; Shape after: {}".format(by_train.shape, y_train_one_hot.shape))
@@ -401,8 +395,8 @@ def  TrainMyUnet():
 
   t_max=np.max(y_train)
   print("Range of values: [0, {}]".format(t_max))
-  train_iter = DataGenerator(x_train[TRAINING_SLICES]  ,y_train[TRAINING_SLICES]   , batch_size=options.trainingbatch, dim=(512,512), n_classes=t_max+1)
-  valid_iter = DataGenerator(x_train[VALIDATION_SLICES],y_train[VALIDATION_SLICES ], batch_size=options.trainingbatch, dim=(512,512), n_classes=t_max+1)
+  train_iter = DataGenerator(x_train[TRAINING_SLICES]  ,y_train[TRAINING_SLICES]   , batch_size=options.trainingbatch, dim=(options.trainingresample,options.trainingresample), n_classes=t_max+1)
+  valid_iter = DataGenerator(x_train[VALIDATION_SLICES],y_train[VALIDATION_SLICES ], batch_size=options.trainingbatch, dim=(options.trainingresample,options.trainingresample), n_classes=t_max+1)
 
   from keras.layers import InputLayer, Conv2D, MaxPool2D, Flatten, Dense, UpSampling2D, LocallyConnected2D
   from keras.models import Model, Sequential
@@ -968,7 +962,7 @@ elif (options.builddb):
   import skimage.transform
 
   # create  custom data frame database type
-  mydatabasetype = [('dataid', int), ('axialliverbounds',bool), ('axialtumorbounds',bool), ('imagedata','(%d,%d)int16' %(options.trainingresample,options.trainingresample)),('truthdata','(%d,%d)uint8' % (options.trainingresample,options.trainingresample))]
+  mydatabasetype = [('dataid', int), ('axialliverbounds',bool),  ('imagedata','(%d,%d)int16' %(options.trainingresample,options.trainingresample)),('truthdata','(%d,%d)uint8' % (options.trainingresample,options.trainingresample))]
 
   # initialize empty dataframe
   numpydatabase = np.empty(0, dtype=mydatabasetype  )
@@ -1002,15 +996,11 @@ elif (options.builddb):
     # bounding box for each label
     if( np.max(restruth) ==1 ) :
       (liverboundingbox,)  = ndimage.find_objects(restruth)
-      tumorboundingbox  = None
     else:
       boundingboxes = ndimage.find_objects(restruth)
       liverboundingbox = boundingboxes[0]
 
-    # FIXME do we need this ?
-    tumorboundingbox  = None
-
-    print(idrow, imagelocation,truthlocation, nslice )
+    print(idrow, imagelocation,truthlocation, nslice, liverboundingbox[2].stop - liverboundingbox[2].start )
 
     # error check
     if( nslice  == restruth.shape[2]):
@@ -1025,12 +1015,8 @@ elif (options.builddb):
       #datamatrix ['nslice' ]      = np.repeat(nslice,nslice  ) 
       # id the slices within the bounding box
       axialliverbounds                              = np.repeat(False,nslice  ) 
-      axialtumorbounds                              = np.repeat(False,nslice  ) 
       axialliverbounds[liverboundingbox[2]]         = True
-      if (tumorboundingbox != None):
-        axialtumorbounds[tumorboundingbox[2]]       = True
       datamatrix ['axialliverbounds'   ]            = axialliverbounds
-      datamatrix ['axialtumorbounds'  ]             = axialtumorbounds
       datamatrix ['imagedata']                      = resimage.transpose(2,1,0) 
       datamatrix ['truthdata']                      = restruth.transpose(2,1,0)  
       numpydatabase = np.hstack((numpydatabase,datamatrix))
@@ -1066,13 +1052,13 @@ elif (options.setuptestset):
       uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),options.trainingmodel,options.trainingsolver,options.trainingresample,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
       modelprereq    = '%s/tumormodelunet.json' % uidoutputdir
       fileHandle.write('%s: \n' % modelprereq  )
-      fileHandle.write('\tpython hccmodel.py --databaseid=%s --traintumor --idfold=%d --kfolds=%d --trainingresample=%d --numepochs=50\n' % (options.databaseid,iii,options.kfolds,options.trainingresample))
+      fileHandle.write('\tpython lrmodel.py --databaseid=%s --traintumor --idfold=%d --kfolds=%d --trainingresample=%d --numepochs=50\n' % (options.databaseid,iii,options.kfolds,options.trainingresample))
       modeltargetlist.append(modelprereq    )
       uiddictionary[iii]=[]
       for idtest in test_set:
          # write target
-         imageprereq    = '$(TRAININGROOT)/%s' % databaseinfo[idtest]['image']
-         maskprereq     = '$(TRAININGROOT)/ImageDatabase/%s/unet/mask.nii.gz' % databaseinfo[idtest]['uid']
+         imageprereq   = '$(TRAININGROOT)/%s' % databaseinfo[idtest]['image']
+         maskprereq    = '$(TRAININGROOT)/ImageDatabase/%s/unet/mask.nii.gz' % databaseinfo[idtest]['uid']
          segmaketarget = '$(TRAININGROOT)/ImageDatabase/%s/unet%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], options.databaseid )
          uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
          cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
