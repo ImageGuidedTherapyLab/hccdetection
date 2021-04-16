@@ -76,8 +76,7 @@ LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0015002 BCM0016002 B
 viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))  
 bcmdata/%/viewlirads: 
 	echo $*
-	c3d bcmlirads/$*fixed.train.nii.gz -dup -lstat  -thresh 3 inf  1 0 -comp -lstat
-	vglrun itksnap -l labelkey.txt  -g  $(@D)/fixed.raw.nii.gz -s  bcmlirads/$*fixed.train.nii.gz  -o bcmdata/$*/fixed.liver.nii.gz bcmdata/$*/Art.longregcc.nii.gz  bcmdata/$*/Pre.longregcc.nii.gz  bcmdata/$*/Ven.longregcc.nii.gz bcmdata/$*/Del.longregcc.nii.gz  bcmdata/$*/Pst.longregcc.nii.gz
+	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat
 %/viewraw: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Truth.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz

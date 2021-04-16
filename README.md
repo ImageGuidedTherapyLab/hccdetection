@@ -61,3 +61,13 @@ ImageSegmentationUnet3D.m     - derived class for Unet3D     architecture
 
 hccmriunet3d.m - derived class using the 3d unet to segment hcc on mri
 hccmriunet2d.m - derived class using the 2d unet to segment hcc on mri
+
+
+TF Usage
+=====
+python lrmodel.py --databaseid=lrbcm --initialize
+python lrmodel.py --databaseid=lrbcm --setuptestset
+python lrmodel.py --databaseid=lrbcm --builddb
+make -f hccstatistics.makefile models
+make -f hccstatistics.makefile labels
+
