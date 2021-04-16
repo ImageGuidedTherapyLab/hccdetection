@@ -77,7 +77,7 @@ viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))
 bcmdata/%/viewlirads: 
 	echo $*
 	c3d bcmlirads/$*fixed.train.nii.gz -dup -lstat  -thresh 3 inf  1 0 -comp -lstat
-	vglrun itksnap -l labelkey.txt  -g  $(@D)/fixed.raw.nii.gz -s  bcmlirads/$*fixed.train.nii.gz  -o bcmdata/$*/fixed.liver.nii.gz
+	vglrun itksnap -l labelkey.txt  -g  $(@D)/fixed.raw.nii.gz -s  bcmlirads/$*fixed.train.nii.gz  -o bcmdata/$*/fixed.liver.nii.gz bcmdata/$*/Art.longregcc.nii.gz  bcmdata/$*/Pre.longregcc.nii.gz  bcmdata/$*/Ven.longregcc.nii.gz bcmdata/$*/Del.longregcc.nii.gz  bcmdata/$*/Pst.longregcc.nii.gz
 %/viewraw: 
 	c3d $(@D)/Pre.raw.nii.gz -info  $(@D)/Ven.raw.nii.gz -info $(@D)/Art.raw.nii.gz -info   $(@D)/Truth.raw.nii.gz  -info
 	vglrun itksnap -g  $(@D)/Art.raw.nii.gz -s  $(@D)/Truth.raw.nii.gz  -o $(@D)/Ven.raw.nii.gz $(@D)/Pre.raw.nii.gz
@@ -109,6 +109,12 @@ BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
 rawbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.raw.nii.gz,$(BCMLISTUID)))
+epmbcm:  $(addprefix $(BCMWORKDIR)/,$(addsuffix /EPM_3.nii,$(BCMLISTUID)))
+
+
+$(BCMWORKDIR)/%/EPM_3.nii:
+	cp /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/$@ $@
+
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
 	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:

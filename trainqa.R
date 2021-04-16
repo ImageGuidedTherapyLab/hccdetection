@@ -54,6 +54,6 @@ server <- function(input, output) {
 
 # Create Shiny app ----
 app = shinyApp(ui = ui, server = server)
-runApp(app,host="127.0.0.1", port=2031, launch.browser = FALSE)
+runApp(app,host="127.0.0.1", port=2021, launch.browser = FALSE)
 # Rscript dataqa.R
 # source("dataqa.R")
