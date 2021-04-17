@@ -86,6 +86,7 @@ parser.add_option("--numepochs",
 
 # current datasets
 trainingdictionary = {'lrbcm':{'dbfile':'./lrtraining.csv','rootlocation':'./'},
+                      'lrbcmagnostic':{'dbfile':'./lrtraininggnostic.csv','rootlocation':'./'} ,
                       'lrbcmphase':{'dbfile':'./lrtrainingphase.csv','rootlocation':'./'} }
 
 # options dependency 
