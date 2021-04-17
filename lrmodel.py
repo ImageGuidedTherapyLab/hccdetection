@@ -228,6 +228,20 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import keras
 import tensorflow as tf
 print("keras version: ",keras.__version__, 'TF version:',tf.__version__)
+
+###################################
+config = tf.ConfigProto()
+ 
+# Don't pre-allocate memory; allocate as-needed
+config.gpu_options.allow_growth = True
+ 
+# Only allow a specified percent of the GPU memory to be allocated
+config.gpu_options.per_process_gpu_memory_fraction = 0.75
+ 
+# Create a session with the above options specified.
+keras.backend.tensorflow_backend.set_session(tf.Session(config = config))
+###################################
+
 # https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
@@ -455,9 +469,9 @@ def  TrainMyUnet():
       # FIXME - HACK image size
       crop_size = options.trainingresample
       if _padding == 'valid':
-          input_layer = Input(shape=(crop_size+40,crop_size+40,2))
+          input_layer = Input(shape=(crop_size+40,crop_size+40,3))
       elif _padding == 'same':
-          input_layer = Input(shape=(crop_size,crop_size,2))
+          input_layer = Input(shape=(crop_size,crop_size,3))
   
       x0 = addConvBNSequential(input_layer, filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
       x0 = addConvBNSequential(x0,          filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
@@ -490,9 +504,9 @@ def  TrainMyUnet():
       # FIXME - HACK image size
       crop_size = options.trainingresample
       if _padding == 'valid':
-          input_layer = Input(shape=(crop_size+40,crop_size+40,2))
+          input_layer = Input(shape=(crop_size+40,crop_size+40,3))
       elif _padding == 'same':
-          input_layer = Input(shape=(crop_size,crop_size,2))
+          input_layer = Input(shape=(crop_size,crop_size,3))
   
       x0 = addConvBNSequential(input_layer, filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
       x0 = addConvBNSequential(x0,          filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
@@ -543,9 +557,9 @@ def  TrainMyUnet():
       # FIXME - HACK image size
       crop_size = options.trainingresample
       if _padding == 'valid':
-          input_layer = Input(shape=(crop_size+40,crop_size+40,2))
+          input_layer = Input(shape=(crop_size+40,crop_size+40,3))
       elif _padding == 'same':
-          input_layer = Input(shape=(crop_size,crop_size,2))
+          input_layer = Input(shape=(crop_size,crop_size,3))
   
       x0 = addConvBNSequential(input_layer, filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
       x0 = addConvBNSequential(x0,          filters=_filters, kernel_size=_kernel_size, padding=_padding, activation=_activation, kernel_regularizer=_kernel_regularizer, batch_norm=_batch_norm)
