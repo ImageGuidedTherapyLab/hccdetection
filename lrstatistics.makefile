@@ -42,6 +42,7 @@ $(TRAININGROOT)/bcmlirads/%-lesionmask.nii.gz: bcmlirads/%fixed.train.nii.gz
 ## intensity statistics
 qastats/%/lstat.csv: 
 	mkdir -p $(@D)
+	#c3d bcmlirads/label.nii.gz  -dup -popas A -split -foreach  -comp -insert A 1 -lstat -pop -endfor -merge
 	$(C3DEXE) $(WORKDIR)/$*/Ven.raw.nii.gz  $(DATADIR)/$*/TruthVen1.nii.gz -replace 2 1 3 1 4 1 5 0  -lstat > $(@D)/lstat.txt &&  sed "s/^\s\+/$(subst /,\/,$*),TruthVen1.nii.gz,Ven.raw.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/lstat.txt > $@
 
 qastats/%/lstat.sql: qastats/%/lstat.csv
