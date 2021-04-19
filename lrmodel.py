@@ -480,7 +480,7 @@ def  TrainMyUnet():
   
   from keras.layers import Input, concatenate
   # @aecelaya
-  def get_batchnorm_pocketunet(_filters=32, _filters_add=0, _kernel_size=(3,3), _padding='same', _activation='prelu', _kernel_regularizer=None, _final_layer_nonlinearity='sigmoid', _batch_norm=True, _num_classes=1):
+  def get_batchnorm_pocketunet(_filters=32, _filters_add=0, _kernel_size=(3,3), _padding='same', _activation='prelu', _kernel_regularizer=None, _final_layer_nonlinearity='softmax', _batch_norm=True, _num_classes=1):
       # FIXME - HACK image size
       crop_size = options.trainingresample
       if _padding == 'valid':
@@ -533,7 +533,7 @@ def  TrainMyUnet():
       model = Model(inputs=input_layer, outputs=output_layer)
       return model
   
-  def get_bnormfull_unet_vector(_filters=32, _filters_add=0, _kernel_size=(3,3), _padding='same', _activation='prelu', _kernel_regularizer=None, _final_layer_nonlinearity='sigmoid', _batch_norm=True, _num_classes=1):
+  def get_bnormfull_unet_vector(_filters=32, _filters_add=0, _kernel_size=(3,3), _padding='same', _activation='prelu', _kernel_regularizer=None, _final_layer_nonlinearity='softmax', _batch_norm=True, _num_classes=1):
       # FIXME - HACK image size
       crop_size = options.trainingresample
       if _padding == 'valid':
@@ -838,7 +838,7 @@ def  TrainMyUnet():
   callbacksave = MyHistories()
 
   # dictionary of models to evaluate
-  modeldict = {'pocket': get_batchnorm_pocketunet(_activation='relu', _batch_norm=True,_filters=64, _filters_add=0,_num_classes=t_max+1),
+  modeldict = {'pocket': get_batchnorm_pocketunet(_activation='relu', _batch_norm=True,_filters=32, _filters_add=0,_num_classes=t_max+1),
                'full': get_bnormfull_unet_vector(_activation='relu', _batch_norm=True,_filters=64, _filters_add=64,_num_classes=t_max+1)}
 
   # restart if previous model available
