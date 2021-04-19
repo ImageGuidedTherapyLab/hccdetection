@@ -107,9 +107,15 @@ def GetDataDictionary():
   names = [description[0] for description in cursor.description]
   sqlStudyList = [ dict(zip(names,xtmp)) for xtmp in cursor ]
   for row in sqlStudyList :
-       CSVDictionary[int( row['dataid'])]  =  {'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid']}  
+       CSVDictionary[int( row['dataid'])]  =  {'image':row['image'], 'label':row['label'], 'uid':"%s" %row['uid'], 'loocv':int(row['loocv'])}  
   return CSVDictionary 
 
+# setup loocv
+def GetSetupLOOCV(loocvidfull ,idfold,dataidsfull ):
+  uniqueloocv = list(set(loocvidfull))
+  testsetid  = [ dataid for lvid,dataid in zip(loocvidfull,dataidsfull)  if uniqueloocv.index(lvid) == idfold ]
+  trainsetid = [ dataid for lvid,dataid in zip(loocvidfull,dataidsfull)  if uniqueloocv.index(lvid) != idfold ]
+  return (trainsetid,testsetid )
 # setup kfolds
 def GetSetupKfolds(numfolds,idfold,dataidsfull ):
   from sklearn.model_selection import KFold
@@ -1055,6 +1061,9 @@ elif (options.setuptestset):
   # get id from setupfiles
   databaseinfo = GetDataDictionary()
   dataidsfull = list(databaseinfo.keys()) 
+  loocvidfull = [databaseinfo [mykey]['loocv'] for mykey in databaseinfo.keys()]
+  uniqueloocv = list(set(loocvidfull))
+  options.kfolds = len(uniqueloocv )
 
   uiddictionary = {}
   modeltargetlist = []
@@ -1063,7 +1072,8 @@ elif (options.setuptestset):
   # open makefile
   with open(makefilename ,'w') as fileHandle:
     for iii in range(options.kfolds):
-      (train_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
+      (train_set,test_set) = GetSetupLOOCV(loocvidfull,iii,dataidsfull)
+      #(train_set,test_set) = GetSetupKfolds(options.kfolds,iii,dataidsfull)
       uidoutputdir= _globaldirectorytemplate % (options.databaseid,options.trainingloss+ _xstr(options.sampleweight),options.trainingmodel,options.trainingsolver,options.trainingresample,options.trainingid,options.trainingbatch,options.validationbatch,options.kfolds,iii)
       modelprereq    = '%s/tumormodelunet.json' % uidoutputdir
       fileHandle.write('%s: \n' % modelprereq  )
