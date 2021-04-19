@@ -50,7 +50,7 @@ parser.add_option( "--trainingid",
                   action="store", dest="trainingid", default='run_a',
                   help="setup info", metavar="Path")
 parser.add_option( "--trainingmodel",
-                  action="store", dest="trainingmodel", default='full',
+                  action="store", dest="trainingmodel", default='pocket',
                   help="setup info", metavar="string")
 parser.add_option( "--trainingloss",
                   action="store", dest="trainingloss", default='dscimg',
@@ -1037,17 +1037,18 @@ elif (options.setuptestset):
       for idtest in test_set:
          # write target
          imageprereq   = '$(TRAININGROOT)/%s' % databaseinfo[idtest]['image']
-         maskprereq    = '$(TRAININGROOT)/ImageDatabase/%s/unet/mask.nii.gz' % databaseinfo[idtest]['uid']
-         segmaketarget = '$(TRAININGROOT)/ImageDatabase/%s/unet%s/tumor.nii.gz' % (databaseinfo[idtest]['uid'], options.databaseid )
+         maskprereq    = '$(TRAININGROOT)/bcmlirads/%s-mask.nii.gz' % databaseinfo[idtest]['uid']
+         lesionprereq  = '$(TRAININGROOT)/bcmlirads/%s-lesionmask.nii.gz' % databaseinfo[idtest]['uid']
+         segmaketarget = '$(TRAININGROOT)/bcmdata/%s/$(DATABASEID)/lirads.nii.gz' % databaseinfo[idtest]['uid']
          uiddictionary[iii].append(databaseinfo[idtest]['uid'] )
-         cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --segmentation=$@"  
-         fileHandle.write('%s: %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq  ) )
+         cvtestcmd = "python ./applymodel.py --predictimage=$< --modelpath=$(word 3, $^) --maskimage=$(word 2, $^) --lesionimage=$(word 4, $^) --segmentation=$@"  
+         fileHandle.write('%s: %s %s %s %s\n' % (segmaketarget ,imageprereq,maskprereq,    modelprereq,lesionprereq    ) )
          fileHandle.write('\t%s\n' % cvtestcmd)
 
   # build job list
   with open(makefilename , 'r') as original: datastream = original.read()
   with open(makefilename , 'w') as modified:
-     modified.write( 'TRAININGROOT=%s\n' % options.rootlocation +'DATABASEID=unet%s\n' % options.databaseid + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
+     modified.write( 'TRAININGROOT=%s\n' % options.rootlocation +'DATABASEID=%s%s\n' % (options.databaseid,options.trainingmodel) + 'SQLITEDB=%s\n' % options.sqlitefile + "models: %s \n" % ' '.join(modeltargetlist))
      for idkey in uiddictionary.keys():
         modified.write("UIDLIST%d=%s \n" % (idkey,' '.join(uiddictionary[idkey])))
      modified.write("UIDLIST=%s \n" % " ".join(map(lambda x : "$(UIDLIST%d)" % x, uiddictionary.keys()))    +datastream)
