@@ -300,10 +300,11 @@ class DataGenerator(keras.utils.Sequence):
         liver  = np.max(y_train_one_hot[:,:,:,1:], axis=3)
         lesion = np.max(y_train_one_hot[:,:,:,3:], axis=3)
 
-        y_train_one_hot[:,:,:,1]=liver
-        y_train_one_hot[:,:,:,3]=lesion
-        y_train_one_hot[:,:,:,4]=lesion
-        y_train_one_hot[:,:,:,5]=lesion
+        #FIXME - is this needed ? 
+        #y_train_one_hot[:,:,:,1]=liver
+        #y_train_one_hot[:,:,:,3]=lesion
+        #y_train_one_hot[:,:,:,4]=lesion
+        #y_train_one_hot[:,:,:,5]=lesion
         
         # vectorize input assume that liver mask is given
         x_train_vector = np.repeat(bx_train,3,axis=3)
@@ -844,7 +845,7 @@ def  TrainMyUnet():
   modelpath  = "%s/tumormodelunet.json" % logfileoutputdir 
   weightsfile= "%s/tumormodelunet.h5"   % logfileoutputdir 
   statefile  = "%s/state.json"          % logfileoutputdir 
-  if (os.path.isfile(modelpath) and os.path.isfile(weightsfile) and os.path.isfile(statefile)):
+  if (False and os.path.isfile(modelpath) and os.path.isfile(weightsfile) and os.path.isfile(statefile)):
     from keras.models import model_from_json
     with open(modelpath, 'r') as json_file:  
       loaded_model_json = json_file.read()

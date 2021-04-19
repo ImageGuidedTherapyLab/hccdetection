@@ -31,14 +31,14 @@ bcmdata/%/viewlirads:
 bcmdata/%/multiphase.nii.gz: bcmdata/%/Pre.longregcc.nii.gz  bcmdata/%/Art.longregcc.nii.gz  bcmdata/%/Ven.longregcc.nii.gz bcmdata/%/Del.longregcc.nii.gz  bcmdata/%/Pst.longregcc.nii.gz
 	c3d $^ -omc $@
 
+bcmdata/%/viewnnlirads: 
+	vglrun itksnap -g bcmdata/$*/EPM_3.nii -s bcmdata/$*/lrbcmpocket/lirads.nii.gz -o bcmdata/$*/lrbcmpocket/lirads-?.nii.gz bcmlirads/$*lrtrain.nii.gz
+
+
 $(TRAININGROOT)/bcmlirads/%-mask.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%/fixed.liver.nii.gz
 	c3d $< $(word 2,$^) -add -binarize -o $@
 $(TRAININGROOT)/bcmlirads/%-lesionmask.nii.gz: bcmlirads/%fixed.train.nii.gz 
-	c3d $< -thres 3 inf 1 0  -o $@
-$(WORKDIR)/%/unet/mask.nii.gz: 
-	mkdir -p $(@D)
-	python ./applymodel.py --predictimage=$(WORKDIR)/$*/Ven.raw.nii.gz --segmentation=$@
-
+	c3d $< -thresh 3 inf 1 0  -o $@
 ## intensity statistics
 qastats/%/lstat.csv: 
 	mkdir -p $(@D)
