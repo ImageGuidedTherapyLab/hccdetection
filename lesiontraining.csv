@@ -179,9 +179,9 @@ BCM0014002,bcmdata/BCM0014002/fixed.raw.nii.gz,bcmdata/BCM0014002/fixed.train.ni
 BCM0014002,bcmdata/BCM0014002/Pre.raw.nii.gz,bcmdata/BCM0014002/Pre.train.nii.gz,bcmdata/BCM0014002/Pre.liver.nii.gz,
 BCM0014002,bcmdata/BCM0014002/Pst.raw.nii.gz,bcmdata/BCM0014002/Pst.train.nii.gz,bcmdata/BCM0014002/Pst.liver.nii.gz,
 BCM0014002,bcmdata/BCM0014002/Ven.raw.nii.gz,bcmdata/BCM0014002/Ven.train.nii.gz,bcmdata/BCM0014002/Ven.liver.nii.gz,
-BCM0015000,bcmdata/BCM0015000/Art.raw.nii.gz,bcmdata/BCM0015000/Art.train.nii.gz,bcmdata/BCM0015000/Art.liver.nii.gz,
+BCM0015000,bcmdata/BCM0015000/Art.raw.nii.gz,bcmdata/BCM0015000/Art.train.nii.gz,bcmdata/BCM0015000/Art.liver.nii.gz,bcmdata/BCM0015000/Segmentations/Segment_Arterial_New.nii.gz
 BCM0015000,bcmdata/BCM0015000/Del.raw.nii.gz,bcmdata/BCM0015000/Del.train.nii.gz,bcmdata/BCM0015000/Del.liver.nii.gz,
-BCM0015000,bcmdata/BCM0015000/fixed.raw.nii.gz,bcmdata/BCM0015000/fixed.train.nii.gz,bcmdata/BCM0015000/fixed.liver.nii.gz,bcmdata/BCM0015000/Segmentations/Segment_Arterial_New.nii.gz
+BCM0015000,bcmdata/BCM0015000/fixed.raw.nii.gz,bcmdata/BCM0015000/fixed.train.nii.gz,bcmdata/BCM0015000/fixed.liver.nii.gz,
 BCM0015000,bcmdata/BCM0015000/Pre.raw.nii.gz,bcmdata/BCM0015000/Pre.train.nii.gz,bcmdata/BCM0015000/Pre.liver.nii.gz,
 BCM0015000,bcmdata/BCM0015000/Pst.raw.nii.gz,bcmdata/BCM0015000/Pst.train.nii.gz,bcmdata/BCM0015000/Pst.liver.nii.gz,
 BCM0015000,bcmdata/BCM0015000/Ven.raw.nii.gz,bcmdata/BCM0015000/Ven.train.nii.gz,bcmdata/BCM0015000/Ven.liver.nii.gz,
