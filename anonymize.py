@@ -64,7 +64,7 @@ with open('datakey.csv', 'w') as csvfile:
         patientDict[patientnumber] = {'mrn':patientID }
         studyDict [study]  = studyDate
         niftifile = 'BCM%04d%02d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
-        fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription,'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid, 'niftifile':niftifile   }
+        fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription.encode('utf-8'),'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid, 'niftifile':niftifile   }
         print  fileDict[seriesanonuid]
         csvwrite.writerow( [ fileDict[seriesanonuid][headerID] for headerID in fileHeader] )
       studyList.append((study,studyDate,idstudy )) 
@@ -74,9 +74,12 @@ with open('datakey.csv', 'w') as csvfile:
 for key,value in fileDict.items():
   if ( value['SeriesModality'] == 'MR'):
     node=slicer.util.loadVolume(value['dcmfile'],returnNode=True);
+    print(node)
     # TODO - note full path output directory
-    outputdir = '/rsrch2/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+    outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
     print( outputdir )
     os.system('mkdir -p %s ' % outputdir  )
-    slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,value['seriesanonuid'] )  )
+    if(node != None):
+      slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,value['seriesanonuid'] )  )
+      slicer.mrmlScene.RemoveNode(node[1])
 exit()
