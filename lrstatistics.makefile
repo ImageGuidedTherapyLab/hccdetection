@@ -20,9 +20,12 @@ C3DEXE=/rsrch2/ip/dtfuentes/bin/c3d
 #LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0015002 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002
 LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002
 lstat:       $(addprefix    qastats/,$(addsuffix /lstat.csv,$(LIRADSLIST)))
+qalirads: $(addprefix bcmdata/,$(addsuffix /qalirads,$(LIRADSLIST)))  
 viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))  
 trainlirads: $(addprefix bcmlirads/,$(addsuffix lrtrain.nii.gz,$(LIRADSLIST)))  
 multiphaselirads: $(addprefix bcmdata/,$(addsuffix /multiphase.nii.gz,$(LIRADSLIST)))  
+bcmdata/%/qalirads: 
+	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  
 bcmlirads/%lrtrain.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%/fixed.liver.nii.gz
 	c3d $< $(word 2,$^) -add -binarize $< -add -replace 6 5 5 4 4 3 3 1 2 1 -o $@
 bcmdata/%/viewlirads: 

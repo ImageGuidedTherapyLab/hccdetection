@@ -7,7 +7,7 @@ WORKDIR=anonymize
 #
 # Defaults
 #
-MATLABROOT      := /opt/apps/matlab/R2020a/
+MATLABROOT      := /data/apps/MATLAB/R2020a/
 MEX=$(MATLABROOT)/bin/mex
 MCC=$(MATLABROOT)/bin/mcc
 applymodel: applymodel.m
@@ -161,7 +161,7 @@ labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffi
 labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 	c3d -verbose bcmdata/$*.raw.nii.gz $< -reslice-identity -o $@
