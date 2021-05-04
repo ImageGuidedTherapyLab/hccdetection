@@ -1,8 +1,8 @@
 loocv,dataid,uid,label,image
-01,01,BCM0001001,bcmlirads/BCM0001001lrtrain.nii.gz,bcmdata/BCM0001001/EPM_3.nii
-01,02,BCM0001002,bcmlirads/BCM0001002lrtrain.nii.gz,bcmdata/BCM0001002/EPM_3.nii
-02,03,BCM0002001,bcmlirads/BCM0002001lrtrain.nii.gz,bcmdata/BCM0002001/EPM_3.nii
-02,04,BCM0002002,bcmlirads/BCM0002002lrtrain.nii.gz,bcmdata/BCM0002002/EPM_3.nii
+01,01,BCM0001002,bcmlirads/BCM0001002lrtrain.nii.gz,bcmdata/BCM0001002/EPM_3.nii
+02,02,BCM0002001,bcmlirads/BCM0002001lrtrain.nii.gz,bcmdata/BCM0002001/EPM_3.nii
+15,03,BCM0015002,bcmlirads/BCM0015002lrtrain.nii.gz,bcmdata/BCM0015002/EPM_3.nii
+16,04,BCM0016001,bcmlirads/BCM0016001lrtrain.nii.gz,bcmdata/BCM0016001/EPM_3.nii
 16,06,BCM0016002,bcmlirads/BCM0016002lrtrain.nii.gz,bcmdata/BCM0016002/EPM_3.nii
 17,07,BCM0017001,bcmlirads/BCM0017001lrtrain.nii.gz,bcmdata/BCM0017001/EPM_3.nii
 17,08,BCM0017002,bcmlirads/BCM0017002lrtrain.nii.gz,bcmdata/BCM0017002/EPM_3.nii
@@ -15,4 +15,3 @@ loocv,dataid,uid,label,image
 21,15,BCM0021001,bcmlirads/BCM0021001lrtrain.nii.gz,bcmdata/BCM0021001/EPM_3.nii
 21,16,BCM0021003,bcmlirads/BCM0021003lrtrain.nii.gz,bcmdata/BCM0021003/EPM_3.nii
 22,17,BCM0022001,bcmlirads/BCM0022001lrtrain.nii.gz,bcmdata/BCM0022001/EPM_3.nii
-22,18,BCM0022002,bcmlirads/BCM0022002lrtrain.nii.gz,bcmdata/BCM0022002/EPM_3.nii

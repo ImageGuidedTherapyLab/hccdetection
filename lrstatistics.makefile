@@ -17,17 +17,18 @@ C3DEXE=/rsrch2/ip/dtfuentes/bin/c3d
 # keep tmp files
 .SECONDARY: 
 
-#LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0015002 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002
-LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002
+#LIRADSLIST = BCM0001002 BCM0002001 BCM0015002 BCM0016001 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 
+LIRADSLIST = BCM0001001 BCM0001002 BCM0002001 BCM0002002 BCM0015000 BCM0015002 BCM0016001 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002
 lstat:       $(addprefix    qastats/,$(addsuffix /lstat.csv,$(LIRADSLIST)))
 qalirads: $(addprefix bcmdata/,$(addsuffix /qalirads,$(LIRADSLIST)))  
 viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))  
 trainlirads: $(addprefix bcmlirads/,$(addsuffix lrtrain.nii.gz,$(LIRADSLIST)))  
 multiphaselirads: $(addprefix bcmdata/,$(addsuffix /multiphase.nii.gz,$(LIRADSLIST)))  
 bcmdata/%/qalirads: 
-	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  
+	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat bcmdata/$*/fixed.liver.nii.gz -info bcmdata/$*/Art.longregcc.nii.gz -info bcmdata/$*/Art.raw.nii.gz  -info 
 bcmlirads/%lrtrain.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%/fixed.liver.nii.gz
-	c3d $< $(word 2,$^) -add -binarize $< -add -replace 6 5 5 4 4 3 3 1 2 1 -o $@
+	c3d bcmdata/$*/Art.longregcc.nii.gz -info bcmdata/$*/Art.raw.nii.gz  -info 
+	c3d $< -info $(word 2,$^) -info  -add -binarize $< -add -replace 6 5 5 4 4 3 3 1 2 1 -o $@ 
 bcmdata/%/viewlirads: 
 	echo $*
 	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat
