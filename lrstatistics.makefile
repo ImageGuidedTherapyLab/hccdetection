@@ -1,5 +1,5 @@
 SHELL := /bin/bash
--include lrbcm256kfold009.makefile
+-include lrbcm256kfold010.makefile
 WORKDIR=$(TRAININGROOT)/bcmdata
 DATADIR=$(TRAININGROOT)/datalocation/train
 mask:        $(addprefix $(WORKDIR)/,$(addsuffix /unet/mask.nii.gz,$(UIDLIST)))
