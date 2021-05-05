@@ -71,4 +71,7 @@ python lrmodel.py --databaseid=lrbcm --builddb
 make -f lrbcm256kfold010.makefile models
 tensorboard  --logdir=./lrbcmlog/  --port=6010
 make -f lrstatistics.makefile labels
-
+make -j 8 -B -f lrstatistics.makefile lstat
+cat qastats/*/lstat.csv > qastats/lstat.csv
+cat lrstatistics.sql  | sqlite3
+R ; source('lrstats.R')
