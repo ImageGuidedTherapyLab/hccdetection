@@ -26,6 +26,7 @@ cbind(mydataset$InstanceUID,mydataset$LabelID, mydataset$countlr5, mydataset$com
 pROC::ci.auc( ifelse(mydataset$truth == 5,1,0), mydataset$predict5  )
 pROC::ci.auc( ifelse(mydataset$truth == 5,1,0), mydataset$countlr5  / mydataset$compsize)
 
-plot(myroc3a);x11() 
-plot(myroc5b)
 
+plot(myroc3a,main=sprintf("ROC curve  LR3/not-LR3 \nAUC=%0.3f", myroc3a$auc))
+x11()
+plot(myroc5b,main=sprintf("ROC curve  LR5/not-LR5 \nAUC=%0.3f", myroc5b$auc))
