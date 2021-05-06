@@ -52,5 +52,5 @@ ORDER BY   lt.InstanceUID  ASC, cast(lt.LabelID as int) ASC;
 
 
 .output qastats/wide.csv  
-select ws.*, vs.* from volumestats vs join  widelstat ws  on vs.InstanceUID = ws.InstanceUID and vs.LabelID = ws.LabelID  where vs.compsize > 20;
+select substr(ws.InstanceUID,1,7)  ptid, ws.*, vs.* from volumestats vs join  widelstat ws  on vs.InstanceUID = ws.InstanceUID and vs.LabelID = ws.LabelID  where vs.compsize > 20;
 .quit
