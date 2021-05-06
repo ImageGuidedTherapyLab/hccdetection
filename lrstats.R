@@ -15,10 +15,13 @@ mydataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE,
 # Calculate the Area Under the Curve (AUC).
 
 
-myroc3a = pROC::roc( response = ifelse(mydataset$truth == 3,1,0), predictor = mydataset$predict3  , curve=T   )
-myroc4a = pROC::roc( response = ifelse(mydataset$truth == 4,1,0), predictor = mydataset$predict4  , curve=T   )
-myroc5a = pROC::roc( response = ifelse(mydataset$truth == 5,1,0), predictor = mydataset$predict5  , curve=T   )
-myroc5b = pROC::roc( response = ifelse(mydataset$truth == 5,1,0), predictor = mydataset$countlr5  / mydataset$compsize, curve=T   )
+myroc3a  = pROC::roc( response = ifelse(mydataset$truth == 3,1,0), predictor = mydataset$predict3  , curve=T   )
+myroc4a  = pROC::roc( response = ifelse(mydataset$truth == 4,1,0), predictor = mydataset$predict4  , curve=T   )
+myroc5a  = pROC::roc( response = ifelse(mydataset$truth == 5,1,0), predictor = mydataset$predict5  , curve=T   )
+myroc5b  = pROC::roc( response = ifelse(mydataset$truth == 5,1,0), predictor = mydataset$countlr5  / mydataset$compsize, curve=T   )
+myrocepm3 = pROC::roc( response = ifelse(mydataset$truth == 3,1,0), predictor = mydataset$EPM  , curve=T   )
+myrocepm4 = pROC::roc( response = ifelse(mydataset$truth == 4,1,0), predictor = mydataset$EPM  , curve=T   )
+myrocepm5 = pROC::roc( response = ifelse(mydataset$truth == 5,1,0), predictor = mydataset$EPM  , curve=T   )
 
 cbind(mydataset$InstanceUID,mydataset$LabelID, mydataset$countlr5, mydataset$compsize, mydataset$countlr5  / mydataset$compsize,mydataset$truth,ifelse(mydataset$truth == 5,1,0))
 # Calculate the AUC Confidence Interval.
@@ -30,3 +33,9 @@ pROC::ci.auc( ifelse(mydataset$truth == 5,1,0), mydataset$countlr5  / mydataset$
 plot(myroc3a,main=sprintf("ROC curve  LR3/not-LR3 \nAUC=%0.3f", myroc3a$auc))
 x11()
 plot(myroc5b,main=sprintf("ROC curve  LR5/not-LR5 \nAUC=%0.3f", myroc5b$auc))
+x11()
+plot(myrocepm5,main=sprintf("ROC curve  EPM  LR5/not-LR5 \nAUC=%0.3f", myrocepm5$auc))
+x11()
+plot(myrocepm4,main=sprintf("ROC curve  EPM  LR4/not-LR4 \nAUC=%0.3f", myrocepm4$auc))
+x11()
+plot(myrocepm3,main=sprintf("ROC curve  EPM  LR3/not-LR3 \nAUC=%0.3f", myrocepm3$auc))

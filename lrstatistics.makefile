@@ -48,6 +48,7 @@ $(TRAININGROOT)/bcmlirads/%-lesionmask.nii.gz: bcmlirads/%fixed.train.nii.gz
 qastats/%/lstat.csv: 
 	mkdir -p $(@D)
 	c3d bcmlirads/$*lrtrain.nii.gz -dup -thresh 3  5  1 0 -comp  -lstat > $(@D)/truth.txt &&  sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain.nii.gz,lrtrain.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/truth.txt > $(@D)/truth.csv 
+	c3d bcmdata/$*/EPM_3.nii.gz bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp  -lstat > $(@D)/epm_3.txt &&  sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain.nii.gz,EPM_3.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/epm_3.txt > $(@D)/epm_3.csv 
 	c3d bcmdata/$*/lrbcmpocket/lirads-3.nii.gz bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp  -lstat > $(@D)/predict.3.txt &&  sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain.nii.gz,lirads-3.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/predict.3.txt > $(@D)/predict.3.csv 
 	c3d bcmdata/$*/lrbcmpocket/lirads-4.nii.gz bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp  -lstat > $(@D)/predict.4.txt &&  sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain.nii.gz,lirads-4.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/predict.4.txt > $(@D)/predict.4.csv 
 	c3d bcmdata/$*/lrbcmpocket/lirads-5.nii.gz bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp  -lstat > $(@D)/predict.5.txt &&  sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain.nii.gz,lirads-5.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/predict.5.txt > $(@D)/predict.5.csv 
@@ -56,7 +57,7 @@ qastats/%/lstat.csv:
 	c3d bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp -thresh 3 3  1 0  -dup bcmdata/$*/lrbcmpocket/lirads.nii.gz  -multiply -lstat > $(@D)/label-3.txt && sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain-3.nii.gz,lirads.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/label-3.txt > $(@D)/label-3.csv 
 	c3d bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp -thresh 4 4  1 0  -dup bcmdata/$*/lrbcmpocket/lirads.nii.gz  -multiply -lstat > $(@D)/label-4.txt && sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain-4.nii.gz,lirads.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/label-4.txt > $(@D)/label-4.csv 
 	c3d bcmlirads/$*lrtrain.nii.gz  -thresh 3  5  1 0 -comp -thresh 5 5  1 0  -dup bcmdata/$*/lrbcmpocket/lirads.nii.gz  -multiply -lstat > $(@D)/label-5.txt && sed "1,2d;s/^\s\+/$(subst /,\/,$*),lrtrain-5.nii.gz,lirads.nii.gz,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/label-5.txt > $(@D)/label-5.csv 
-	cat $(@D)/label-?.csv $(@D)/predict.?.csv $(@D)/truth.csv > $@
+	cat $(@D)/label-?.csv $(@D)/predict.?.csv $(@D)/truth.csv $(@D)/epm_3.csv > $@
 
 qastats/lstat.csv: 
 	cat qastats/*/lstat.csv > $@

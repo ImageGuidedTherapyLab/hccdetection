@@ -39,6 +39,7 @@ ORDER BY   lt.InstanceUID  ASC;
 
 create table widelstat  as
 select lt.InstanceUID,cast(lt.LabelID as int) LabelID,
+            max(CASE WHEN lt.SegmentationID='lrtrain.nii.gz' and FeatureID = 'EPM_3.nii.gz' THEN lt.Mean ELSE NULL END)  EPM,
             max(CASE WHEN lt.SegmentationID='lrtrain.nii.gz' and FeatureID = 'lirads-3.nii.gz' THEN lt.Mean ELSE NULL END)  predict3,
             max(CASE WHEN lt.SegmentationID='lrtrain.nii.gz' and FeatureID = 'lirads-4.nii.gz' THEN lt.Mean ELSE NULL END)  predict4,
             max(CASE WHEN lt.SegmentationID='lrtrain.nii.gz' and FeatureID = 'lirads-5.nii.gz' THEN lt.Mean ELSE NULL END)  predict5,
