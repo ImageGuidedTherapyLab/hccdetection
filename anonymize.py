@@ -71,15 +71,23 @@ with open('datakey.csv', 'w') as csvfile:
     if( len(studyList) > 0 ):
       patientDict[patientnumber]['studyList'] = studyList
 
+#for key,value in fileDict.items():
+#  if ( value['SeriesModality'] == 'MR'):
+#    node=slicer.util.loadVolume(value['dcmfile'],returnNode=True);
+#    print(node)
+#    # TODO - note full path output directory
+#    outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+#    print( outputdir )
+#    os.system('mkdir -p %s ' % outputdir  )
+#    if(node[1] != None):
+#      slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,value['seriesanonuid'] )  )
+#      slicer.mrmlScene.RemoveNode(node[1])
 for key,value in fileDict.items():
   if ( value['SeriesModality'] == 'MR'):
-    node=slicer.util.loadVolume(value['dcmfile'],returnNode=True);
-    print(node)
-    # TODO - note full path output directory
     outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+    conversionCMD = '/opt/apps/dcm2niix/MRIcroGL/Resources/dcm2niix -o %s -f %s.nii.gz -z y %s'  % (outputdir,value['seriesanonuid'], '/'.join(value['dcmfile'].split('/')[0:-1]) )
+    print(conversionCMD )
     print( outputdir )
     os.system('mkdir -p %s ' % outputdir  )
-    if(node[1] != None):
-      slicer.util.saveNode(node[1], '%s/%s.nii.gz' % (outputdir,value['seriesanonuid'] )  )
-      slicer.mrmlScene.RemoveNode(node[1])
+    os.system( conversionCMD )
 exit()
