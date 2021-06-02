@@ -63,13 +63,28 @@ with open('datakey.csv', 'w') as csvfile:
         seriesanonuid = uuid.uuid4()
         patientDict[patientnumber] = {'mrn':patientID }
         studyDict [study]  = studyDate
-        niftifile = 'BCM%04d%02d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
+        niftifile = 'BCM%04d%03d/%s.nii.gz' % (int(patientnumber) ,idstudy,seriesanonuid )
         fileDict[seriesanonuid] = {'PatientID':patientID,'Study':study,'StudyDate':studyDate,'Series':series,'dcmfile':serieslist[0],'HCCDate':'FIXME','DiagnosticInterval':'FIXME','StudyNumber':idstudy,'PatientNumber':patientnumber ,'SeriesDescription':seriesDescription.encode('utf-8'),'SeriesModality':seriesModality,'seriesanonuid':seriesanonuid, 'niftifile':niftifile   }
         print  fileDict[seriesanonuid]
         csvwrite.writerow( [ fileDict[seriesanonuid][headerID] for headerID in fileHeader] )
       studyList.append((study,studyDate,idstudy )) 
     if( len(studyList) > 0 ):
       patientDict[patientnumber]['studyList'] = studyList
+
+import re
+triphasicCT = re.compile('.*lava.*|.*thr.*|.*vibe.*', re.IGNORECASE)
+# print triphasicCT.match('t1_vibe_fs_tra_bh_ Pre')
+# print triphasicCT.match('t1_vibe_fs_tra_bh_Arterial')
+# print triphasicCT.match('t1_vibe_fs_tra_bh_30 sect')
+# print triphasicCT.match('t1_vibe_fs_tra_bh_60 sect')
+# print triphasicCT.match('3D_Thr_Pre')
+# print triphasicCT.match('3D_Thr_Art')
+# print triphasicCT.match('3D_Thr_Port')
+# print triphasicCT.match('Ph1/Ax LAVA Multiphase BH Asset')
+# print triphasicCT.match('Ph2/Ax LAVA Multiphase BH Asset')
+# print triphasicCT.match('Ph3/Ax LAVA Multiphase BH Asset')
+# print triphasicCT.match('Ax LAVA BH  DELAY')
+# print triphasicCT.match('WATER: AX LAVA-FLEX MULTIPHASE +C ACR')
 
 #for key,value in fileDict.items():
 #  if ( value['SeriesModality'] == 'MR'):
@@ -84,10 +99,12 @@ with open('datakey.csv', 'w') as csvfile:
 #      slicer.mrmlScene.RemoveNode(node[1])
 for key,value in fileDict.items():
   if ( value['SeriesModality'] == 'MR'):
-    outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
-    conversionCMD = '/opt/apps/dcm2niix/MRIcroGL/Resources/dcm2niix -o %s -f %s.nii.gz -z y %s'  % (outputdir,value['seriesanonuid'], '/'.join(value['dcmfile'].split('/')[0:-1]) )
-    print(conversionCMD )
-    print( outputdir )
-    os.system('mkdir -p %s ' % outputdir  )
-    os.system( conversionCMD )
+    #   write only triphasic scans
+    if( triphasicCT.match(value['SeriesDescription'])):
+      outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+      conversionCMD = '/opt/apps/dcm2niix/MRIcroGL/Resources/dcm2niix -o %s -f %s -z y %s'  % (outputdir,value['seriesanonuid'], '/'.join(value['dcmfile'].split('/')[0:-1]) )
+      print(conversionCMD )
+      print( outputdir )
+      os.system('mkdir -p %s ' % outputdir  )
+      os.system( conversionCMD )
 exit()
