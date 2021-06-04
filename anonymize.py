@@ -103,6 +103,8 @@ for key,value in fileDict.items():
     if( triphasicCT.match(value['SeriesDescription'])):
       outputdir = '/rsrch3/ip/dtfuentes/github/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
       conversionCMD = '/opt/apps/dcm2niix/MRIcroGL/Resources/dcm2niix -o %s -f %s -z y %s'  % (outputdir,value['seriesanonuid'], '/'.join(value['dcmfile'].split('/')[0:-1]) )
+      outputdir = '/Users/newshan/Documents/hccdetection/tmpconvert/BCM%04d%03d/' % (int(value['PatientNumber']) ,value['StudyNumber'])
+      conversionCMD = '/Applications/MRIcroGL.app/Contents/Resources/dcm2niix -o %s -f %s -z y "%s"'  % (outputdir,value['seriesanonuid'], '/'.join(value['dcmfile'].split('/')[0:-1]) )
       print(conversionCMD )
       print( outputdir )
       os.system('mkdir -p %s ' % outputdir  )
