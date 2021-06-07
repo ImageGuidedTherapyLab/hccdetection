@@ -85,20 +85,20 @@ $(WORKDIR)/washouthcc%/label.nii:
 	c3d Processed/$(word $*, $(MRILIST))/Truth.raw.nii.gz -type uchar -o $@
 
 # setup BCM data
-LiverMRIProjectData/dataqa.csv:
+bcmlirads/dataqa.csv:
 	echo StudyUID,Status > $@
 	for idfile in  bcmdata/BCM*/reviewsolution.txt ; do STUDYUID=$$(echo $$idfile | cut -d '/' -f2); sed "s/^/$$STUDYUID,/g" $$idfile; done >> $@
-LiverMRIProjectData/wideanon.csv:
+bcmlirads/wideanon.csv:
 	 cat wide.sql  | sqlite3
-BCMDATADIR=LiverMRIProjectData/tmpconvert/
+BCMDATADIR=LiverMRIProjectDataV2/tmpconvert/
 BCMWORKDIR=bcmdata
-BCMLISTUID  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 )
-BCMLISTPRE  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f5 )
-BCMLISTART  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f6 )
-BCMLISTVEN  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f7 )
-BCMLISTDEL  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f8 )
-BCMLISTPST  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f9 )
-BCMLISTFIX  = $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f14)
+BCMLISTUID  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 )
+BCMLISTPRE  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f5 )
+BCMLISTART  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f6 )
+BCMLISTVEN  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f7 )
+BCMLISTDEL  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f8 )
+BCMLISTPST  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f9 )
+BCMLISTFIX  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f14)
 BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
@@ -110,17 +110,17 @@ $(BCMWORKDIR)/%/EPM_3.nii:
 	cp /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/$@ $@
 
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Ven.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Del.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Pst.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
 $(BCMWORKDIR)/%/fixed.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d LiverMRIProjectData/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
 
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
 %/viewbcm: 
