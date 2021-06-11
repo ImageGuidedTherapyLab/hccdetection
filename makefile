@@ -110,17 +110,17 @@ $(BCMWORKDIR)/%/EPM_3.nii:
 	cp /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/$@ $@
 
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/Ven.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/Del.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/Pst.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/fixed.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz.nii.gz  -o $@
 
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
 %/viewbcm: 
@@ -152,7 +152,8 @@ $(BCMWORKDIR)/%.zscore.nii.gz:
 	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
 $(BCMWORKDIR)/%.bias.nii.gz: 
 	c3d -verbose $(BCMWORKDIR)/$*.raw.nii.gz  -shift 1  -o  $@
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
+	/opt/apps/ANTS/build/ANTS-build/Examples/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
+	#/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	python normalization.py --imagefile=$@  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
@@ -161,7 +162,7 @@ labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffi
 labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 	c3d -verbose bcmdata/$*.raw.nii.gz $< -reslice-identity -o $@
