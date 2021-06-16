@@ -102,7 +102,6 @@ BCMLISTFIX  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f14)
 BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
-rawbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.raw.nii.gz,$(BCMLISTUID)))
 epmbcm:  $(addprefix $(BCMWORKDIR)/,$(addsuffix /EPM_3.nii,$(BCMLISTUID)))
 
 
@@ -121,6 +120,8 @@ $(BCMWORKDIR)/%/Pst.raw.nii.gz:
 	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz.nii.gz  -o $@
 $(BCMWORKDIR)/%/fixed.raw.nii.gz:
 	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz.nii.gz  -o $@
+
+
 
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
 %/viewbcm: 
@@ -159,7 +160,6 @@ $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
 labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
-labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID))) 
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
@@ -170,6 +170,9 @@ bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
 	c3d -verbose bcmdata/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
+
+
+
 # register study
 regbcm:  $(foreach idc,$(filter-out Art fixed,$(BCMCONTRASTLIST)),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).regcc.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.regcc.nii.gz: bcmdata/%.bias.nii.gz bcmdata/%.mask.nii.gz
@@ -189,6 +192,57 @@ clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
 radoncsync:
 	rsync    -v -avz  --include={'*bias.nii.gz','*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
+
+# setup MDA data
+MDADATADIR="/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/LIRADS_MRI_NIFTI"
+MDALISTUID  = $(shell sed 1d bcmlirads/mdafilepaths.csv | cut -d, -f1 )
+MDALISTFIX  = $(shell sed 1d bcmlirads/mdafilepaths.csv | cut -d, -f8 )
+rawmda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).raw.nii.gz,$(MDALISTUID)))) 
+mdadata/%/Pre.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$*/Pre.raw.nii  -o $@
+mdadata/%/Art.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$*/Art.raw.nii  -o $@
+mdadata/%/Ven.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$*/Ven.raw.nii  -o $@
+mdadata/%/Del.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$*/Del.raw.nii  -o $@
+mdadata/%/Pst.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$*/Pst.raw.nii  -o $@
+mdadata/%/fixed.raw.nii.gz:
+	mkdir -p $(@D); c3d  $(MDADATADIR)/$(word $(shell sed 1d bcmlirads/mdafilepaths.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(MDALISTFIX))  -o $@
+
+# preprocess data
+zscoremda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).zscore.nii.gz,$(MDALISTUID)))) 
+biasmda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).bias.nii.gz,$(MDALISTUID)))) 
+resizemda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).crop.nii.gz,$(MDALISTUID)))) 
+resizemdafixed: $(addprefix mdadata/,$(addsuffix /fixed.crop.nii.gz,$(MDALISTUID))) $(addprefix mdadata/,$(addsuffix /fixed.bias.nii.gz,$(MDALISTUID)))
+mdadata/%.zscore.nii.gz: 
+	python normalization.py --imagefile=mdadata/$*.raw.nii.gz  --output=$@
+mdadata/%.bias.nii.gz: 
+	c3d -verbose mdadata/$*.raw.nii.gz  -shift 1  -o  $@
+	/opt/apps/ANTS/build/ANTS-build/Examples/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
+	#/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
+	python normalization.py --imagefile=$@  --output=$@
+mdadata/%.crop.nii.gz: mdadata/%.zscore.nii.gz
+	python resize.py --imagefile=mdadata/$*.zscore.nii.gz  --output=$@
+# label data
+labelmda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).label.nii.gz,$(MDALISTUID)))) 
+mdadata/%/label.nii.gz: mdadata/%.256.nii.gz
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
+	echo vglrun itksnap -g $< -s mdadata/$*/label.nii.gz -o mdadata/$*/score.nii.gz
+mdadata/%.label.nii.gz: mdadata/%/label.nii.gz
+	c3d -verbose mdadata/$*.raw.nii.gz $< -reslice-identity -o $@
+# dilate mask
+maskmda: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix mdadata/,$(addsuffix /$(idc).mask.nii.gz,$(MDALISTUID)))) 
+mdadata/%.mask.nii.gz: 
+	c3d -verbose mdadata/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  mdadata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
+
+# register longitudinal
+longregmda: $(foreach idc,$(filter-out fixed,$(BCMCONTRASTLIST)),$(addprefix mdadata/,$(addsuffix /$(idc).longregcc.nii.gz,$(MDALISTUID)))) 
+mdadata/%.longregcc.nii.gz: mdadata/%.bias.nii.gz 
+	echo "bsub -Is -q interactive -W 6:00 -M 32 -R rusage[mem=32] -n 4 /usr/bin/bash"
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:55 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,mdadata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,mdadata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.bias.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
