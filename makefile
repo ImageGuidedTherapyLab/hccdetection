@@ -151,10 +151,11 @@ resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuff
 resizebcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.crop.nii.gz,$(BCMLISTUID))) $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.bias.nii.gz,$(BCMLISTUID)))
 $(BCMWORKDIR)/%.zscore.nii.gz: 
 	python normalization.py --imagefile=$(BCMWORKDIR)/$*.raw.nii.gz  --output=$@
+#/opt/apps/ANTS/ANTS-build/ANTS-build/Examples/N4BiasFieldCorrection
+#/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 $(BCMWORKDIR)/%.bias.nii.gz: 
 	c3d -verbose $(BCMWORKDIR)/$*.raw.nii.gz  -shift 1  -o  $@
 	/opt/apps/ANTS/build/ANTS-build/Examples/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
-	#/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	python normalization.py --imagefile=$@  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
