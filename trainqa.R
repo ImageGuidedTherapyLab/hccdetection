@@ -40,9 +40,12 @@ server <- function(input, output) {
 
   # system call selection for QA
   observeEvent(input$table_rows_selected, {
-      system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$raw[input$table_rows_selected],' -s ', my.data$data$liver[input$table_rows_selected]),wait = F)
-      if(!is.na(my.data$data$lesion[input$table_rows_selected])) { system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$longreg[input$table_rows_selected],' -s ', my.data$data$lesion[input$table_rows_selected]),wait = F)}
-      #system(paste0('echo ',my.data$data$uid[input$table_rows_selected],';make anonymize/',my.data$data$uid[input$table_rows_selected],'/amiralabel'),wait = F)
+      #system(paste0('echo ',my.data$data$UID[input$table_rows_selected],';make anonymize/',my.data$data$UID[input$table_rows_selected],'/amiralabel'),wait = F)
+      system(paste0('echo ',my.data$data$liver[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$raw[input$table_rows_selected],' -s ', my.data$data$liver[input$table_rows_selected]),wait = F)
+      splitpath = unlist(strsplit(toString(my.data$data$liver[input$table_rows_selected]), '\\.'))
+      splitbase = unlist(strsplit(splitpath[1], '\\/'))
+      system(paste0('echo ',my.data$data$liver[input$table_rows_selected],';vglrun /opt/apps/Amira/2020.2/bin/start -tclcmd \" load ',my.data$data$raw[input$table_rows_selected],'; load ', my.data$data$liver[input$table_rows_selected],'; create HxCastField ConvertImage; ConvertImage data connect ',splitbase[3 ],'.liver.nii.gz; ConvertImage fire; ConvertImage outputType setIndex 0 7; ConvertImage create result setLabel ; ',splitbase[3 ],'.liver.nii.to-labelfield-8_bits ImageData connect ',splitbase[3 ],'.raw.nii.gz;\"'),wait = F)
+      if(!is.na(my.data$data$lesion[input$table_rows_selected])) { system(paste0('echo ',my.data$data$train[input$table_rows_selected],';vglrun itksnap  -l labelkey.txt -g ',my.data$data$longreg[input$table_rows_selected],' -s ', my.data$data$lesion[input$table_rows_selected]),wait = F)}
    })
   
   observeEvent(input$savereview, {

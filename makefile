@@ -89,7 +89,7 @@ bcmlirads/dataqa.csv:
 	echo StudyUID,Status > $@
 	for idfile in  bcmdata/BCM*/reviewsolution.txt ; do STUDYUID=$$(echo $$idfile | cut -d '/' -f2); sed "s/^/$$STUDYUID,/g" $$idfile; done >> $@
 bcmlirads/wideanon.csv:
-	 cat wide.sql  | sqlite3
+	 cat newwide.sql  | sqlite3
 BCMDATADIR=LiverMRIProjectDataV2/tmpconvert/
 BCMWORKDIR=bcmdata
 BCMLISTUID  = $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 )
@@ -109,17 +109,17 @@ $(BCMWORKDIR)/%/EPM_3.nii:
 	cp /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/$@ $@
 
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Ven.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Del.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
 $(BCMWORKDIR)/%/Pst.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
 $(BCMWORKDIR)/%/fixed.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz.nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
 
 
 
@@ -245,6 +245,15 @@ mdadata/%.longregcc.nii.gz: mdadata/%.bias.nii.gz
 	echo "bsub -Is -q interactive -W 6:00 -M 32 -R rusage[mem=32] -n 4 /usr/bin/bash"
 	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 00:55 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,mdadata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,mdadata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.bias.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
 
+viewmdalong: $(addprefix mdadata/,$(addsuffix /viewmdalong,$(MDALISTUID)))  
+%/viewmdalong: 
+	c3d -verbose $(@D)/fixed.bias.nii.gz  -info $(@D)/fixed.mask.nii.gz  -info -lstat
+	c3d -verbose $(@D)/Pre.bias.nii.gz    -info $(@D)/Pre.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Art.bias.nii.gz    -info $(@D)/Art.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Ven.bias.nii.gz    -info $(@D)/Ven.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Del.bias.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
+	c3d -verbose $(@D)/Pst.bias.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
+	vglrun itksnap -g  $(@D)/fixed.bias.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
 # setup CRC data
 CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
 CRCIMAGELIST  = $(shell sed 1d crctrainingdata.csv | cut -f3 )

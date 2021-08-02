@@ -4,7 +4,11 @@
 -- FIXME - error check dos2unix command has reformat csv files
 .import bcmlirads/LiverMRIAnonymizationKey.csv  datekey
 .import bcmlirads/newLiverMRIAnonymizationKeyCases.csv newdatekey 
-.import bcmlirads/newdatakeyanon.csv                 imaging 
+.import bcmlirads/controlsALLanon.csv                  controldatekey 
+-- .import bcmlirads/newdatakeyanon.csv                 imaging 
+.import bcmlirads/controlsdatakeyanon.csv              imaging 
+
+
 
 
 -- .import LiverMRIProjectData/dataqa.csv  qadata
@@ -30,7 +34,25 @@ CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription 
 from datekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
 
 insert into hccimaging  
-select 'Case' as Status,
+select 'control' as Status,
+        NULL as HCCDate,
+       substr(im.StudyDate, 1, 4) || '-' || substr(im.StudyDate, 5,2) || '-' || substr(im.StudyDate, 7,2) as  StudyDate,
+       im.StudyNumber,im.PatientNumber,im.SeriesDescription,
+CASE WHEN im.seriesDescription like "%vibe%" THEN 'vibe'
+     WHEN im.seriesDescription like "%Thr%"  THEN 'thrive'
+     WHEN im.seriesDescription like "%lava%" THEN 'lava'
+     ELSE NULL END AS Vendor,
+CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'     )  THEN 'Pre'
+     WHEN (im.seriesDescription like "t1_vibe_fs%Art%"  or im.seriesDescription like '3D_Thr_Art'  or im.seriesDescription like '%Ph1%Ax LAVA%'  )  THEN 'Art'
+     WHEN (im.seriesDescription like "t1_vibe_fs%30%"   or im.seriesDescription like '3D_Thr_Ven'  or im.seriesDescription like '%Ph2%Ax LAVA%'  )  THEN 'Ven'
+     WHEN (im.seriesDescription like "t1_vibe_fs%60%"   or im.seriesDescription like '3D_Thr_Del%' or im.seriesDescription like '%Ph3%Ax LAVA%'  )  THEN 'Del'
+     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%')  THEN 'Pst'
+     ELSE NULL END AS ImageType,
+       im.SeriesModality,im.seriesanonuid,im.niftifile 
+from controldatekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
+
+insert into hccimaging  
+select 'case' as Status,
        CASE WHEN dk.HCCDate = ""  THEN NULL
        ELSE replace(dk.HCCDate, rtrim(dk.HCCDate, replace(dk.HCCDate, '/', '')), '')  || '-' || printf('%02d', cast(substr(dk.HCCDate, 0, instr(dk.HCCDate,'/')) as int)) || '-' || printf('%02d', cast(substr(substr(dk.HCCDate, instr(dk.HCCDate,'/')+1), 0, instr(substr(dk.HCCDate, instr(dk.HCCDate,'/')+1),'/')) as int) ) END  as HCCDate,
        substr(im.StudyDate, 1, 4) || '-' || substr(im.StudyDate, 5,2) || '-' || substr(im.StudyDate, 7,2) as  StudyDate,
