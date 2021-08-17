@@ -1,5 +1,5 @@
 UID,raw,longreg,train,liver,lesion
-BCM0001000,oldbcmdata/BCM0001000/Art.raw.nii.gz,oldbcmdata/BCM0001000/Art.longregcc.nii.gz,bcmlirads/BCM0001000Art.train.nii.gz,oldbcmdata/BCM0001000/Art.liver.nii.gz,
+BCM0001000,bcmdata/BCM0001000/Art.raw.nii.gz,bcmdata/BCM0001000/Art.longregcc.nii.gz,bcmlirads/BCM0001000Art.train.nii.gz,bcmdata/BCM0001000/Art.liver.nii.gz,
 BCM0001000,bcmdata/BCM0001000/Del.raw.nii.gz,bcmdata/BCM0001000/Del.longregcc.nii.gz,bcmlirads/BCM0001000Del.train.nii.gz,bcmdata/BCM0001000/Del.liver.nii.gz,
 BCM0001000,bcmdata/BCM0001000/Pre.raw.nii.gz,bcmdata/BCM0001000/Pre.longregcc.nii.gz,bcmlirads/BCM0001000Pre.train.nii.gz,bcmdata/BCM0001000/Pre.liver.nii.gz,
 BCM0001000,bcmdata/BCM0001000/Pst.raw.nii.gz,bcmdata/BCM0001000/Pst.longregcc.nii.gz,bcmlirads/BCM0001000Pst.train.nii.gz,bcmdata/BCM0001000/Pst.liver.nii.gz,
