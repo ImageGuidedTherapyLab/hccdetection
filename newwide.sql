@@ -24,11 +24,11 @@ CASE WHEN im.seriesDescription like "%vibe%" THEN 'vibe'
      WHEN im.seriesDescription like "%Thr%"  THEN 'thrive'
      WHEN im.seriesDescription like "%lava%" THEN 'lava'
      ELSE NULL END AS Vendor,
-CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'     )  THEN 'Pre'
+CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH' or im.seriesDescription = 'Ax LAVA MULTIPHASE +C'  )  THEN 'Pre'
      WHEN (im.seriesDescription like "t1_vibe_fs%Art%"  or im.seriesDescription like '3D_Thr_Art'  or im.seriesDescription like '%Ph1%Ax LAVA%'  )  THEN 'Art'
      WHEN (im.seriesDescription like "t1_vibe_fs%30%"   or im.seriesDescription like '3D_Thr_Ven'  or im.seriesDescription like '%Ph2%Ax LAVA%'  )  THEN 'Ven'
      WHEN (im.seriesDescription like "t1_vibe_fs%60%"   or im.seriesDescription like '3D_Thr_Del%' or im.seriesDescription like '%Ph3%Ax LAVA%'  )  THEN 'Del'
-     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%')  THEN 'Pst'
+     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%' )  THEN 'Pst'
      ELSE NULL END AS ImageType,
        im.SeriesModality,im.seriesanonuid,im.niftifile 
 from datekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
@@ -42,11 +42,11 @@ CASE WHEN im.seriesDescription like "%vibe%" THEN 'vibe'
      WHEN im.seriesDescription like "%Thr%"  THEN 'thrive'
      WHEN im.seriesDescription like "%lava%" THEN 'lava'
      ELSE NULL END AS Vendor,
-CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'     )  THEN 'Pre'
+CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'  or im.seriesDescription = 'Ax LAVA MULTIPHASE +C'    )  THEN 'Pre'
      WHEN (im.seriesDescription like "t1_vibe_fs%Art%"  or im.seriesDescription like '3D_Thr_Art'  or im.seriesDescription like '%Ph1%Ax LAVA%'  )  THEN 'Art'
      WHEN (im.seriesDescription like "t1_vibe_fs%30%"   or im.seriesDescription like '3D_Thr_Ven'  or im.seriesDescription like '%Ph2%Ax LAVA%'  )  THEN 'Ven'
      WHEN (im.seriesDescription like "t1_vibe_fs%60%"   or im.seriesDescription like '3D_Thr_Del%' or im.seriesDescription like '%Ph3%Ax LAVA%'  )  THEN 'Del'
-     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%')  THEN 'Pst'
+     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%' )  THEN 'Pst'
      ELSE NULL END AS ImageType,
        im.SeriesModality,im.seriesanonuid,im.niftifile 
 from controldatekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
@@ -61,11 +61,11 @@ CASE WHEN im.seriesDescription like "%vibe%" THEN 'vibe'
      WHEN im.seriesDescription like "%Thr%"  THEN 'thrive'
      WHEN im.seriesDescription like "%lava%" THEN 'lava'
      ELSE NULL END AS Vendor,
-CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'     )  THEN 'Pre'
+CASE WHEN (im.seriesDescription like "t1_vibe_fs%Pre"   or im.seriesDescription like '3D_Thr_Pre'  or im.seriesDescription = 'Ax LAVA BH'   or im.seriesDescription = 'Ax LAVA MULTIPHASE +C'   )  THEN 'Pre'
      WHEN (im.seriesDescription like "t1_vibe_fs%Art%"  or im.seriesDescription like '3D_Thr_Art'  or im.seriesDescription like '%Ph1%Ax LAVA%'  )  THEN 'Art'
      WHEN (im.seriesDescription like "t1_vibe_fs%30%"   or im.seriesDescription like '3D_Thr_Ven'  or im.seriesDescription like '%Ph2%Ax LAVA%'  )  THEN 'Ven'
      WHEN (im.seriesDescription like "t1_vibe_fs%60%"   or im.seriesDescription like '3D_Thr_Del%' or im.seriesDescription like '%Ph3%Ax LAVA%'  )  THEN 'Del'
-     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%')  THEN 'Pst'
+     WHEN (im.seriesDescription like "t1_vibe_fs%Post%" or im.seriesDescription like '3D_Thr_Port' or im.seriesDescription like '%Ax LAVA%DELAY%' )  THEN 'Pst'
      ELSE NULL END AS ImageType,
        im.SeriesModality,im.seriesanonuid,im.niftifile 
 from newdatekey dk join imaging im on  dk.slicerID = im.PatientNumber ;
@@ -113,6 +113,15 @@ left join hccstudy     w3 on  w2.PatientNumber = w3.PatientNumber;
 UPDATE fixedstudy  
 SET FixedNumber = 0 
 WHERE PatientNumber  = 24;
+UPDATE fixedstudy  
+SET FixedNumber = 1 
+WHERE PatientNumber  = 149;
+UPDATE fixedstudy  
+SET FixedNumber = 10 
+WHERE PatientNumber  = 26;
+UPDATE fixedstudy  
+SET FixedNumber = 2 
+WHERE PatientNumber  = 129;
 -- select * from fixedstudy;
 
 -- join with hcc date

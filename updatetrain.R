@@ -15,21 +15,32 @@ if( length( args ) >= 1 )
 # https://shiny.rstudio.com/articles/scoping.html
 csv.data <- read.csv("bcmlirads/wideanon.csv", header = TRUE,na.strings="")
 
+qadatafiles=paste0("bcmdata/",csv.data$UID,"/reviewsolution.txt")
+qadatainfo <- rep(NA,length(qadatafiles))
+for (iii in 1:length(qadatafiles))
+{
+ if(file.exists(qadatafiles[iii]))
+ {
+  qadatainfo[iii]<- paste(readLines(qadatafiles[iii]), collapse=" ")
+ }
+}
+
 
 # set up reactive data for updating reviewed status
 # "FixedNumber","PatientNumber","studynumber"
 my.data <- reactiveValues(data=cbind(REVIEWED = F, subset(csv.data,  select = c("UID","Vendor","Status","diagnosticinterval","daysincebaseline","Fixed")),
+  QA = qadatainfo,
 liradtrain=paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz"),
 liradtrainExists=file.exists(paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz")),
-Prerawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pre.rawlivertrain.nii.gz"),
+#Prerawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pre.rawlivertrain.nii.gz"),
 PrerawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.rawlivertrain.nii.gz")),
-Artrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Art.rawlivertrain.nii.gz"),
+#Artrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Art.rawlivertrain.nii.gz"),
 ArtrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.rawlivertrain.nii.gz")),
-Venrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Ven.rawlivertrain.nii.gz"),
+#Venrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Ven.rawlivertrain.nii.gz"),
 VenrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Ven.rawlivertrain.nii.gz")),
-Delrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Del.rawlivertrain.nii.gz"),
+#Delrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Del.rawlivertrain.nii.gz"),
 DelrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Del.rawlivertrain.nii.gz")),
-Pstrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pst.rawlivertrain.nii.gz"),
+#Pstrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pst.rawlivertrain.nii.gz"),
 PstrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Pst.rawlivertrain.nii.gz")),
 Prelongregcc=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.longregcc.nii.gz")),
 Artlongregcc=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.longregcc.nii.gz")),

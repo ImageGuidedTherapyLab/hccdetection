@@ -104,23 +104,21 @@ BCMCONTRASTLIST = Pre Art Ven Del Pst fixed
 rawbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).raw.nii.gz,$(BCMLISTUID)))) 
 epmbcm:  $(addprefix $(BCMWORKDIR)/,$(addsuffix /EPM_3.nii,$(BCMLISTUID)))
 
-
 $(BCMWORKDIR)/%/EPM_3.nii:
 	cp /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/$@ $@
 
 $(BCMWORKDIR)/%/Pre.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPRE)).nii.gz -swapdim RAI  -o $@
 $(BCMWORKDIR)/%/Art.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTART)).nii.gz -swapdim RAI -o $@
 $(BCMWORKDIR)/%/Ven.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTVEN)).nii.gz -swapdim RAI  -o $@
 $(BCMWORKDIR)/%/Del.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTDEL)).nii.gz -swapdim RAI  -o $@
 $(BCMWORKDIR)/%/Pst.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz  -o $@
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$*/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTPST)).nii.gz -swapdim RAI  -o $@
 $(BCMWORKDIR)/%/fixed.raw.nii.gz:
-	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz  -o $@
-
+	mkdir -p $(@D); c3d  $(BCMDATADIR)/$(word $(shell sed 1d bcmlirads/wideanon.csv | cut -d, -f1 | grep -n $* |cut -f1 -d: ), $(BCMLISTFIX)).nii.gz    -swapdim RAI  -o $@
 
 
 viewbcm: $(addprefix $(BCMWORKDIR)/,$(addsuffix /viewbcm,$(BCMLISTUID)))  
