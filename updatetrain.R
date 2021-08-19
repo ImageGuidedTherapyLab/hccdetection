@@ -71,7 +71,7 @@ server <- function(input, output) {
   # system call selection for QA
   observeEvent(input$table_rows_selected, {
       #system(paste0('echo ',my.data$data$UID[input$table_rows_selected],';make anonymize/',my.data$data$UID[input$table_rows_selected],'/amiralabel'),wait = F)
-      system(paste0('echo ',my.data$data$UID[input$table_rows_selected],';make bcmdata/',my.data$data$UID[input$table_rows_selected],'/viewbcmlong '),wait = F)
+      system(paste0('echo ',my.data$data$UID[input$table_rows_selected],';make bcmdata/',my.data$data$UID[input$table_rows_selected],'/qabcmlong '),wait = F)
    })
   
   observeEvent(input$savereview, {
