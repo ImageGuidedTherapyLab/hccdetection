@@ -173,9 +173,12 @@ labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffi
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
+	echo HACK - matlab losing header info
+	c3d $< bcmdata/$*/label.nii.gz -copy-transform -o bcmdata/$*/label.nii.gz 
+	c3d $< bcmdata/$*/score.nii.gz -copy-transform -o bcmdata/$*/score.nii.gz 
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
-	c3d -verbose bcmdata/$*.raw.nii.gz $< -reslice-identity -o $@
+	c3d -verbose bcmdata/$*.raw.nii.gz $<  -reslice-identity -o $@
 # dilate mask
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
