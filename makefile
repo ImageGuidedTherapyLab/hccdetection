@@ -203,6 +203,8 @@ bcmdata/%.longregcc.nii.gz: bcmdata/%.bias.nii.gz
 
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
+badawyrsync:
+	rsync  -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/ip/mebadawy/github/hccdetection/bcmdata/
 radoncsync:
 	rsync    -v -avz  --include={'*bias.nii.gz','*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
