@@ -206,7 +206,7 @@ clusterrsync:
 badawyrsync:
 	rsync  -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/ip/mebadawy/github/hccdetection/bcmdata/
 radoncsync:
-	rsync    -v -avz  --include={'*bias.nii.gz','*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
+	rsync    -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
 # setup MDA data
 MDADATADIR="/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/LIRADS_MRI_NIFTI"
