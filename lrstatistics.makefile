@@ -18,8 +18,11 @@ C3DEXE=/rsrch2/ip/dtfuentes/bin/c3d
 .SECONDARY: 
 
 #LIRADSLIST = BCM0001002 BCM0002001 BCM0015002 BCM0016001 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 
-LIRADSLIST = BCM0001000 BCM0001001 BCM0001002 BCM0001003 BCM0002001 BCM0002002 BCM0003001 BCM0003007 BCM0004000 BCM0005000 BCM0006000 BCM0007000 BCM0008000 BCM0010000 BCM0011000 BCM0013000 BCM0014000 BCM0015000 BCM0015002 BCM0016001 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002 BCM0025001 BCM0025003 BCM0025004 BCM0027002 BCM0029000 BCM0029001 BCM0031003 BCM0032001 BCM0032002 BCM0033008 BCM0034001 BCM0035005 BCM0036000 BCM0037002 BCM0042011 BCM0042021 BCM0045000 BCM0046008 BCM0047007 BCM0048004 BCM0049011 BCM0050002 BCM0051006 BCM0052013 BCM0054001 BCM0054012 BCM0056005 BCM0059013 BCM0059016 BCM0060014 BCM0061000 BCM0062003 BCM0063002 BCM0064007 BCM0066002 BCM0067001 BCM0068010 BCM0069003 BCM0070000 BCM0071007 BCM0072006 BCM0119000 BCM0144007 BCM0156008 BCM0169024
-lstat:       $(addprefix    qastats/,$(addsuffix /lstat.csv,$(LIRADSLIST)))
+LIRADSLIST = BCM0001000 BCM0001001 BCM0001002 BCM0001003 BCM0002001 BCM0002002 BCM0003001 BCM0003007 BCM0004000 BCM0005000 BCM0006000 BCM0007000 BCM0008000 BCM0010000 BCM0011000 BCM0013000 BCM0014000 BCM0015000 BCM0015002 BCM0016001 BCM0016002 BCM0017001 BCM0017002 BCM0018003 BCM0018004 BCM0019001 BCM0019002 BCM0020001 BCM0020002 BCM0021001 BCM0021003 BCM0022001 BCM0022002 BCM0025001 BCM0025002 BCM0025003 BCM0025004 BCM0027002 BCM0027006 BCM0029000 BCM0029001 BCM0031003 BCM0031004 BCM0032001 BCM0032002 BCM0033008 BCM0034001 BCM0035005 BCM0035006 BCM0036000 BCM0037002 BCM0037003 BCM0039010 BCM0042011 BCM0042012 BCM0042021 BCM0045000 BCM0045001 BCM0046008 BCM0047007 BCM0047008 BCM0048004 BCM0048005 BCM0049011 BCM0049012 BCM0050002 BCM0051006 BCM0051007 BCM0052013 BCM0052014 BCM0054001 BCM0054012 BCM0054013 BCM0056005 BCM0056006 BCM0057012 BCM0057013 BCM0059013 BCM0059014 BCM0059016 BCM0060014 BCM0060015 BCM0061000 BCM0061002 BCM0062003 BCM0062004 BCM0063002 BCM0063005 BCM0064007 BCM0064008 BCM0066002 BCM0067001 BCM0067002 BCM0068010 BCM0068012 BCM0069003 BCM0069004 BCM0070000 BCM0070001 BCM0071007 BCM0071008 BCM0072006 BCM0072007 BCM0073000 BCM0073002 BCM0074000 BCM0075000 BCM0076000 BCM0077000 BCM0078000 BCM0079000 BCM0080000 BCM0081000 BCM0082000 BCM0083000 BCM0084000 BCM0085000 BCM0086000 BCM0087000 BCM0088000 BCM0090000 BCM0091000 BCM0092000 BCM0093001 BCM0094000 BCM0095001 BCM0096000 BCM0097000 BCM0098000 BCM0099000 BCM0100001 BCM0102000 BCM0103000 BCM0104000 BCM0105000 BCM0106000 BCM0108000 BCM0109000 BCM0110000 BCM0111000 BCM0112000 BCM0113000 BCM0115000 BCM0116000 BCM0118000 BCM0119000 BCM0120000 BCM0121000 BCM0122000 BCM0123000 BCM0124000 BCM0126001 BCM0127000 BCM0128000 BCM0129002 BCM0130000 BCM0131000 BCM0132000 BCM0133000 BCM0135000 BCM0136000 BCM0137000 BCM0138000 BCM0139000 BCM0140000 BCM0141000 BCM0142000 BCM0143002 BCM0144007 BCM0145000 BCM0146000 BCM0147001 BCM0149001 BCM0150000 BCM0151001 BCM0152000 BCM0153000 BCM0154001 BCM0155001 BCM0156000 BCM0156008 BCM0157002 BCM0158001 BCM0159000 BCM0160001 BCM0161000 BCM0162000 BCM0163000 BCM0164000 BCM0165001 BCM0166000 BCM0167000 BCM0168001 BCM0169000 BCM0169024
+
+
+lstat:    $(addprefix qastats/,$(addsuffix /lstat.csv,$(LIRADSLIST)))
+epmstatdf: $(addprefix epmstats/,$(addsuffix /lstat.csv,$(LIRADSLIST)))
 qalirads: $(addprefix bcmdata/,$(addsuffix /qalirads,$(LIRADSLIST)))  
 viewlirads: $(addprefix bcmdata/,$(addsuffix /viewlirads,$(LIRADSLIST)))  
 epm: $(addprefix bcmdata/,$(addsuffix /EPM.nii,$(LIRADSLIST)))  
@@ -27,18 +30,20 @@ trainlirads: $(addprefix bcmlirads/,$(addsuffix lrtrain.nii.gz,$(LIRADSLIST)))
 multiphaselirads: $(addprefix bcmdata/,$(addsuffix /multiphase.nii.gz,$(LIRADSLIST)))  
 #make -k -i -f lrstatistics.makefile qalirads > qa.log 2>&1
 bcmdata/%/qalirads: 
-	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat bcmdata/$*/fixed.liver.nii.gz -info bcmdata/$*/Art.longregcc.nii.gz -info bcmdata/$*/Art.raw.nii.gz  -info 
+	@echo make -f lrstatistics.makefile bcmdata/$*/viewlirads
+	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  bcmdata/$*/fixed.liver.nii.gz -info bcmdata/$*/Art.longregcc.nii.gz -info bcmdata/$*/Art.raw.nii.gz  -info 
+	@echo !!!!!replacecmd - bcmlirads/$*fixed.train.nii.gz -replace 2 6 -o bcmlirads/$*fixed.train.nii.gz 
 bcmlirads/%lrtrain.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%/fixed.liver.nii.gz
 	c3d bcmdata/$*/Art.longregcc.nii.gz -info bcmdata/$*/Art.raw.nii.gz  -info 
 	c3d $< -info $(word 2,$^) -info  -add -binarize $< -add -replace 6 5 5 4 4 3 3 1 2 1 -o $@ 
-
 bcmdata/%/EPM.nii: bcmdata/%/Pre.longregcc.nii.gz  bcmdata/%/Art.longregcc.nii.gz  bcmdata/%/Ven.longregcc.nii.gz bcmdata/%/Del.longregcc.nii.gz  bcmdata/%/Pst.longregcc.nii.gz
-	/rsrch1/ip/dtfuentes/github/cmd_line_epm/run_epm.sh /data/apps/MATLAB/R2021a/  $(@D)/ $(PWD)/bcmdata/$*/Pre.longregcc.nii.gz $(PWD)/bcmdata/$*/Art.longregcc.nii.gz $(PWD)/bcmdata/$*/Ven.longregcc.nii.gz  $(PWD)/bcmdata/$*/Del.longregcc.nii.gz  $(PWD)/bcmdata/$*/Pst.longregcc.nii.gz  $(PWD)/bcmlirads/$*fixed.train.nii.gz  2
+	/rsrch1/ip/dtfuentes/github/cmd_line_epm/run_epm.sh /data/apps/MATLAB/R2021a/  $(@D)/ $(PWD)/bcmdata/$*/Pre.longregcc.nii.gz $(PWD)/bcmdata/$*/Art.longregcc.nii.gz $(PWD)/bcmdata/$*/Ven.longregcc.nii.gz  $(PWD)/bcmdata/$*/Del.longregcc.nii.gz  $(PWD)/bcmdata/$*/Pst.longregcc.nii.gz  $(PWD)/bcmlirads/$*fixed.train.nii.gz  6
 
 bcmdata/%/viewlirads: 
 	echo $*
 	c3d bcmlirads/$*fixed.train.nii.gz -info -dup -lstat  -thresh 3 inf  1 0 -comp -lstat
-	vglrun itksnap -l labelkey.txt  -g bcmdata/$*/EPM.nii -s bcmlirads/$*fixed.train.nii.gz 
+	vglrun itksnap -l labelkey.txt  -g bcmdata/$*/Art.longregcc.nii.gz  -s bcmlirads/$*fixed.train.nii.gz 
+	#vglrun itksnap -l labelkey.txt  -g bcmdata/$*/EPM.nii -s bcmlirads/$*fixed.train.nii.gz 
 	#vglrun itksnap -l labelkey.txt  -g  $(@D)/fixed.raw.nii.gz -s  bcmlirads/$*lrtrain.nii.gz  -o bcmdata/$*/multiphase.nii.gz bcmdata/$*/EPM.nii 
 bcmdata/%/multiphase.nii.gz: bcmdata/%/Pre.longregcc.nii.gz  bcmdata/%/Art.longregcc.nii.gz  bcmdata/%/Ven.longregcc.nii.gz bcmdata/%/Del.longregcc.nii.gz  bcmdata/%/Pst.longregcc.nii.gz
 	c3d $^ -omc $@
@@ -51,6 +56,15 @@ $(TRAININGROOT)/bcmlirads/%-mask.nii.gz: bcmlirads/%fixed.train.nii.gz bcmdata/%
 	c3d $< $(word 2,$^) -add -binarize -o $@
 $(TRAININGROOT)/bcmlirads/%-lesionmask.nii.gz: bcmlirads/%fixed.train.nii.gz 
 	c3d $< -thresh 3 inf 1 0  -o $@
+
+## epm statistics
+epmstats/%/lstat.csv:
+	mkdir -p $(@D)
+	c3d bcmdata/$*/EPM.nii bcmlirads/$*fixed.train.nii.gz  -lstat  > $(@D)/epm.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,epm,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/epm.txt > $(@D)/epm.csv 
+	c3d bcmdata/$*/Art.longregcc.nii.gz bcmlirads/$*fixed.train.nii.gz  -lstat > $(@D)/art.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,art,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/art.txt > $(@D)/art.csv 
+	c3d bcmdata/$*/Ven.longregcc.nii.gz bcmlirads/$*fixed.train.nii.gz  -lstat > $(@D)/ven.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,ven,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/ven.txt > $(@D)/ven.csv 
+	cat $(@D)/art.csv $(@D)/ven.csv $(@D)/epm.csv  > $@
+
 ## intensity statistics
 qastats/%/lstat.csv: 
 	mkdir -p $(@D)
