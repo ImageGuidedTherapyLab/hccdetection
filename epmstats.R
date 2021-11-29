@@ -8,19 +8,39 @@ graphics.off()
 
 # source('epmstats.R')
 fname <- "epmstats/widejoin.csv" 
-mydataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
+rawdataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
+mydataset  <- subset(rawdataset ,                                               LabelID > 2 )
 
 # summary stats
 print( 'unique patients' )
 print( unique(mydataset$ptid) )
 
 # subset data
+epmdata      <- subset(mydataset ,                                               FeatureID == 'epm')
 epmdataDx    <- subset(mydataset , Status == 'case' & diagnosticinterval ==0.0 & FeatureID == 'epm')
-epmdataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0 & FeatureID == 'epm')
+epmdataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0  & FeatureID == 'epm')
 epmdataCase  <- subset(mydataset , Status == 'case' & FeatureID == 'epm')
 epmdataCntrl <- subset(mydataset , Status == 'control' & FeatureID == 'epm')
 epmdataPreDxCntrl <- subset(mydataset ,  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'epm')
 epmdataDxCntrl    <- subset(mydataset ,  ((Status == 'case' & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'epm')
+
+# subset data
+artdata      <- subset(mydataset ,                                               FeatureID == 'art')
+artdataDx    <- subset(mydataset , Status == 'case' & diagnosticinterval ==0.0 & FeatureID == 'art')
+artdataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0  & FeatureID == 'art')
+artdataCase  <- subset(mydataset , Status == 'case' & FeatureID == 'art')
+artdataCntrl <- subset(mydataset , Status == 'control' & FeatureID == 'art')
+artdataPreDxCntrl <- subset(mydataset ,  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'art')
+artdataDxCntrl    <- subset(mydataset ,  ((Status == 'case' & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'art')
+
+# subset data
+vendata      <- subset(mydataset ,                                               FeatureID == 'ven')
+vendataDx    <- subset(mydataset , Status == 'case' & diagnosticinterval ==0.0 & FeatureID == 'ven')
+vendataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0  & FeatureID == 'ven')
+vendataCase  <- subset(mydataset , Status == 'case' & FeatureID == 'ven')
+vendataCntrl <- subset(mydataset , Status == 'control' & FeatureID == 'ven')
+vendataPreDxCntrl <- subset(mydataset ,  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'ven')
+vendataDxCntrl    <- subset(mydataset ,  ((Status == 'case' & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'ven')
 
 print( 'DX summary' )
 print( length(unique(epmdataDx$ptid)) )
@@ -36,6 +56,26 @@ print( 'pre Dx Cntrl summary' )
 print( length(unique(epmdataPreDxCntrl$ptid)))
 print( 'Dx control summary' )
 print( length(unique(epmdataDxCntrl$ptid)))
+
+# Boxplot of EPM 
+png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LR", ylab="EPM") ; dev.off()
+png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LR", ylab="EPM") ; dev.off()
+png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LR", ylab="EPM") ; dev.off()
+png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM") ; dev.off()
+
+# Boxplot of ART 
+png('artboxpredxcntrl.png'); boxplot(Mean~LabelID,data=artdataPreDxCntrl, main="Pre Dx vs Control", xlab="LR", ylab="ART") ; dev.off()
+png('artboxdxcntrl.png');boxplot(Mean~LabelID,data=artdataDxCntrl, main="Dx vs Control", xlab="LR", ylab="ART") ; dev.off()
+png('artboxcasecontrola.png');boxplot(Mean~LabelID,data=artdata, main="Case vs Control", xlab="LR", ylab="ART") ; dev.off()
+png('artboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=artdata, main="Case vs Control", xlab="Status", ylab="ART") ; dev.off()
+
+# Boxplot of VEN 
+png('venboxpredxcntrl.png'); boxplot(Mean~LabelID,data=vendataPreDxCntrl, main="Pre Dx vs Control", xlab="LR", ylab="VEN") ; dev.off()
+png('venboxdxcntrl.png');boxplot(Mean~LabelID,data=vendataDxCntrl, main="Dx vs Control", xlab="LR", ylab="VEN") ; dev.off()
+png('venboxcasecontrola.png');boxplot(Mean~LabelID,data=vendata, main="Case vs Control", xlab="LR", ylab="VEN") ; dev.off()
+png('venboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=vendata, main="Case vs Control", xlab="Status", ylab="VEN") ; dev.off()
+
+res <- wilcox.test(Mean ~ Status, data = epmdata, exact = FALSE)
 
 # The `pROC' package implements various AUC functions.
 # Calculate the Area Under the Curve (AUC).
