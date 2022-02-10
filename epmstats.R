@@ -3,6 +3,7 @@
  
 #ROC plots: https://github.com/EGates1/RadPath/blob/master/Code/GradePreds.R#L751
 #PR plot: https://github.com/EGates1/RadPath/blob/master/Code/GradePreds.R#L761
+library(caret)
 
 graphics.off()
 
@@ -13,7 +14,12 @@ mydataset  <- subset(rawdataset ,                                               
 
 # summary stats
 print( 'unique patients' )
-print( unique(mydataset$ptid) )
+uniqueptid = unique(mydataset$ptid) 
+print( uniqueptid )
+
+# kfold data
+folds <- createFolds(uniqueptid , 5)
+is_train <- lapply(folds, function(ind, n) !(1:n %in% ind), n = length(uniqueptid ))
 
 # subset data
 epmdata      <- subset(mydataset ,                                               FeatureID == 'epm')
@@ -22,7 +28,15 @@ epmdataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0  &
 epmdataCase  <- subset(mydataset , Status == 'case' & FeatureID == 'epm')
 epmdataCntrl <- subset(mydataset , Status == 'control' & FeatureID == 'epm')
 epmdataPreDxCntrl <- subset(mydataset ,  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'epm')
-epmdataDxCntrl    <- subset(mydataset ,  ((Status == 'case' & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'epm')
+epmdataDxCntrl    <- subset(mydataset ,  ((Status == 'case'     & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'epm')
+epmdataBackground <- subset(mydataset ,  LabelID == 6  & FeatureID == 'epm')
+epmdataBackgroundCase    <- subset(mydataset , Status == 'case'    & LabelID == 6  & FeatureID == 'epm')
+epmdataBackgroundControl <- subset(mydataset , Status == 'control' & LabelID == 6  & FeatureID == 'epm')
+mean(epmdataBackgroundCase$Mean)
+mean(epmdataBackgroundControl$Mean)
+resBackground <- wilcox.test(Mean ~ Status, data = epmdataBackground , exact = FALSE)
+
+epmdataThreshold  <- subset(mydataset ,  ((Status == 'case' & LabelID < 6) |  (Status == 'control'))  & FeatureID == 'epm')
 
 # subset data
 artdata      <- subset(mydataset ,                                               FeatureID == 'art')
@@ -81,9 +95,33 @@ res <- wilcox.test(Mean ~ Status, data = epmdata, exact = FALSE)
 # Calculate the Area Under the Curve (AUC).
 myrocepm3   = pROC::roc( response = ifelse(epmdataCase$LabelID == 3,1,0), predictor = epmdataCase$Mean  , curve=T   )
 myrocepm5   = pROC::roc( response = ifelse(epmdataCase$LabelID == 5,1,0), predictor = epmdataCase$Mean  , curve=T   )
-
 png('myrocepm5.png');   plot(myrocepm5  ,main=sprintf("ROC curve EPM LR5/LR3&LR4\nAUC=%0.3f", myrocepm5$auc)); dev.off()
 png('myrocepm3.png');   plot(myrocepm3  ,main=sprintf("ROC curve EPM LR3/LR4&LR5\nAUC=%0.3f", myrocepm3$auc)); dev.off()
+
+# evaluate optimal threshold for case/control
+uniquecasecntlptid = unique(epmdataThreshold$ptid) 
+epmdataThreshold$response = ifelse(epmdataThreshold$LabelID == 6,0,1)
+
+# kfold data
+casecntlfolds <- createFolds(uniquecasecntlptid , 5)
+casecntlSubgroups = 1:length(uniquecasecntlptid )
+casecntlSubgroups[casecntlfolds$Fold1] = 1
+casecntlSubgroups[casecntlfolds$Fold2] = 2
+casecntlSubgroups[casecntlfolds$Fold3] = 3
+casecntlSubgroups[casecntlfolds$Fold4] = 4
+casecntlSubgroups[casecntlfolds$Fold5] = 5
+is_train <- lapply(casecntlfolds , function(ind, n) !(1:n %in% ind), n = length(uniqueptid ))
+
+dataframeuidmap  = data.frame(ptid=uniquecasecntlptid,casecntlSubgroups)
+
+epmdataCaseCntl = merge(x = epmdataThreshold, y = dataframeuidmap  , by = "ptid", all.x = TRUE)
+
+library(cutpointr)
+cp <- cutpointr(epmdataCaseCntl , Mean, response , subgroup = casecntlSubgroups,method = maximize_metric, metric = sum_sens_spec)
+summary(cp)
+plot(cp)
+
+
 
 ## 
 ## cbind(mydataset$InstanceUID,mydataset$LabelID, mydataset$countlr5, mydataset$compsize, mydataset$countlr5  / mydataset$compsize,mydataset$truth,ifelse(mydataset$truth == 5,1,0))
