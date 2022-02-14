@@ -10,6 +10,9 @@ select substr(ts.InstanceUID,1,7) ptid,ts.InstanceUID,dk.Status, cast(dk.diagnos
 from tmplstat ts join datakey dk on ts.InstanceUID = dk.UID
  where cast(Count as int) >0 ;
 
+create table patientlist  as
+select substr(dk.UID,1,7) ptid,dk.status from datakey dk where dk.diagnosticinterval  = '0.0'  or dk.daysincebaseline    = '0.0'; 
+      
 
 create table cnrhelper  as
 select ls.ptid,ls.InstanceUID,ls.Status, ls.diagnosticinterval,ls.SegmentationID,ls.FeatureID,
@@ -41,8 +44,10 @@ from cnrdata cd
 where cd.cnr is not NULL and cd.diagnosticinterval = 0;
 
 
--- -- select HCCDate from datekey;
--- .output epmstats/widejoin.csv  
--- select * from lstat where LabelID > 0;
--- .quit
+-- select HCCDate from datekey;
+.output epmstats/widejoin.csv  
+select  pl.ptid,ls.*
+from patientlist pl  left join lstat ls on pl.ptid = ls.ptid;
+--.quit
+
 
