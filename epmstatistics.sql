@@ -11,8 +11,13 @@ from tmplstat ts join datakey dk on ts.InstanceUID = dk.UID
  where cast(Count as int) >0 ;
 
 create table patientlist  as
-select substr(dk.UID,1,7) ptid,dk.status from datakey dk where dk.diagnosticinterval  = '0.0'  or dk.daysincebaseline    = '0.0'; 
+select substr(dk.UID,1,7) ptid,dk.UID,dk.status from datakey dk where dk.diagnosticinterval = '0.0' or dk.daysincebaseline = '0.0'; 
       
+create table patientlistneg  as
+select substr(dk.UID,1,7) ptid,dk.UID,dk.status,cast(dk.diagnosticinterval as float) diagnosticinterval  from datakey dk where cast(dk.diagnosticinterval as float) < 0.0;
+
+create table patientlistprior  as
+select pn.ptid,pn.UID,pn.status,max (pn.diagnosticinterval) diagnosticinterval from patientlistneg  pn  group by pn.ptid ;
 
 create table cnrhelper  as
 select ls.ptid,ls.InstanceUID,ls.Status, ls.diagnosticinterval,ls.SegmentationID,ls.FeatureID,
@@ -45,9 +50,9 @@ where cd.cnr is not NULL and cd.diagnosticinterval = 0;
 
 
 -- select HCCDate from datekey;
-.output epmstats/widejoin.csv  
-select  pl.ptid,ls.*
-from patientlist pl  left join lstat ls on pl.ptid = ls.ptid;
+--.output epmstats/widejoin.csv  
+--select  pl.ptid,ls.*
+--from patientlist pl  left join lstat ls on pl.ptid = ls.ptid;
 --.quit
 
 
