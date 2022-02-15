@@ -122,6 +122,63 @@ WHERE PatientNumber  = 26;
 UPDATE fixedstudy  
 SET FixedNumber = 2 
 WHERE PatientNumber  = 129;
+UPDATE fixedstudy  
+SET FixedNumber = 1 
+WHERE PatientNumber  = 124;
+UPDATE fixedstudy  
+SET FixedNumber = 2 
+WHERE PatientNumber  = 125;
+UPDATE fixedstudy  
+SET FixedNumber = 4 
+WHERE PatientNumber  = 144;
+UPDATE fixedstudy  
+SET FixedNumber = 1 
+WHERE PatientNumber  = 108;
+UPDATE fixedstudy  
+SET FixedNumber = 3 
+WHERE PatientNumber  = 163;
+UPDATE fixedstudy  
+SET FixedNumber = 1 
+WHERE PatientNumber  = 159;
+UPDATE fixedstudy  
+SET FixedNumber = 2 
+WHERE PatientNumber  = 153;
+UPDATE fixedstudy  
+SET FixedNumber = 4
+WHERE PatientNumber  = 151;
+UPDATE fixedstudy  
+SET FixedNumber = 2
+WHERE PatientNumber  = 148;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  = 138;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  = 131;
+UPDATE fixedstudy  
+SET FixedNumber = 3
+WHERE PatientNumber  = 129;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  = 109;
+UPDATE fixedstudy  
+SET FixedNumber = 2
+WHERE PatientNumber  = 107;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  = 104;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  =  94;
+UPDATE fixedstudy  
+SET FixedNumber = 2
+WHERE PatientNumber  =  86;
+UPDATE fixedstudy  
+SET FixedNumber = 1
+WHERE PatientNumber  =  85;
+UPDATE fixedstudy  
+SET FixedNumber = 2
+WHERE PatientNumber  =   3;
 -- select * from fixedstudy;
 
 -- join with hcc date
@@ -145,8 +202,34 @@ select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art)
 UPDATE widejoinqa SET Post = Del WHERE Post is Null;
 select count(UID),count(Status),count(diagnosticinterval),count(Pre) ,count(Art) ,count(Ven),count(Del),count(Post)  from widejoinqa;
 
+create table patientlist  as
+select substr(dk.UID,1,7) ptid,dk.UID,dk.status,dk.diagnosticinterval,dk.daysincebaseline   from widejoinqa dk where (dk.diagnosticinterval = 0.0 or dk.diagnosticinterval = 'inf') and  dk.daysincebaseline = 0.0; 
+
+create table patientlistpos  as
+select substr(dk.UID,1,7) ptid,dk.UID,dk.status,dk.diagnosticinterval from widejoinqa dk where dk.diagnosticinterval  > 0.0 and dk.diagnosticinterval != 'inf' ;
+
+create table patientlistprior  as
+select pn.ptid,pn.UID,pn.status,min (pn.diagnosticinterval) diagnosticinterval from patientlistpos  pn  group by pn.ptid ;
+
+create table patientlistunion as
+select ptid,UID,status from patientlist   union
+select ptid,UID,status from patientlistprior;
+
+-- filter missing study
+create table filterpatientlistcase as
+select count(ptid) numscan,* from patientlistunion where status = 'case' group by ptid;
+
+create table patientlistunionnew as
+select ptid,UID,status from patientlistunion where status = 'control' union
+select pu.ptid,pu.UID,pu.status from patientlistunion pu join  filterpatientlistcase fp on pu.ptid = fp.ptid where fp.numscan =2 ;
+
+-- error check
+select count(ptid), status from patientlistunionnew group by status ;
+
 .output bcmlirads/wideanon.csv 
 select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,FixedNumber,daysincebaseline,Fixed from  widejoinqa;
+.output bcmlirads/wideanonPreDx.csv 
+select wj.UID,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join patientlistunionnew  pn on pn.UID = wj.UID ;
 .quit
 -- cat newwide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;

@@ -13,7 +13,7 @@ if( length( args ) >= 1 )
 # load data outside server so it is added to global environment
 # and not loaded with every session connection
 # https://shiny.rstudio.com/articles/scoping.html
-csv.data <- read.csv("bcmlirads/wideanon.csv", header = TRUE,na.strings="")
+csv.data <- read.csv("bcmlirads/wideanonPreDx.csv", header = TRUE,na.strings="")
 
 qadatafiles=paste0("bcmdata/",csv.data$UID,"/reviewsolution.txt")
 qadatainfo <- rep(NA,length(qadatafiles))
@@ -32,15 +32,20 @@ my.data <- reactiveValues(data=cbind(REVIEWED = F, subset(csv.data,  select = c(
   QA = qadatainfo,
 liradtrain=paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz"),
 liradtrainExists=file.exists(paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz")),
-#Prerawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pre.rawlivertrain.nii.gz"),
+Preraw=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.raw.nii.gz")),
+Artraw=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.raw.nii.gz")),
+Venraw=file.exists(paste0("bcmdata/",csv.data$UID,"/Ven.raw.nii.gz")),
+Delraw=file.exists(paste0("bcmdata/",csv.data$UID,"/Del.raw.nii.gz")),
+Pstraw=file.exists(paste0("bcmdata/",csv.data$UID,"/Pst.raw.nii.gz")),
+Premask=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.mask.nii.gz")),
+Artmask=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.mask.nii.gz")),
+Venmask=file.exists(paste0("bcmdata/",csv.data$UID,"/Ven.mask.nii.gz")),
+Delmask=file.exists(paste0("bcmdata/",csv.data$UID,"/Del.mask.nii.gz")),
+Pstmask=file.exists(paste0("bcmdata/",csv.data$UID,"/Pst.mask.nii.gz")),
 PrerawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.rawlivertrain.nii.gz")),
-#Artrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Art.rawlivertrain.nii.gz"),
 ArtrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.rawlivertrain.nii.gz")),
-#Venrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Ven.rawlivertrain.nii.gz"),
 VenrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Ven.rawlivertrain.nii.gz")),
-#Delrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Del.rawlivertrain.nii.gz"),
 DelrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Del.rawlivertrain.nii.gz")),
-#Pstrawlivertrain=paste0("bcmdata/",csv.data$UID,"/Pst.rawlivertrain.nii.gz"),
 PstrawlivertrainExists=file.exists(paste0("bcmdata/",csv.data$UID,"/Pst.rawlivertrain.nii.gz")),
 Prelongregcc=file.exists(paste0("bcmdata/",csv.data$UID,"/Pre.longregcc.nii.gz")),
 Artlongregcc=file.exists(paste0("bcmdata/",csv.data$UID,"/Art.longregcc.nii.gz")),
