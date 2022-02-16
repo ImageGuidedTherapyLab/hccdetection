@@ -211,6 +211,19 @@ select substr(dk.UID,1,7) ptid,dk.UID,dk.status,dk.diagnosticinterval from widej
 create table patientlistprior  as
 select pn.ptid,pn.UID,pn.status,min (pn.diagnosticinterval) diagnosticinterval from patientlistpos  pn  group by pn.ptid ;
 
+UPDATE patientlistprior  
+SET UID = 'BCM0033006'
+WHERE ptid  =  'BCM0033';
+UPDATE patientlistprior  
+SET UID = 'BCM0039008'
+WHERE ptid  =  'BCM0039';
+UPDATE patientlistprior  
+SET UID = 'BCM0044010'
+WHERE ptid  =  'BCM0044';
+UPDATE patientlistprior  
+SET UID = 'BCM0065001'
+WHERE ptid  =  'BCM0065';
+
 create table patientlistunion as
 select ptid,UID,status from patientlist   union
 select ptid,UID,status from patientlistprior;
