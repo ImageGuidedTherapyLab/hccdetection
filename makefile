@@ -156,7 +156,8 @@ $(BCMWORKDIR)/%/slic.nii.gz:
 
 # preprocess data
 zscorebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).zscore.nii.gz,$(BCMLISTUID)))) 
-biasbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID))))  $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.bias.nii.gz,$(BCMLISTUID)))
+biasbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).bias.nii.gz,$(BCMLISTUID)))) 
+fixedbiasbcm:  $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.bias.nii.gz,$(BCMLISTUID)))
 resizebcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).crop.nii.gz,$(BCMLISTUID)))) 
 resizebcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.crop.nii.gz,$(BCMLISTUID)))
 $(BCMWORKDIR)/%.zscore.nii.gz: 
@@ -171,6 +172,7 @@ $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
 # label data
 labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
+labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID)))
 bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
@@ -178,6 +180,13 @@ bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
 	c3d $< bcmdata/$*/label.nii.gz -copy-transform -o bcmdata/$*/label.nii.gz 
 	c3d $< bcmdata/$*/score.nii.gz -copy-transform -o bcmdata/$*/score.nii.gz 
 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
+bcmdata/BCM0015000/%/label.nii.gz: bcmdata/BCM0015000/%.256.nii.gz
+	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','cpu'\)
+	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
+	echo HACK - matlab losing header info
+	c3d $< bcmdata/BCM0015000/$*/label.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/label.nii.gz 
+	c3d $< bcmdata/BCM0015000/$*/score.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/score.nii.gz 
+	echo vglrun itksnap -g $< -s bcmdata/BCM0015000/$*/label.nii.gz -o bcmdata/BCM0015000/$*/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 	c3d -verbose bcmdata/$*.raw.nii.gz $<  -reslice-identity -o $@
 # dilate mask

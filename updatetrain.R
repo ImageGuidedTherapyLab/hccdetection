@@ -17,18 +17,20 @@ csv.data <- read.csv("bcmlirads/wideanonPreDx.csv", header = TRUE,na.strings="")
 
 qadatafiles=paste0("bcmdata/",csv.data$UID,"/reviewsolution.txt")
 qadatainfo <- rep(NA,length(qadatafiles))
+reviewinfo <- rep(F,length(qadatafiles))
 for (iii in 1:length(qadatafiles))
 {
  if(file.exists(qadatafiles[iii]))
  {
   qadatainfo[iii]<- paste(readLines(qadatafiles[iii]), collapse=" ")
+  reviewinfo[iii] <- T
  }
 }
 
 
 # set up reactive data for updating reviewed status
 # "FixedNumber","PatientNumber","studynumber"
-my.data <- reactiveValues(data=cbind(REVIEWED = F, subset(csv.data,  select = c("UID","Vendor","Status","diagnosticinterval","daysincebaseline","Fixed")),
+my.data <- reactiveValues(data=cbind(REVIEWED = reviewinfo , subset(csv.data,  select = c("UID","Vendor","Status","diagnosticinterval","daysincebaseline","Fixed")),
   QA = qadatainfo,
 liradtrain=paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz"),
 liradtrainExists=file.exists(paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz")),
