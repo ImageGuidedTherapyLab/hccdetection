@@ -10,7 +10,19 @@ graphics.off()
 # source('epmstats.R')
 fname <- "epmstats/widejoin.csv" 
 rawdataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
-mydataset  <- subset(rawdataset ,                                               LabelID > 2 )
+myrawsubset  <- subset(rawdataset ,                                               LabelID > 2 )
+
+qadatafiles=paste0("bcmdata/",myrawsubset$UID,"/reviewsolution.txt")
+qadatainfo <- rep(NA,length(qadatafiles))
+for (iii in 1:length(qadatafiles))
+{
+ if(file.exists(qadatafiles[iii]))
+ {
+  qadatainfo[iii]<- paste(readLines(qadatafiles[iii]), collapse=" ")
+ }
+}
+mydataset = cbind(mydataset,qadatainfo)
+
 
 # summary stats
 print( 'unique patients' )
