@@ -4,6 +4,7 @@
 #ROC plots: https://github.com/EGates1/RadPath/blob/master/Code/GradePreds.R#L751
 #PR plot: https://github.com/EGates1/RadPath/blob/master/Code/GradePreds.R#L761
 library(caret)
+options(width=135)
 
 graphics.off()
 
@@ -21,8 +22,8 @@ for (iii in 1:length(qadatafiles))
   qadatainfo[iii]<- paste(readLines(qadatafiles[iii]), collapse=" ")
  }
 }
-mydataset = cbind(mydataset,qadatainfo)
-
+mydatasetwithqa = cbind(myrawsubset , QA=qadatainfo)
+mydataset <- subset(mydatasetwithqa , QA=='Usable' )
 
 # summary stats
 print( 'unique patients' )
@@ -35,18 +36,29 @@ is_train <- lapply(folds, function(ind, n) !(1:n %in% ind), n = length(uniquepti
 
 # subset data
 epmdata      <- subset(mydataset ,                                               FeatureID == 'epm')
-epmdataDx    <- subset(mydataset , Status == 'case' & diagnosticinterval ==0.0 & FeatureID == 'epm')
-epmdataPreDx <- subset(mydataset , Status == 'case' & diagnosticinterval >0.0  & FeatureID == 'epm')
+epmdataDx    <- subset(mydataset , Status == 'case' &  diagnosticinterval ==0.0 & FeatureID == 'epm')
+epmdataPreDx <- subset(mydataset , Status == 'case' &  diagnosticinterval >0.0  & FeatureID == 'epm')
 epmdataCase  <- subset(mydataset , Status == 'case' & FeatureID == 'epm')
 epmdataCntrl <- subset(mydataset , Status == 'control' & FeatureID == 'epm')
-epmdataPreDxCntrl <- subset(mydataset ,  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'epm')
-epmdataDxCntrl    <- subset(mydataset ,  ((Status == 'case'     & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'epm')
+epmdataPreDxCntrl <- subset(mydataset , LabelID != 5  &  ((Status == 'control') |(Status == 'case' & diagnosticinterval >0.0) ) & FeatureID == 'epm')
+epmdataDxCntrl    <- subset(mydataset , LabelID != 3  &  ((Status == 'case'     & diagnosticinterval == 0.0) |  (Status == 'control'))  & FeatureID == 'epm')
 epmdataBackground <- subset(mydataset ,  LabelID == 6  & FeatureID == 'epm')
 epmdataBackgroundCase    <- subset(mydataset , Status == 'case'    & LabelID == 6  & FeatureID == 'epm')
 epmdataBackgroundControl <- subset(mydataset , Status == 'control' & LabelID == 6  & FeatureID == 'epm')
 mean(epmdataBackgroundCase$Mean)
 mean(epmdataBackgroundControl$Mean)
-resBackground <- wilcox.test(Mean ~ Status, data = epmdataBackground , exact = FALSE)
+epmdataLR3Background <- subset(mydataset ,  (LabelID == 3 |LabelID == 6)  & FeatureID == 'epm')
+epmdataLR4Background <- subset(mydataset ,  (LabelID == 4 |LabelID == 6)  & FeatureID == 'epm')
+epmdataLR5Background <- subset(mydataset ,  (LabelID == 5 |LabelID == 6)  & FeatureID == 'epm')
+resBackground <- wilcox.test(Mean ~ Status , data = epmdataBackground    , exact = FALSE)
+LR3Background <- wilcox.test(Mean ~ LabelID, data = epmdataLR3Background , exact = FALSE)
+LR4Background <- wilcox.test(Mean ~ LabelID, data = epmdataLR4Background , exact = FALSE)
+LR5Background <- wilcox.test(Mean ~ LabelID, data = epmdataLR5Background , exact = FALSE)
+aggregate(epmdata$Mean, list(epmdata$LabelID), FUN=mean)
+print(resBackground )
+print(LR3Background )
+print(LR4Background )
+print(LR5Background )
 
 epmdataThreshold  <- subset(mydataset ,  ((Status == 'case' & LabelID < 6) |  (Status == 'control'))  & FeatureID == 'epm')
 
@@ -84,10 +96,10 @@ print( 'Dx control summary' )
 print( length(unique(epmdataDxCntrl$ptid)))
 
 # Boxplot of EPM 
-png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM") ; dev.off()
-png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM") ; dev.off()
+png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR3","LR4","Control"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR4","LR5","Control"), ylim = c(0, 1.5)) ; dev.off()
 png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR3","LR4","LR5","Control")) ; dev.off()
-png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM", names=c("Case.3","Cntl.3","Case.4","Cntl.4","Case.5","Cntl.5","Case.0","Cntl.0")) ; dev.off()
+png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
 
 # Boxplot of ART 
 png('artboxpredxcntrl.png'); boxplot(Mean~LabelID,data=artdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="ART") ; dev.off()

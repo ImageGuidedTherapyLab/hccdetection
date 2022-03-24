@@ -3,6 +3,12 @@ Export slicer DB as nifti
 ==============
 vglrun /opt/apps/slicer/Slicer-4.10.2-linux-amd64/Slicer --no-main-window --python-script ./anonymize.py
 
+epmstats 
+==============
+make -k -i -B -f lrstatistics.makefile epmstatdf
+cat epmstats/*/lstat.csv > epmstats/lstat.csv
+cat epmstatistics.sql  | sqlite3
+Rscript epmstats.R
 
 Matlab example 
 ==============
