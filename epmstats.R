@@ -60,7 +60,8 @@ print(LR3Background )
 print(LR4Background )
 print(LR5Background )
 
-epmdataThreshold  <- subset(mydataset ,  ((Status == 'case' & LabelID < 6) |  (Status == 'control'))  & FeatureID == 'epm')
+epmdataThresholdDx    <- subset(mydataset, ((Status == 'case' & LabelID < 6& diagnosticinterval ==0.0 ) | (Status == 'control')) & FeatureID == 'epm')
+epmdataThresholdPreDx <- subset(mydataset, ((Status == 'case' & LabelID < 6& diagnosticinterval > 0.0 ) | (Status == 'control')) & FeatureID == 'epm')
 
 # subset data
 artdata      <- subset(mydataset ,                                               FeatureID == 'art')
@@ -96,10 +97,10 @@ print( 'Dx control summary' )
 print( length(unique(epmdataDxCntrl$ptid)))
 
 # Boxplot of EPM 
-png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR3","LR4","Control"), ylim = c(0, 1.5)) ; dev.off()
-png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR4","LR5","Control"), ylim = c(0, 1.5)) ; dev.off()
-png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM", names=c("LR3","LR4","LR5","Control")) ; dev.off()
-png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
+png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","Control"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR4","LR5","Control"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","LR5","Control")) ; dev.off()
+png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM RMSD", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
 
 # Boxplot of ART 
 png('artboxpredxcntrl.png'); boxplot(Mean~LabelID,data=artdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="ART") ; dev.off()
@@ -123,44 +124,41 @@ png('myrocepm5.png');   plot(myrocepm5  ,main=sprintf("ROC curve EPM LR5/LR3&LR4
 png('myrocepm3.png');   plot(myrocepm3  ,main=sprintf("ROC curve EPM LR3/LR4&LR5\nAUC=%0.3f", myrocepm3$auc)); dev.off()
 
 # evaluate optimal threshold for case/control
-uniquecasecntlptid = unique(epmdataThreshold$ptid) 
-epmdataThreshold$response = ifelse(epmdataThreshold$LabelID == 6,0,1)
+uniquecasecntlptidDx = unique(epmdataThresholdDx$ptid) 
+epmdataThresholdDx$response = ifelse(epmdataThresholdDx$LabelID == 6,0,1)
 
-# kfold data
-casecntlfolds <- createFolds(uniquecasecntlptid , 5)
-casecntlSubgroups = 1:length(uniquecasecntlptid )
-casecntlSubgroups[casecntlfolds$Fold1] = 1
-casecntlSubgroups[casecntlfolds$Fold2] = 2
-casecntlSubgroups[casecntlfolds$Fold3] = 3
-casecntlSubgroups[casecntlfolds$Fold4] = 4
-casecntlSubgroups[casecntlfolds$Fold5] = 5
-is_train <- lapply(casecntlfolds , function(ind, n) !(1:n %in% ind), n = length(uniqueptid ))
+uniquecasecntlptidPreDx = unique(epmdataThresholdPreDx$ptid) 
+epmdataThresholdPreDx$response = ifelse(epmdataThresholdPreDx$LabelID == 6,0,1)
 
-dataframeuidmap  = data.frame(ptid=uniquecasecntlptid,casecntlSubgroups)
-
-epmdataCaseCntl = merge(x = epmdataThreshold, y = dataframeuidmap  , by = "ptid", all.x = TRUE)
+# kfold data PreDx
+casecntlfoldsPreDx <- createFolds(uniquecasecntlptidPreDx , 5)
+casecntlSubgroupsPreDx = 1:length(uniquecasecntlptidPreDx )
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold1] = 1
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold2] = 2
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold3] = 3
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold4] = 4
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold5] = 5
+dataframeuidmapPreDx  = data.frame(ptid=uniquecasecntlptidPreDx,casecntlSubgroupsPreDx)
+epmdataCaseCntlPreDx = merge(x = epmdataThresholdPreDx, y = dataframeuidmapPreDx  , by = "ptid", all.x = TRUE)
 
 library(cutpointr)
-cp <- cutpointr(epmdataCaseCntl , Mean, response , subgroup = casecntlSubgroups,method = maximize_metric, metric = sum_sens_spec)
-summary(cp)
-plot(cp)
+cpPreDx <- cutpointr(epmdataCaseCntlPreDx , Mean, response , subgroup = casecntlSubgroupsPreDx,method = maximize_metric, metric = sum_sens_spec)
+summary(cpPreDx)
+plot(cpPreDx)
 
+# kfold data Dx
+casecntlfoldsDx <- createFolds(uniquecasecntlptidDx , 5)
+casecntlSubgroupsDx = 1:length(uniquecasecntlptidDx )
+casecntlSubgroupsDx[casecntlfoldsDx$Fold1] = 1
+casecntlSubgroupsDx[casecntlfoldsDx$Fold2] = 2
+casecntlSubgroupsDx[casecntlfoldsDx$Fold3] = 3
+casecntlSubgroupsDx[casecntlfoldsDx$Fold4] = 4
+casecntlSubgroupsDx[casecntlfoldsDx$Fold5] = 5
+dataframeuidmapDx  = data.frame(ptid=uniquecasecntlptidDx,casecntlSubgroupsDx)
+epmdataCaseCntlDx = merge(x = epmdataThresholdDx, y = dataframeuidmapDx  , by = "ptid", all.x = TRUE)
 
+cpDx <- cutpointr(epmdataCaseCntlDx , Mean, response , subgroup = casecntlSubgroupsDx,method = maximize_metric, metric = sum_sens_spec)
+summary(cpDx)
+dev.new()
+plot(cpDx)
 
-## 
-## cbind(mydataset$InstanceUID,mydataset$LabelID, mydataset$countlr5, mydataset$compsize, mydataset$countlr5  / mydataset$compsize,mydataset$truth,ifelse(mydataset$truth == 5,1,0))
-## # Calculate the AUC Confidence Interval.
-## #pROC::ci.auc( ifelse(mydataset$truth == 5,1,0), mydataset$predict5  )
-## #pROC::ci.auc( ifelse(mydataset$truth == 5,1,0), mydataset$countlr5  / mydataset$compsize)
-## 
-## pROC::roc.test(myroc3a   , myrocepm3   , method='bootstrap'   )
-## pROC::roc.test(myroc5a   , myrocepm5   , method='bootstrap'   )
-## pROC::roc.test(myrocsuba , myrocepmsub , method='bootstrap'   )
-## 
-## 
-## png('myroc3a.png');     plot(myroc3a    ,main=sprintf("ROC curve NN LR3/LR4&LR5 \nAUC=%0.3f", myroc3a$auc)); dev.off()
-## png('myroc5a.png');     plot(myroc5a    ,main=sprintf("ROC curve NN LR5/LR3&LR4 \nAUC=%0.3f", myroc5a$auc)); dev.off()
-## #png('myroc5b.png');     plot(myroc5b    ,main=sprintf("ROC curve bLR5/not-LR5   \nAUC=%0.3f", myroc5b$auc)); dev.off()
-## png('myrocepmsub.png'); plot(myrocepmsub,main=sprintf("ROC curve EPM LR3/LR5    \nAUC=%0.3f", myrocepmsub$auc)); dev.off()
-## png('myrocsuba.png');   plot(myrocsuba  ,main=sprintf("ROC curve NN  LR3/LR5    \nAUC=%0.3f", myrocsuba$auc)); dev.off()
-## #png('myrocsubb.png');   plot(myrocsubb  ,main=sprintf("ROC curve NN  LR3/LR5    \nAUC=%0.3f", myrocsubb$auc)); dev.off()
