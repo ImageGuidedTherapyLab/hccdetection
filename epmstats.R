@@ -8,6 +8,7 @@ options(width=135)
 
 graphics.off()
 
+# Rscript epmstats.R
 # source('epmstats.R')
 fname <- "epmstats/widejoin.csv" 
 rawdataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
