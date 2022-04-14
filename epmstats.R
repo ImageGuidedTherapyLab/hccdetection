@@ -97,8 +97,8 @@ print( 'Dx control summary' )
 print( length(unique(epmdataDxCntrl$ptid)))
 
 # Boxplot of EPM 
-png('epmboxpredxcntrl.png'); boxplot(Mean~LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","Control"), ylim = c(0, 1.5)) ; dev.off()
-png('epmboxdxcntrl.png');boxplot(Mean~LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR4","LR5","Control"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxpredxcntrl.png'); boxplot(Mean~Status+LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","","LR4","","Case","Cntl"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxdxcntrl.png');boxplot(Mean~Status+LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR4","","LR5","","Case","Cntl"), ylim = c(0, 1.5)) ; dev.off()
 png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","LR5","Control")) ; dev.off()
 png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM RMSD", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
 
@@ -131,7 +131,8 @@ uniquecasecntlptidPreDx = unique(epmdataThresholdPreDx$ptid)
 epmdataThresholdPreDx$response = ifelse(epmdataThresholdPreDx$LabelID == 6,0,1)
 
 # kfold data PreDx
-casecntlfoldsPreDx <- createFolds(uniquecasecntlptidPreDx , 5)
+nFolds = 5
+casecntlfoldsPreDx <- createFolds(uniquecasecntlptidPreDx , nFolds )
 casecntlSubgroupsPreDx = 1:length(uniquecasecntlptidPreDx )
 casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold1] = 1
 casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold2] = 2
@@ -142,12 +143,67 @@ dataframeuidmapPreDx  = data.frame(ptid=uniquecasecntlptidPreDx,casecntlSubgroup
 epmdataCaseCntlPreDx = merge(x = epmdataThresholdPreDx, y = dataframeuidmapPreDx  , by = "ptid", all.x = TRUE)
 
 library(cutpointr)
+dfget_opt_ind <- function(roc_curve, oc, direction) {
+    stopifnot(is.numeric(oc) | is.na(oc))
+    sapply(oc, function(x) {
+        if (direction == ">=") {
+            opt_ind <- max(which(roc_curve$x.sorted >= x))
+        } else if (direction == "<=") {
+            opt_ind <- max(which(roc_curve$x.sorted <= x))
+        }
+        return(opt_ind)
+    })
+}
+
 cpPreDx <- cutpointr(epmdataCaseCntlPreDx , Mean, response , subgroup = casecntlSubgroupsPreDx,method = maximize_metric, metric = sum_sens_spec)
-summary(cpPreDx)
+print(summary(cpPreDx))
 plot(cpPreDx)
 
+PreDx_summary <- vector("list", nFolds )
+for (iii in 1:nFolds ) {
+  oi <- dfget_opt_ind(cpPreDx$roc_curve[[iii]], oc = unlist(cpPreDx$optimal_cutpoint[iii]), direction = cpPreDx$direction[iii])
+  PreDx_summary[[iii]]$confusion_matrix <- data.frame( cutpoint = unlist(cpPreDx$optimal_cutpoint[iii]), cpPreDx$roc_curve[[iii]][oi, c("tp", "fn", "fp", "tn")])
+}
+
+foldlengthPreDx = sapply(cpPreDx$data,nrow)
+aggregateaccuracyPreDx = sum(cpPreDx$acc * foldlengthPreDx) / sum(foldlengthPreDx)
+
+aggregatesensitivityPreDx = (
+    PreDx_summary[[1]]$confusion_matrix$tp +
+    PreDx_summary[[2]]$confusion_matrix$tp +
+    PreDx_summary[[3]]$confusion_matrix$tp +
+    PreDx_summary[[4]]$confusion_matrix$tp +
+    PreDx_summary[[5]]$confusion_matrix$tp ) / (
+    PreDx_summary[[1]]$confusion_matrix$tp + PreDx_summary[[1]]$confusion_matrix$fn +
+    PreDx_summary[[2]]$confusion_matrix$tp + PreDx_summary[[2]]$confusion_matrix$fn +
+    PreDx_summary[[3]]$confusion_matrix$tp + PreDx_summary[[3]]$confusion_matrix$fn +
+    PreDx_summary[[4]]$confusion_matrix$tp + PreDx_summary[[4]]$confusion_matrix$fn +
+    PreDx_summary[[5]]$confusion_matrix$tp + PreDx_summary[[5]]$confusion_matrix$fn 
+                            ) 
+
+aggregatespecificityPreDx = (
+    PreDx_summary[[1]]$confusion_matrix$tn +
+    PreDx_summary[[2]]$confusion_matrix$tn +
+    PreDx_summary[[3]]$confusion_matrix$tn +
+    PreDx_summary[[4]]$confusion_matrix$tn +
+    PreDx_summary[[5]]$confusion_matrix$tn ) / (
+    PreDx_summary[[1]]$confusion_matrix$tn + PreDx_summary[[1]]$confusion_matrix$fp +
+    PreDx_summary[[2]]$confusion_matrix$tn + PreDx_summary[[2]]$confusion_matrix$fp +
+    PreDx_summary[[3]]$confusion_matrix$tn + PreDx_summary[[3]]$confusion_matrix$fp +
+    PreDx_summary[[4]]$confusion_matrix$tn + PreDx_summary[[4]]$confusion_matrix$fp +
+    PreDx_summary[[5]]$confusion_matrix$tn + PreDx_summary[[5]]$confusion_matrix$fp 
+                            ) 
+
+cat("PreDx cutpoints = ",cpPreDx$optimal_cutpoint,"\n")
+print(sprintf("PreDx acc = %f sensitivity = %f specifitity = %f",aggregateaccuracyPreDx, aggregatesensitivityPreDx , aggregatespecificityPreDx))
+
+cpPreDxinsample <- cutpointr(epmdataCaseCntlPreDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
+print(summary(cpPreDxinsample))
+dev.new()
+plot(cpPreDxinsample)
+
 # kfold data Dx
-casecntlfoldsDx <- createFolds(uniquecasecntlptidDx , 5)
+casecntlfoldsDx <- createFolds(uniquecasecntlptidDx , nFolds )
 casecntlSubgroupsDx = 1:length(uniquecasecntlptidDx )
 casecntlSubgroupsDx[casecntlfoldsDx$Fold1] = 1
 casecntlSubgroupsDx[casecntlfoldsDx$Fold2] = 2
@@ -158,7 +214,49 @@ dataframeuidmapDx  = data.frame(ptid=uniquecasecntlptidDx,casecntlSubgroupsDx)
 epmdataCaseCntlDx = merge(x = epmdataThresholdDx, y = dataframeuidmapDx  , by = "ptid", all.x = TRUE)
 
 cpDx <- cutpointr(epmdataCaseCntlDx , Mean, response , subgroup = casecntlSubgroupsDx,method = maximize_metric, metric = sum_sens_spec)
-summary(cpDx)
+print( summary(cpDx))
 dev.new()
 plot(cpDx)
 
+Dx_summary <- vector("list", nFolds )
+for (iii in 1:nFolds ) {
+  oi <- dfget_opt_ind(cpDx$roc_curve[[iii]], oc = unlist(cpDx$optimal_cutpoint[iii]), direction = cpDx$direction[iii])
+  Dx_summary[[iii]]$confusion_matrix <- data.frame( cutpoint = unlist(cpDx$optimal_cutpoint[iii]), cpDx$roc_curve[[iii]][oi, c("tp", "fn", "fp", "tn")])
+}
+
+foldlengthDx = sapply(cpDx$data,nrow)
+aggregateaccuracyDx = sum(cpDx$acc * foldlengthDx) / sum(foldlengthDx)
+
+aggregatesensitivityDx = (
+    Dx_summary[[1]]$confusion_matrix$tp +
+    Dx_summary[[2]]$confusion_matrix$tp +
+    Dx_summary[[3]]$confusion_matrix$tp +
+    Dx_summary[[4]]$confusion_matrix$tp +
+    Dx_summary[[5]]$confusion_matrix$tp ) / (
+    Dx_summary[[1]]$confusion_matrix$tp + Dx_summary[[1]]$confusion_matrix$fn +
+    Dx_summary[[2]]$confusion_matrix$tp + Dx_summary[[2]]$confusion_matrix$fn +
+    Dx_summary[[3]]$confusion_matrix$tp + Dx_summary[[3]]$confusion_matrix$fn +
+    Dx_summary[[4]]$confusion_matrix$tp + Dx_summary[[4]]$confusion_matrix$fn +
+    Dx_summary[[5]]$confusion_matrix$tp + Dx_summary[[5]]$confusion_matrix$fn 
+                            ) 
+
+aggregatespecificityDx = (
+    Dx_summary[[1]]$confusion_matrix$tn +
+    Dx_summary[[2]]$confusion_matrix$tn +
+    Dx_summary[[3]]$confusion_matrix$tn +
+    Dx_summary[[4]]$confusion_matrix$tn +
+    Dx_summary[[5]]$confusion_matrix$tn ) / (
+    Dx_summary[[1]]$confusion_matrix$tn + Dx_summary[[1]]$confusion_matrix$fp +
+    Dx_summary[[2]]$confusion_matrix$tn + Dx_summary[[2]]$confusion_matrix$fp +
+    Dx_summary[[3]]$confusion_matrix$tn + Dx_summary[[3]]$confusion_matrix$fp +
+    Dx_summary[[4]]$confusion_matrix$tn + Dx_summary[[4]]$confusion_matrix$fp +
+    Dx_summary[[5]]$confusion_matrix$tn + Dx_summary[[5]]$confusion_matrix$fp 
+                            ) 
+
+cat("Dx cutpoints = ",cpDx$optimal_cutpoint,"\n")
+print( sprintf("Dx acc = %f sensitivity = %f specifitity = %f",aggregateaccuracyDx, aggregatesensitivityDx , aggregatespecificityDx))
+
+cpDxinsample <- cutpointr(epmdataCaseCntlDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
+print(summary(cpDxinsample ))
+dev.new()
+plot(cpDxinsample )
