@@ -134,11 +134,11 @@ epmdataThresholdPreDx$response = ifelse(epmdataThresholdPreDx$LabelID == 6,0,1)
 nFolds = 5
 casecntlfoldsPreDx <- createFolds(uniquecasecntlptidPreDx , nFolds )
 casecntlSubgroupsPreDx = 1:length(uniquecasecntlptidPreDx )
-casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold1] = 1
-casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold2] = 2
-casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold3] = 3
-casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold4] = 4
-casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold5] = 5
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold1] =  "Fold 1"
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold2] =  "Fold 2"
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold3] =  "Fold 3"
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold4] =  "Fold 4"
+casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold5] =  "Fold 5"
 dataframeuidmapPreDx  = data.frame(ptid=uniquecasecntlptidPreDx,casecntlSubgroupsPreDx)
 epmdataCaseCntlPreDx = merge(x = epmdataThresholdPreDx, y = dataframeuidmapPreDx  , by = "ptid", all.x = TRUE)
 
@@ -157,7 +157,7 @@ dfget_opt_ind <- function(roc_curve, oc, direction) {
 
 cpPreDx <- cutpointr(epmdataCaseCntlPreDx , Mean, response , subgroup = casecntlSubgroupsPreDx,method = maximize_metric, metric = sum_sens_spec)
 print(summary(cpPreDx))
-plot(cpPreDx)
+png('ROCcpPreDx.png'); plot_roc(cpPreDx);dev.off()
 
 PreDx_summary <- vector("list", nFolds )
 for (iii in 1:nFolds ) {
@@ -199,24 +199,23 @@ print(sprintf("PreDx acc = %f sensitivity = %f specifitity = %f",aggregateaccura
 
 cpPreDxinsample <- cutpointr(epmdataCaseCntlPreDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
 print(summary(cpPreDxinsample))
-dev.new()
-plot(cpPreDxinsample)
+
+png('ROCcpPreDxinsample.png'); plot_roc(cpPreDxinsample);dev.off()
 
 # kfold data Dx
 casecntlfoldsDx <- createFolds(uniquecasecntlptidDx , nFolds )
 casecntlSubgroupsDx = 1:length(uniquecasecntlptidDx )
-casecntlSubgroupsDx[casecntlfoldsDx$Fold1] = 1
-casecntlSubgroupsDx[casecntlfoldsDx$Fold2] = 2
-casecntlSubgroupsDx[casecntlfoldsDx$Fold3] = 3
-casecntlSubgroupsDx[casecntlfoldsDx$Fold4] = 4
-casecntlSubgroupsDx[casecntlfoldsDx$Fold5] = 5
+casecntlSubgroupsDx[casecntlfoldsDx$Fold1] = "Fold 1"
+casecntlSubgroupsDx[casecntlfoldsDx$Fold2] = "Fold 2"
+casecntlSubgroupsDx[casecntlfoldsDx$Fold3] = "Fold 3"
+casecntlSubgroupsDx[casecntlfoldsDx$Fold4] = "Fold 4"
+casecntlSubgroupsDx[casecntlfoldsDx$Fold5] = "Fold 5"
 dataframeuidmapDx  = data.frame(ptid=uniquecasecntlptidDx,casecntlSubgroupsDx)
 epmdataCaseCntlDx = merge(x = epmdataThresholdDx, y = dataframeuidmapDx  , by = "ptid", all.x = TRUE)
 
 cpDx <- cutpointr(epmdataCaseCntlDx , Mean, response , subgroup = casecntlSubgroupsDx,method = maximize_metric, metric = sum_sens_spec)
 print( summary(cpDx))
-dev.new()
-plot(cpDx)
+png('ROCcpDx.png'); plot_roc(cpDx);dev.off()
 
 Dx_summary <- vector("list", nFolds )
 for (iii in 1:nFolds ) {
@@ -258,5 +257,4 @@ print( sprintf("Dx acc = %f sensitivity = %f specifitity = %f",aggregateaccuracy
 
 cpDxinsample <- cutpointr(epmdataCaseCntlDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
 print(summary(cpDxinsample ))
-dev.new()
-plot(cpDxinsample )
+png('ROCcpDxinsample.png'); plot_roc(cpDxinsample );dev.off()
