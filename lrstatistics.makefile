@@ -65,7 +65,7 @@ epmstats/%/lstat.csv:
 	c3d bcmdata/$*/EPM.nii bcmlirads/$*fixed.train.nii.gz  -lstat  > $(@D)/epm.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,epm,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/epm.txt > $(@D)/epm.csv 
 	c3d bcmdata/$*/Art.longregcc.nii.gz bcmlirads/$*fixed.train.nii.gz  -lstat > $(@D)/art.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,art,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/art.txt > $(@D)/art.csv 
 	c3d bcmdata/$*/Ven.longregcc.nii.gz bcmlirads/$*fixed.train.nii.gz  -lstat > $(@D)/ven.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,ven,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/ven.txt > $(@D)/ven.csv 
-	cat $(@D)/art.csv $(@D)/ven.csv $(@D)/epm.csv  > $@
+	if [  -f $(@D)/epm.csv  ]  ; then cat $(@D)/art.csv $(@D)/ven.csv $(@D)/epm.csv  > $@ ; fi 
 
 ## intensity statistics
 qastats/%/lstat.csv: 
