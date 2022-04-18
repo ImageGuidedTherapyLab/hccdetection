@@ -86,20 +86,34 @@ print( 'DX summary' )
 print( length(unique(epmdataDx$ptid)) )
 print( 'Dx lesion summary' )
 print( table(epmdataDx$LabelID))
+print( 'DX summary' )
+dxtmp = subset(epmdataDxCntrl , Status == 'case')
+print( length(unique(dxtmp$ptid)) )
+print( 'Dx lesion summary' )
+print( table(dxtmp$LabelID))
+
 print( 'pre Dx summary' )
 print( length(unique(epmdataPreDx$ptid)))
 print( 'pre Dx lesion summary' )
 print( table(epmdataPreDx$LabelID))
+print( 'pre Dx summary' )
+predxtmp = subset(epmdataPreDxCntrl , Status == 'case')
+print( length(unique(predxtmp $ptid)))
+print( 'pre Dx lesion summary' )
+print( table(predxtmp $LabelID))
+
 print( 'control summary' )
 print( length(unique(epmdataCntrl$ptid)))
 print( 'pre Dx Cntrl summary' )
 print( length(unique(epmdataPreDxCntrl$ptid)))
+
+
 print( 'Dx control summary' )
 print( length(unique(epmdataDxCntrl$ptid)))
 
 # Boxplot of EPM 
-png('epmboxpredxcntrl.png'); boxplot(Mean~Status+LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","","LR4","","Case","Cntl"), ylim = c(0, 1.5)) ; dev.off()
-png('epmboxdxcntrl.png');boxplot(Mean~Status+LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR4","","LR5","","Case","Cntl"), ylim = c(0, 1.5)) ; dev.off()
+png('epmboxpredxcntrl.png'); boxplot(Mean~Status+LabelID,data=epmdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","","LR4","","Case","Cntl"), ylim = c(0, 1.5)) ; text(5.5, .5, 'background');dev.off()
+png('epmboxdxcntrl.png');boxplot(Mean~Status+LabelID,data=epmdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR4","","LR5","","Case","Cntl"), ylim = c(0, 1.5)) ; text(5.5, .5, 'background');dev.off()
 png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","LR5","Control")) ; dev.off()
 png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM RMSD", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
 
