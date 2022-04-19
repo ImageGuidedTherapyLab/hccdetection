@@ -78,6 +78,9 @@ select (plr3.epmsumbPreDxlr3+ plr4.epmsumbPreDxlr4)/( plr3.epmcntbPreDxlr3+ plr4
        (plr3.vensumbPreDxlr3+ plr4.vensumbPreDxlr4)/( plr3.vencntbPreDxlr3+ plr4.vencntbPreDxlr4)  as vencnrPreDx 
 from      cnrdatalr3PreDx plr3 join  cnrdatalr4PreDx plr4;
 
+select * from cnrdatalr5Dx;
+select * from cnrdatalr4Dx;
+
 select (plr5.epmsumbDxlr5+ plr4.epmsumbDxlr4)/( plr5.epmcntbDxlr5+ plr4.epmcntbDxlr4)  as epmcnrDx,
        (plr5.artsumbDxlr5+ plr4.artsumbDxlr4)/( plr5.artcntbDxlr5+ plr4.artcntbDxlr4)  as artcnrDx,
        (plr5.vensumbDxlr5+ plr4.vensumbDxlr4)/( plr5.vencntbDxlr5+ plr4.vencntbDxlr4)  as vencnrDx 
