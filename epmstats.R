@@ -151,7 +151,7 @@ epmdataThresholdDx$response = ifelse(epmdataThresholdDx$LabelID == 6,0,1)
 uniquecasecntlptidPreDx = unique(epmdataThresholdPreDx$ptid) 
 epmdataThresholdPreDx$response = ifelse(epmdataThresholdPreDx$LabelID == 6,0,1)
 
-set.seed(1) 
+set.seed(2) 
 # kfold data PreDx
 nFolds = 5
 casecntlfoldsPreDx <- createFolds(uniquecasecntlptidPreDx , nFolds )
