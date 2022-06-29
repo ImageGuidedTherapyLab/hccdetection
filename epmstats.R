@@ -25,6 +25,7 @@ for (iii in 1:length(qadatafiles))
 }
 mydatasetwithqa = cbind(myrawsubset , QA=qadatainfo)
 mydataset <- subset(mydatasetwithqa , QA=='Usable' )
+write.csv(mydataset ,"hassan.csv", row.names = FALSE)
 
 # summary stats
 print( 'unique patients' )
