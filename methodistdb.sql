@@ -49,8 +49,12 @@ CASE WHEN (im.seriesDescription like 'DYNAMIC' or im.seriesDescription like 'DYN
 -- "Ax LAVA Post Delay",lava,Pst
 -- "AX VIBE FS 10 MIN DELAYED",vibe,Pst
      WHEN (im.seriesDescription like 'AX%VIBE%10 MIN%' or im.seriesDescription like '%t1_VIBE%DELAY%'or im.seriesDescription like 'AX%VIBE%DELAY%' or im.seriesDescription like '%cor%lava%delay' or im.seriesDescription like '%Ax%LAVA%DELAY%')  THEN 'Pst'
-     ELSE NULL END AS ImageType from series im 
-where im.seriesDescription not like '%SUB%';
+     ELSE NULL END AS ImageType,
+     replace(di.Filename, "X:/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/Methodist QIAC Uploads 2022/",'') flagtmpptid
+     from series im  
+     join images   di on di.SeriesInstanceUID= im.SeriesInstanceUID
+where im.seriesDescription not like '%SUB%'
+GROUP BY    im.SeriesInstanceUID;
 -- select * from tmp.flagdata where ImageType is not NULL;
 -- select StudyInstanceUID,seriesDescription,Vendor,ImageType from tmp.flagdata where ImageType is not NULL;
 
@@ -68,7 +72,8 @@ select count(ws.StudyInstanceUID),count(ws.Dyn),count(ws.Pst)  from tmp.widestud
 
 create table tmp.wideformat  as
 select ws.*,dn.seriesDate DynDate ,dn.seriesDescription DynDescription , pt.seriesDate PstDate, pt.seriesDescription PstDescription,
-replace(di.Filename, "/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/Methodist QIAC Uploads 2022/",'') tmpptid,
+--replace(di.Filename, "/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/Methodist QIAC Uploads 2022/",'') tmpptid,
+replace(di.Filename, "X:/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/Methodist QIAC Uploads 2022/",'') tmpptid,
 rtrim(di.Filename, replace(di.Filename, '/', '')) DynFilename,
 rtrim(pi.Filename, replace(pi.Filename, '/', '')) PstFilename
 from tmp.widestudy ws 
@@ -80,13 +85,20 @@ GROUP BY    ws.StudyInstanceUID;
 
 -- wide format
 -- sqlite3 -init methodistdb.sql methodistdb/ctkDICOM.sql
+-- sqlite3 -init methodistdb.sql /rsrch3/maroach/ctkDICOM.sql
 -- cat methodistdb.sql  | sqlite3 methodistdb/ctkDICOM.sql
+-- cat methodistdb.sql  | sqlite3 /rsrch3/maroach/ctkDICOM.sql
 .mode csv
 .output methodistdb/wideformat.csv 
 select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename from tmp.wideformat;
 
 .output methodistdb/flagdata.csv 
-select SeriesDescription,Vendor,ImageType from tmp.flagdata;
+select rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/")),'/') ptid,SeriesDescription,Vendor,ImageType from tmp.flagdata;
+
+.output methodistdb/ucsfdb.csv 
+select im.SeriesDescription,di.Filename from images di join series im on di.SeriesInstanceUID= im.SeriesInstanceUID where di.Filename like "%UCSF%" group by di.seriesinstanceuid;
+.output methodistdb/sfvadb.csv 
+select im.SeriesDescription,di.Filename from images di join series im on di.SeriesInstanceUID= im.SeriesInstanceUID where di.Filename like "%SFVA%" group by di.seriesinstanceuid;
 .mode list
 .output stdout
 
