@@ -222,6 +222,9 @@ print(sprintf("PreDx acc = %f sensitivity = %f specifitity = %f",aggregateaccura
 
 cpPreDxinsample <- cutpointr(epmdataCaseCntlPreDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
 print(summary(cpPreDxinsample))
+# get CI for auc
+getpreaucci   = pROC::roc( response = epmdataCaseCntlPreDx$response, predictor = epmdataCaseCntlPreDx$Mean, curve=T , ci=TRUE  )
+print(getpreaucci )
 
 png('ROCcpPreDxinsample.png'); plot_roc(cpPreDxinsample);dev.off()
 
