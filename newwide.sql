@@ -7,13 +7,19 @@
 .import bcmlirads/controlsALLanon.csv                  controldatekey 
 -- .import bcmlirads/newdatakeyanon.csv                 imaging 
 .import bcmlirads/controlsdatakeyanon.csv              imaging 
-
-
-
+.import bcmlirads/DemographicsCases.csv                democase
+.import bcmlirads/DemographicsControls.csv             democontrol
 
 -- .import LiverMRIProjectData/dataqa.csv  qadata
 -- select HCCDate from datekey;
 .headers on
+create table demographics  as
+select da.SlicerID,da.RaceEthnicity,da.BMI,da.Age,da.Sex,da.Diabetes,da.CirrhosisCause
+from democase da
+union
+select do.SlicerID,do.RaceEthnicity,do.BMI,do.Age,do.Sex,do.Diabetes,do.CirrhosisCause
+from democontrol do;
+
 create table hccimaging  as
 select dk.Status,
        CASE WHEN dk.HCCDate = ""  THEN NULL
@@ -240,9 +246,10 @@ select pu.ptid,pu.UID,pu.status from patientlistunion pu join  filterpatientlist
 select count(ptid), status from patientlistunionnew group by status ;
 
 .output bcmlirads/wideanon.csv 
-select UID,Vendor,Status,diagnosticinterval,Pre,Art,Ven,Del,Post,PatientNumber,studynumber,FixedNumber,daysincebaseline,Fixed from  widejoinqa;
+select wj.UID,wj.Vendor,wj.Status,dm.*,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join demographics dm on wj.PatientNumber = dm.SlicerID;
 .output bcmlirads/wideanonPreDx.csv 
 select wj.UID,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join patientlistunionnew  pn on pn.UID = wj.UID ;
-.quit
+.mode list
+.output stdout
 -- cat newwide.sql  | sqlite3
 -- select   printf('BCM%04d%03d', cast(PatientNumber as int) , cast(StudyNumber as int) ) UID,  PatientNumber, StudyNumber from imaging GROUP BY    PatientNumber, StudyNumber;

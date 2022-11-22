@@ -164,6 +164,20 @@ casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold4] =  "Fold 4"
 casecntlSubgroupsPreDx[casecntlfoldsPreDx$Fold5] =  "Fold 5"
 dataframeuidmapPreDx  = data.frame(ptid=uniquecasecntlptidPreDx,casecntlSubgroupsPreDx)
 epmdataCaseCntlPreDx = merge(x = epmdataThresholdPreDx, y = dataframeuidmapPreDx  , by = "ptid", all.x = TRUE)
+write.csv(epmdataCaseCntlPreDx ,"logisticpre.csv", row.names = FALSE)
+
+# https://www.statology.org/how-to-report-logistic-regression-results/#:~:text=We%20can%20use%20the%20following,%5D%20and%20%5Bresponse%20variable%5D.
+# We can use the following general format to report the results of a logistic regression model:
+# Logistic regression was used to analyze the relationship between [predictor variable 1], [predictor variable 2], … [predictor variable n] and [response variable].
+# It was found that, holding all other predictor variables constant, the odds of [response variable] occurring [increased or decreased] by [some percent] (95% CI [Lower Limit, Upper Limit]) for a one -unit increase in [predictor variable 1].
+
+# In a multivariable logistic regression model, adjusting for BMI, age, sex, and diabetes status, the association between EPM and HCC status is significant (OR=8.08e3;  95% CI: 1.41e2-4.61e5).
+myinput  <- c("BMI", "Age", "Sex", "Diabetes",   "Mean")
+myglm <- glm(response~ ., data=epmdataCaseCntlPreDx[c(myinput, "response")], family=binomial(link="logit"))
+print(summary(myglm))
+exp(myglm$coefficients['Mean'])
+exp(myglm$coefficients['Mean']- 1.96* 2.063876)
+exp(myglm$coefficients['Mean']+ 1.96* 2.063876)
 
 library(cutpointr)
 dfget_opt_ind <- function(roc_curve, oc, direction) {
@@ -238,6 +252,17 @@ casecntlSubgroupsDx[casecntlfoldsDx$Fold4] = "Fold 4"
 casecntlSubgroupsDx[casecntlfoldsDx$Fold5] = "Fold 5"
 dataframeuidmapDx  = data.frame(ptid=uniquecasecntlptidDx,casecntlSubgroupsDx)
 epmdataCaseCntlDx = merge(x = epmdataThresholdDx, y = dataframeuidmapDx  , by = "ptid", all.x = TRUE)
+
+# adjust for covariates
+# https://www.statology.org/how-to-report-logistic-regression-results/#:~:text=We%20can%20use%20the%20following,%5D%20and%20%5Bresponse%20variable%5D.
+# In a multivariable logistic regression model, adjusting for BMI, age, sex, and diabetes status, the association between EPM and HCC status is significant (OR=2.91e5;  95% CI: 2.81e2- 3.02e7).
+
+myglmdx <- glm(response~ ., data=epmdataCaseCntlDx[c(myinput, "response")], family=binomial(link="logit"))
+print(summary(myglmdx ))
+exp(myglmdx$coefficients['Mean'])
+exp(myglmdx$coefficients['Mean']- 1.96* 2.368484)
+exp(myglmdx$coefficients['Mean']+ 1.96* 2.368484)
+
 
 cpDx <- cutpointr(epmdataCaseCntlDx , Mean, response , subgroup = casecntlSubgroupsDx,method = maximize_metric, metric = sum_sens_spec)
 print( summary(cpDx))
