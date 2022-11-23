@@ -1,6 +1,6 @@
 import sqlite3
-#conn = sqlite3.connect('/rsrch3/maroach/ctkDICOM.sql')
-conn = sqlite3.connect('methodistdb/ctkDICOM.sql')
+conn = sqlite3.connect('/rsrch3/maroach/ctkDICOM.sql')
+#conn = sqlite3.connect('methodistdb/ctkDICOM.sql')
  
 print("Opened database successfully")
 
@@ -100,11 +100,16 @@ cursor = conn.execute('''
 -- cat methodistdb.sql  | sqlite3 /rsrch3/maroach/ctkDICOM.sql
 select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename from tmp.wideformat;
 ''')
+numberPt=set()
 for row in cursor:
-   print(row)
+   print(row[0].split('_'),row)
+   if(len(row[0].split('_'))>1):
+     numberPt.add(row[0].split('_')[3])
+   else:
+     numberPt.add(row[0])
 cursor = conn.execute('''
 select rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/")),'/') ptid,SeriesDescription,Vendor,ImageType from tmp.flagdata;
 ''')
-for row in cursor:
-   print(row)
+#for row in cursor:
+#   print(row)
 conn.close()
