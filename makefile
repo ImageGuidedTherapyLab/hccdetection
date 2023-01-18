@@ -223,6 +223,9 @@ badawyrsync:
 radoncsync:
 	rsync    -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
+biostatsync:
+	rsync    -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/biostat/epmdata
+
 # setup MDA data
 MDADATADIR="/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/LIRADS_MRI_NIFTI"
 MDALISTUID  = $(shell sed 1d bcmlirads/mdafilepaths.csv | cut -d, -f1 )

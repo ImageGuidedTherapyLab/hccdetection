@@ -124,6 +124,12 @@ png('epmboxdxcntrl.png');boxplot(Mean~Status+LabelID,data=epmdataDxCntrl, main="
 png('epmboxcasecontrola.png');boxplot(Mean~LabelID,data=epmdata, main="Case vs Control", xlab="LI-RADS", ylab="EPM RMSD", names=c("LR3","LR4","LR5","Control")) ; dev.off()
 png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Case vs Control", xlab="Status", ylab="EPM RMSD", names=c("LR3","","LR4","","LR5","","Case","Cntl")) ; text(7.5, .5, 'background'); dev.off()
 
+# NN plot update
+epmdataDxCntrlLesion = cbind(epmdataDxCntrl, lesionID = ifelse(epmdataDxCntrl$LabelID < 6  ,45,6))
+epmdataPreDxCntrlLesion = cbind(epmdataPreDxCntrl, lesionID = ifelse(epmdataPreDxCntrl$LabelID < 6  ,34,6))
+png('epmboxdxcntrllesion.png'); boxplot(Mean~Status+lesionID,data=epmdataDxCntrlLesion, main="Dx vs Control", xlab="", ylab="EPM RMSD", names=c("Case","Cntl","lesion",""), ylim = c(0, 1.5)) ; text(1.5, .5, 'background');dev.off()
+png('epmboxpredxcntrllesion.png'); boxplot(Mean~Status+lesionID,data=epmdataPreDxCntrlLesion, main="Pre Dx vs Control", xlab="", ylab="EPM RMSD", names=c("Case","Cntl","lesion",""),  ylim = c(0, 1.5)) ; text(1.5, .5, 'background');dev.off()
+
 # Boxplot of ART 
 png('artboxpredxcntrl.png'); boxplot(Mean~LabelID,data=artdataPreDxCntrl, main="Pre Dx vs Control", xlab="LI-RADS", ylab="ART") ; dev.off()
 png('artboxdxcntrl.png');boxplot(Mean~LabelID,data=artdataDxCntrl, main="Dx vs Control", xlab="LI-RADS", ylab="ART") ; dev.off()
