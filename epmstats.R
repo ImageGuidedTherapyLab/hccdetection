@@ -127,6 +127,9 @@ png('epmboxcasecontrolb.png');boxplot(Mean~Status+LabelID,data=epmdata, main="Ca
 # NN plot update
 epmdataDxCntrlLesion = cbind(epmdataDxCntrl, lesionID = ifelse(epmdataDxCntrl$LabelID < 6  ,45,6))
 epmdataPreDxCntrlLesion = cbind(epmdataPreDxCntrl, lesionID = ifelse(epmdataPreDxCntrl$LabelID < 6  ,34,6))
+print( 'median EPM NN' )
+print(aggregate(epmdataPreDxCntrlLesion$Mean, list(epmdataPreDxCntrlLesion$lesionID), FUN=median))
+print(aggregate(epmdataDxCntrlLesion$Mean, list(epmdataDxCntrlLesion$lesionID), FUN=median))
 png('epmboxdxcntrllesion.png'); boxplot(Mean~Status+lesionID,data=epmdataDxCntrlLesion, main="Dx vs Control", xlab="", ylab="EPM RMSD", names=c("Case","Cntl","lesion",""), ylim = c(0, 1.5)) ; text(1.5, .5, 'background');dev.off()
 png('epmboxpredxcntrllesion.png'); boxplot(Mean~Status+lesionID,data=epmdataPreDxCntrlLesion, main="Pre Dx vs Control", xlab="", ylab="EPM RMSD", names=c("Case","Cntl","lesion",""),  ylim = c(0, 1.5)) ; text(1.5, .5, 'background');dev.off()
 
