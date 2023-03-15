@@ -90,7 +90,7 @@ GROUP BY    ws.StudyInstanceUID;
 -- cat methodistdb.sql  | sqlite3 /rsrch3/maroach/ctkDICOM.sql
 .mode csv
 .output methodistdb/wideformat.csv 
-select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename from tmp.wideformat;
+select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename,rtrim(DynFilename,'/') || '_0' as DynFilename0,rtrim(DynFilename,'/') || '_1' as DynFilename1,rtrim(DynFilename,'/')||'_2' as DynFilename2,rtrim(DynFilename,'/')||'_3' as DynFilename3  from tmp.wideformat;
 
 .output methodistdb/flagdata.csv 
 select rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/")),'/') ptid,SeriesDescription,Vendor,ImageType from tmp.flagdata;
