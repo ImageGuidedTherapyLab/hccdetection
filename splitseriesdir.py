@@ -12,11 +12,11 @@ for (ptidtmp,idir) in dirfilepaths :
     print(mysplitcmd)
     os.system(mysplitcmd)
     mymatch = re.search(r'(?<=LAB)\d+', ptidtmp)
-    if mymatch  == None:
-      ptid = ptidtmp
-    else:
-      ptid = 'LAB'+mymatch.group(0)
+    #if mymatch  == None:
+    #  ptid = ptidtmp
+    #else:
+    ptid = 'LAB'+mymatch.group(0)
     for idseries in range(4):
-       updateptidcmd = 'for idfile in "%s_%d/"*.dcm ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" "$idfile"   ; done' % (linuxpath[:-1],idseries,ptid )
+       updateptidcmd = 'for idfile in "%s_%d/"*.dcm ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" "$idfile"   ; done' % (linuxpath[:-1],idseries,ptid,ptid)
        print(updateptidcmd )
        os.system(updateptidcmd )
