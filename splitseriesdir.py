@@ -10,7 +10,7 @@ for (ptidtmp,idir,postdir) in dirfilepaths :
     linuxpath = idir.replace('X:','/Radonc')
     linuxstudy = "/".join(list(filter(len,linuxpath.split('/')))[:-1])
     linuxseries = list(filter(len,linuxpath.split('/')))[-1]
-    myoutputdir = '%s/raystation/%s' % (linuxstudy ,linuxseries)
+    myoutputdir = '/%s/raystation/%s' % (linuxstudy ,linuxseries)
     mysplitcmd = '/rsrch3/ip/dtfuentes/github/anonymizationtransfer/DicomSeriesReadSplitSeriesWrite "%s" "%s_"' % (linuxpath ,myoutputdir  )
     print(mysplitcmd)
     os.system(mysplitcmd)
@@ -20,12 +20,12 @@ for (ptidtmp,idir,postdir) in dirfilepaths :
     #else:
     ptid = 'LAB'+mymatch.group(0)
     for idseries in range(4):
-       updateptidcmd = 'for idfile in "%s_%d/"*.dcm ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" -i "(0008|103e)=liverprotocol%d" "$idfile"   ; done' % (myoutputdir,idseries,ptid,ptid,idseries)
+       updateptidcmd = 'for idfile in "%s_%d/"*.dcm ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" -i "(0008,103e)=liverprotocol%d" "$idfile"   ; done' % (myoutputdir,idseries,ptid,ptid,idseries)
        print(updateptidcmd )
        os.system(updateptidcmd )
     pstlinuxpath = postdir.replace('X:','/Radonc')
     pstseries = list(filter(len,pstlinuxpath.split('/')))[-1]
-    pstoutputdir = '%s/raystation/%s' % (linuxstudy ,pstseries )
+    pstoutputdir = '/%s/raystation/%s' % (linuxstudy ,pstseries )
     pstupdateptidcmd = 'rsync -avz "%s" "%s_a"; for idfile in "%s_a/"* ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" "$idfile"   ; done' % (pstlinuxpath,pstoutputdir ,pstoutputdir ,ptid,ptid)
     print(pstupdateptidcmd )
     os.system(pstupdateptidcmd )
