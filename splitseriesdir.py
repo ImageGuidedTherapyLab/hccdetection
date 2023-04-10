@@ -26,6 +26,6 @@ for (ptidtmp,idir,postdir) in dirfilepaths :
     pstlinuxpath = postdir.replace('X:','/Radonc')
     pstseries = list(filter(len,pstlinuxpath.split('/')))[-1]
     pstoutputdir = '/%s/raystation/%s' % (linuxstudy ,pstseries )
-    pstupdateptidcmd = 'rsync -avz "%s" "%s_a"; for idfile in "%s_a/"* ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" "$idfile"   ; done' % (pstlinuxpath,pstoutputdir ,pstoutputdir ,ptid,ptid)
+    pstupdateptidcmd = 'mkdir -p "%s_a"; for idfile in "%s/"* ; do echo "$idfile" ;cp "$idfile" "%s_a"/$(basename "$idfile").dcm; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" "%s_a"/$(basename "$idfile").dcm ; done' % (pstoutputdir,pstlinuxpath,pstoutputdir ,ptid,ptid,pstoutputdir )
     print(pstupdateptidcmd )
     os.system(pstupdateptidcmd )
