@@ -19,7 +19,7 @@ for (ptidtmp,idir,postdir) in dirfilepaths :
     #  ptid = ptidtmp
     #else:
     ptid = 'LAB'+mymatch.group(0)
-    for idseries in range(4):
+    for idseries in range(7):
        updateptidcmd = 'for idfile in "%s_%d/"*.dcm ; do echo "$idfile" ; dcmodify -nb -i "(0010,0020)=%s" -i "(0010,0010)=%s" -i "(0008,103e)=liverprotocol%d" "$idfile"   ; done' % (myoutputdir,idseries,ptid,ptid,idseries)
        print(updateptidcmd )
        os.system(updateptidcmd )
