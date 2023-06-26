@@ -430,6 +430,8 @@ $(WORKDIR)/%/overlap.sql: $(WORKDIR)/%/overlap.csv
 overlap.csv: 
 	-sqlite3 $(SQLITEDB)  -init .exportoverlap  ".quit"
 
+radiomicsout%.csv: labellist%.csv
+	pyradiomics  $< -o $@   -v  5  -j 8  -p Params.yaml -f csv
 
 ###########################################################################
 .SECONDEXPANSION:
