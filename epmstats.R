@@ -175,6 +175,36 @@ dataframeuidmapPreDx  = data.frame(ptid=uniquecasecntlptidPreDx,casecntlSubgroup
 epmdataCaseCntlPreDx = merge(x = epmdataThresholdPreDx, y = dataframeuidmapPreDx  , by = "ptid", all.x = TRUE)
 write.csv(epmdataCaseCntlPreDx ,"logisticpre.csv", row.names = FALSE)
 
+# nfold statistics
+length(casecntlfoldsPreDx$Fold1)
+length(casecntlfoldsPreDx$Fold1)/ length(uniquecasecntlptidPreDx )
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 1' & Status == 'case'   ))
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 1' & Status == 'control'))
+length(casecntlfoldsPreDx$Fold2)
+length(casecntlfoldsPreDx$Fold2)/ length(uniquecasecntlptidPreDx )
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 2' & Status == 'case'   ))
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 2' & Status == 'control'))
+length(casecntlfoldsPreDx$Fold3)
+length(casecntlfoldsPreDx$Fold3)/ length(uniquecasecntlptidPreDx )
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 3' & Status == 'case'   ))
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 3' & Status == 'control'))
+length(casecntlfoldsPreDx$Fold4)
+length(casecntlfoldsPreDx$Fold4)/ length(uniquecasecntlptidPreDx )
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 4' & Status == 'case'   ))
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 4' & Status == 'control'))
+length(casecntlfoldsPreDx$Fold5)
+length(casecntlfoldsPreDx$Fold5)/ length(uniquecasecntlptidPreDx )
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 5' & Status == 'case'   ))
+nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 5' & Status == 'control'))
+
+# avg percentage in each fold
+(length(casecntlfoldsPreDx$Fold1)/ length(uniquecasecntlptidPreDx ) + length(casecntlfoldsPreDx$Fold2)/ length(uniquecasecntlptidPreDx ) + length(casecntlfoldsPreDx$Fold3)/ length(uniquecasecntlptidPreDx ) + length(casecntlfoldsPreDx$Fold4)/ length(uniquecasecntlptidPreDx ) + length(casecntlfoldsPreDx$Fold5)/ length(uniquecasecntlptidPreDx ))/5.
+
+# avg case in each fold
+( nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 1' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 2' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 3' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 4' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 5' & Status == 'case'   ))   ) /5.
+# avg control in each fold
+( nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 1' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 2' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 3' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 4' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlPreDx,casecntlSubgroupsPreDx=='Fold 5' & Status == 'control'   ))   ) /5.
+
 # https://www.statology.org/how-to-report-logistic-regression-results/#:~:text=We%20can%20use%20the%20following,%5D%20and%20%5Bresponse%20variable%5D.
 # We can use the following general format to report the results of a logistic regression model:
 # Logistic regression was used to analyze the relationship between [predictor variable 1], [predictor variable 2], … [predictor variable n] and [response variable].
@@ -252,6 +282,7 @@ print(getpreaucci )
 png('ROCcpPreDxinsample.png'); plot_roc(cpPreDxinsample);dev.off()
 
 # kfold data Dx
+
 casecntlfoldsDx <- createFolds(uniquecasecntlptidDx , nFolds )
 casecntlSubgroupsDx = 1:length(uniquecasecntlptidDx )
 casecntlSubgroupsDx[casecntlfoldsDx$Fold1] = "Fold 1"
@@ -261,6 +292,15 @@ casecntlSubgroupsDx[casecntlfoldsDx$Fold4] = "Fold 4"
 casecntlSubgroupsDx[casecntlfoldsDx$Fold5] = "Fold 5"
 dataframeuidmapDx  = data.frame(ptid=uniquecasecntlptidDx,casecntlSubgroupsDx)
 epmdataCaseCntlDx = merge(x = epmdataThresholdDx, y = dataframeuidmapDx  , by = "ptid", all.x = TRUE)
+
+# avg percentage in each fold
+(length(casecntlfoldsDx$Fold1)/ length(uniquecasecntlptidDx ) + length(casecntlfoldsDx$Fold2)/ length(uniquecasecntlptidDx ) + length(casecntlfoldsDx$Fold3)/ length(uniquecasecntlptidDx ) + length(casecntlfoldsDx$Fold4)/ length(uniquecasecntlptidDx ) + length(casecntlfoldsDx$Fold5)/ length(uniquecasecntlptidDx ))/5.
+
+# avg case in each fold
+( nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 1' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 2' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 3' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 4' & Status == 'case'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 5' & Status == 'case'   ))   ) /5.
+# avg control in each fold
+( nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 1' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 2' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 3' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 4' & Status == 'control'   )) + nrow(subset(epmdataCaseCntlDx,casecntlSubgroupsDx=='Fold 5' & Status == 'control'   ))   ) /5.
+
 
 # adjust for covariates
 # https://www.statology.org/how-to-report-logistic-regression-results/#:~:text=We%20can%20use%20the%20following,%5D%20and%20%5Bresponse%20variable%5D.
@@ -317,4 +357,7 @@ print( sprintf("Dx acc = %f sensitivity = %f specifitity = %f",aggregateaccuracy
 
 cpDxinsample <- cutpointr(epmdataCaseCntlDx , Mean, response , method = maximize_metric, metric = sum_sens_spec)
 print(summary(cpDxinsample ))
+# get CI for auc
+getaucci   = pROC::roc( response = epmdataCaseCntlDx$response, predictor = epmdataCaseCntlDx$Mean, curve=T , ci=TRUE  )
+print(getaucci )
 png('ROCcpDxinsample.png'); plot_roc(cpDxinsample );dev.off()
