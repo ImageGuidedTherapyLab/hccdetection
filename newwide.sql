@@ -108,8 +108,10 @@ ORDER BY    cast(PatientNumber as int) ASC, cast(StudyNumber as int) ASC;
 -- update min
 create table hccstudy  as 
 select PatientNumber, StudyNumber  HCCStudyNumber  from hccimaging where HCCDate == StudyDate group by Patientnumber;
+create table minmaxdatewidestudy  as 
+select PatientNumber, min(StudyDate) MinStudyDate, max(StudyDate) MaxStudyDate from widestudy group by Patientnumber;
 create table minwidestudy  as 
-select PatientNumber, min(StudyNumber) MinStudyNumber from widestudy group by Patientnumber;
+select ws.PatientNumber, ws.StudyNumber MinStudyNumber from widestudy ws join  minmaxdatewidestudy ms on ws.PatientNumber=ms.PatientNumber and ms.MinStudyDate=ws.StudyDate;
 -- use hcc date if not then the min study
 create table fixedstudy  as 
 select w2.PatientNumber, ifnull(w3.HCCStudyNumber,w2.MinStudyNumber) FixedNumber 
@@ -189,17 +191,19 @@ WHERE PatientNumber  =   3;
 
 -- join with hcc date
 create table baselineart  as 
-select w1.PatientNumber, w1.Art, w1.StudyDate, w2.FixedNumber
+select w1.PatientNumber, w1.Art, w1.StudyDate, w2.FixedNumber,w3.MaxStudyDate
 from widestudy w1 
-join fixedstudy w2 on  w1.PatientNumber = w2.PatientNumber and w1.StudyNumber = w2.FixedNumber;
+join fixedstudy w2 on  w1.PatientNumber = w2.PatientNumber and w1.StudyNumber = w2.FixedNumber 
+join minmaxdatewidestudy  w3 on  w1.PatientNumber = w3.PatientNumber ;
 -- select * from baselineart  ;
 
 -- output wide format
 create table widejoinqa  as 
-select w1.*,w3.FixedNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w3.FixedNumber as int),w3.Art) Fixed
+select w1.*,w3.FixedNumber,julianday(w1.StudyDate)-julianday(w3.StudyDate) daysincebaseline,julianday(w3.MaxStudyDate)-julianday(w1.StudyDate) daysuntilmax,printf('BCM%04d%03d/%s', cast(w1.PatientNumber as int), cast(w3.FixedNumber as int),w3.Art) Fixed
 from widestudy    w1
 join baselineart  w3 on w1.PatientNumber = w3.PatientNumber
-where w1.Pre is not null and w1.Art is not null and w1.Ven is not null and w1.Del is not null and w1.Post is not null;
+where w1.Pre is not null and w1.Art is not null and w1.Ven is not null and w1.Del is not null and w1.Post is not null
+order by cast(w1.PatientNumber as int),w1.StudyDate ;
 -- left join qadata       qa on w1.UID = qa.StudyUID;
 
 -- error check missing data
@@ -249,6 +253,8 @@ select count(ptid), status from patientlistunionnew group by status ;
 select wj.UID,wj.Vendor,wj.Status,dm.*,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join demographics dm on wj.PatientNumber = dm.SlicerID;
 .output bcmlirads/wideanonPreDx.csv 
 select wj.UID,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join patientlistunionnew  pn on pn.UID = wj.UID ;
+.output bcmlirads/wideanonAll.csv 
+select rowid, wj.UID,wj.PatientNumber,wj.StudyNumber,wj.StudyDate,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.daysuntilmax,wj.Fixed from  widejoinqa wj order by cast(wj.PatientNumber as int),wj.StudyDate ;
 .mode list
 .output stdout
 -- cat newwide.sql  | sqlite3
