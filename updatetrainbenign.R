@@ -30,7 +30,7 @@ for (iii in 1:length(qadatafiles))
 
 # set up reactive data for updating reviewed status
 # "FixedNumber","PatientNumber","studynumber"
-my.data <- reactiveValues(data=cbind(REVIEWED = reviewinfo , subset(csv.data,  select = c("rowid","UID","Vendor","Status","diagnosticinterval","daysincebaseline","daysuntilmax","Fixed")),
+my.data <- reactiveValues(data=cbind(REVIEWED = reviewinfo , subset(csv.data,  select = c("rowid","UID","Vendor","Status","StudyDate","diagnosticinterval","daysincebaseline","daysuntilmax","Fixed")),
   QA = qadatainfo,
 liradtrain=paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz"),
 liradtrainExists=file.exists(paste0("bcmlirads/",csv.data$UID,"fixed.train.nii.gz")),
