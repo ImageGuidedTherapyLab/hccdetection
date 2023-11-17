@@ -196,6 +196,11 @@ bcmdata/BCM0002002/Pst/label.nii.gz: bcmdata/BCM0002002/Pst.256.nii.gz
 	echo vglrun itksnap -g $< -s bcmdata/BCM0002002/Pst/label.nii.gz -o bcmdata/BCM0002002/Pst/score.nii.gz
 bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
 	c3d -verbose bcmdata/$*.raw.nii.gz $<  -reslice-identity -o $@
+bcmdata/%.liver.nii.gz:
+	echo id,Image > bcmdata/$*.data_predict.csv
+	echo $(basename $(basename $(notdir $@))),$(basename $(basename $(basename $(notdir $@)))).raw.nii.gz  >> bcmdata/$*.data_predict.csv
+	docker run --entrypoint=/usr/bin/python --rm -it -u $$(id -u):$$(id -g)  --gpus all -v /rsrch3/ip/dtfuentes/github/cmd_line_epm/mrlivernew:/mist/segmentationmodel -v $(PWD)/$(@D):/workspace misttfepm /mist/predict.py --models /mist/segmentationmodel/best/ --config /mist/segmentationmodel/config.json --data Art.data_predict.csv --output . --gpu 1
+	
 # dilate mask
 maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).mask.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.mask.nii.gz: 
@@ -434,7 +439,7 @@ overlap.csv:
 radiomicsout%.csv: labellist%.csv
 	pyradiomics  $< -o $@   -v  5  -j 8  -p Params.yaml -f csv
 
-bcmdata/%.maurer.nii.gz: bcmdata/%.mask.nii.gz
+bcmdata/%.maurer.nii.gz: bcmdata/%.liver.nii.gz
 	/opt/apps/ANTS/build/ANTS-build/Examples/ImageMath   3 $@  MaurerDistance $<   
 
 ###########################################################################
