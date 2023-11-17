@@ -9,6 +9,7 @@
 .import bcmlirads/controlsdatakeyanon.csv              imaging 
 .import bcmlirads/DemographicsCases.csv                democase
 .import bcmlirads/DemographicsControls.csv             democontrol
+.import bcmlirads/benignlesions.csv                    benigndata
 
 -- .import LiverMRIProjectData/dataqa.csv  qadata
 -- select HCCDate from datekey;
@@ -254,7 +255,10 @@ select wj.UID,wj.Vendor,wj.Status,dm.*,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ve
 .output bcmlirads/wideanonPreDx.csv 
 select wj.UID,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.Fixed from  widejoinqa wj join patientlistunionnew  pn on pn.UID = wj.UID ;
 .output bcmlirads/wideanonAll.csv 
-select rowid, wj.UID,wj.PatientNumber,wj.StudyNumber,wj.StudyDate,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.daysuntilmax,wj.Fixed from  widejoinqa wj order by cast(wj.PatientNumber as int),wj.StudyDate ;
+select wj.rowid, wj.UID,wj.PatientNumber,wj.StudyNumber,wj.StudyDate,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.daysuntilmax,wj.Fixed,bd.*
+from  widejoinqa wj 
+left join benigndata  bd on wj.PatientNumber=bd.SlicerID
+order by cast(wj.PatientNumber as int),wj.StudyDate ;
 .mode list
 .output stdout
 -- cat newwide.sql  | sqlite3
