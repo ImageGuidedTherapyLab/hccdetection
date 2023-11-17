@@ -442,6 +442,9 @@ radiomicsout%.csv: labellist%.csv
 bcmdata/%.maurer.nii.gz: bcmdata/%.liver.nii.gz
 	/opt/apps/ANTS/build/ANTS-build/Examples/ImageMath   3 $@  MaurerDistance $<   
 
+bcmdata/%.mm.nii.gz: bcmdata/%.mask.nii.gz
+	/opt/apps/ANTS/build/ANTS-build/Examples/ImageMath   3 $@  MaurerDistance $<   
+
 ###########################################################################
 .SECONDEXPANSION:
 #https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html#Secondary-Expansion
