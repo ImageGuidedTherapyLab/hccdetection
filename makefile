@@ -170,32 +170,32 @@ $(BCMWORKDIR)/%.bias.nii.gz:
 	python normalization.py --imagefile=$@  --output=$@
 $(BCMWORKDIR)/%.crop.nii.gz: $(BCMWORKDIR)/%.zscore.nii.gz
 	python resize.py --imagefile=bcmdata/$*.zscore.nii.gz  --output=$@
+## labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID)))
+## bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
+## 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
+## 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
+## 	echo HACK - matlab losing header info
+## 	c3d $< bcmdata/$*/label.nii.gz -copy-transform -o bcmdata/$*/label.nii.gz 
+## 	c3d $< bcmdata/$*/score.nii.gz -copy-transform -o bcmdata/$*/score.nii.gz 
+## 	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
+## bcmdata/BCM0015000/%/label.nii.gz: bcmdata/BCM0015000/%.256.nii.gz
+## 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','cpu'\)
+## 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
+## 	echo HACK - matlab losing header info
+## 	c3d $< bcmdata/BCM0015000/$*/label.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/label.nii.gz 
+## 	c3d $< bcmdata/BCM0015000/$*/score.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/score.nii.gz 
+## 	echo vglrun itksnap -g $< -s bcmdata/BCM0015000/$*/label.nii.gz -o bcmdata/BCM0015000/$*/score.nii.gz
+## bcmdata/BCM0002002/Pst/label.nii.gz: bcmdata/BCM0002002/Pst.256.nii.gz
+## 	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','cpu'\)
+## 	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
+## 	echo HACK - matlab losing header info
+## 	c3d $< bcmdata/BCM0002002/Pst/label.nii.gz -copy-transform -o bcmdata/BCM0002002/Pst/label.nii.gz 
+## 	c3d $< bcmdata/BCM0002002/Pst/score.nii.gz -copy-transform -o bcmdata/BCM0002002/Pst/score.nii.gz 
+## 	echo vglrun itksnap -g $< -s bcmdata/BCM0002002/Pst/label.nii.gz -o bcmdata/BCM0002002/Pst/score.nii.gz
+## bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
+## 	c3d -verbose bcmdata/$*.raw.nii.gz $<  -reslice-identity -o $@
 # label data
-labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).label.nii.gz,$(BCMLISTUID)))) 
-labelbcmfixed: $(addprefix $(BCMWORKDIR)/,$(addsuffix /fixed.label.nii.gz,$(BCMLISTUID)))
-bcmdata/%/label.nii.gz: bcmdata/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
-	echo HACK - matlab losing header info
-	c3d $< bcmdata/$*/label.nii.gz -copy-transform -o bcmdata/$*/label.nii.gz 
-	c3d $< bcmdata/$*/score.nii.gz -copy-transform -o bcmdata/$*/score.nii.gz 
-	echo vglrun itksnap -g $< -s bcmdata/$*/label.nii.gz -o bcmdata/$*/score.nii.gz
-bcmdata/BCM0015000/%/label.nii.gz: bcmdata/BCM0015000/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','cpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
-	echo HACK - matlab losing header info
-	c3d $< bcmdata/BCM0015000/$*/label.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/label.nii.gz 
-	c3d $< bcmdata/BCM0015000/$*/score.nii.gz -copy-transform -o bcmdata/BCM0015000/$*/score.nii.gz 
-	echo vglrun itksnap -g $< -s bcmdata/BCM0015000/$*/label.nii.gz -o bcmdata/BCM0015000/$*/score.nii.gz
-bcmdata/BCM0002002/Pst/label.nii.gz: bcmdata/BCM0002002/Pst.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','cpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 cpu
-	echo HACK - matlab losing header info
-	c3d $< bcmdata/BCM0002002/Pst/label.nii.gz -copy-transform -o bcmdata/BCM0002002/Pst/label.nii.gz 
-	c3d $< bcmdata/BCM0002002/Pst/score.nii.gz -copy-transform -o bcmdata/BCM0002002/Pst/score.nii.gz 
-	echo vglrun itksnap -g $< -s bcmdata/BCM0002002/Pst/label.nii.gz -o bcmdata/BCM0002002/Pst/score.nii.gz
-bcmdata/%.label.nii.gz: bcmdata/%/label.nii.gz
-	c3d -verbose bcmdata/$*.raw.nii.gz $<  -reslice-identity -o $@
+labelbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix /$(idc).liver.nii.gz,$(BCMLISTUID)))) 
 bcmdata/%.liver.nii.gz:
 	echo id,Image > bcmdata/$*.data_predict.csv
 	echo $(basename $(basename $(notdir $@))),$(basename $(basename $(basename $(notdir $@)))).bias.nii.gz  >> bcmdata/$*.data_predict.csv
@@ -206,8 +206,6 @@ maskbcm: $(foreach idc,$(BCMCONTRASTLIST),$(addprefix $(BCMWORKDIR)/,$(addsuffix
 bcmdata/%.mask.nii.gz: 
 	echo $*
 	if [  -f bcmlirads/$*.rawlivertrain.nii.gz  ] ; then echo found training data ; c3d -verbose bcmlirads/$*.rawlivertrain.nii.gz -type char -o bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@ ; else  echo using NN label; c3d  bcmdata/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@ ;fi
-
-
 
 
 # register study
