@@ -1,0 +1,29 @@
+---
+title: "Verify getting same EPM values"
+author: "David Fuentes"
+always_allow_html: yes
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: united
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+---
+Usage: Rscript -e " rmarkdown::render( 'debugepm.RMD', output_file = './debugepm.html' )"
+
+## Load data frame
+```{r}
+fname <- "autostats/widejoin.csv" 
+rawdataset <- read.csv(fname, na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
+```
+
+Extract subset of benign lesions
+
+```{r}
+benignsubset  <- subset(rawdataset ,      Status == 'control' & LabelID > 0  &   LabelID < 6 & FeatureID == 'epm')
+```
+Print individual values to compare
+```{r}
+cbind("UID"=as.character(benignsubset$UID),"EPM" = benignsubset$Mean,"LabelID"=benignsubset$LabelID)
+```
