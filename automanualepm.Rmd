@@ -1,0 +1,65 @@
+---
+title: "EPM analysis auto vs manual"
+author: "David Fuentes"
+always_allow_html: yes
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: united
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+---
+Usage: Rscript -e " rmarkdown::render( 'automanualepm.Rmd', output_file = './automanualepm.html' )"
+Usage: R; rmarkdown::render( 'automanualepm.Rmd', output_file = './automanualepm.html' )
+
+EPM analysis corresponding to https://arxiv.org/abs/2309.03980
+
+address review comments for mask sensitivity
+```{r setup, include=FALSE}
+#install.packages('plotly') 
+library(htmltools)
+library(plotly)
+options(width=135)
+```
+ 
+# Load Data
+
+Note that some manual labels were missing that causes epm =0 downstream. Dropping these for now.
+```{r Load data}
+manualdataset <- read.csv( "epmstats/widejoin.csv", na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
+autodataset   <- read.csv("autostats/widejoin.csv", na.strings=c(".", "NA", "", "?"), strip.white=TRUE, encoding="UTF-8")
+epmmanualsubset  <- subset(manualdataset, FeatureID == 'epm' & LabelID> 0 & Mean > 0 )  
+epmautosubset    <- subset(autodataset  , FeatureID == 'epm' & LabelID> 0 )
+```
+# merge data frames 
+
+UID encodes patient id and time point
+LabelID is the ROI label
+
+```{r merge}
+automanualdata = merge(x = epmmanualsubset , y = epmautosubset  , by = c("UID","LabelID"),suffixes=c("man","aut"))
+#cbind(as.character(automanualdata$UID),automanualdata$LabelID,automanualdata$Meanman,automanualdata$Meanaut)
+```
+
+# analyze
+
+plot and compute correlation
+
+```{r analyze}
+#plot(automanualdata$Mean.x,automanualdata$Mean.y)
+fig <- plot_ly(
+  automanualdata, x = ~Meanman, y = ~Meanaut,
+  # Hover text:
+  text = ~paste("UID: ", UID, '<br>LabelID:', LabelID)
+  #color = ~carat, size = ~carat
+) %>%
+  layout(xaxis = list(title = 'Manual'),
+         yaxis = list(title = 'Automatic'))
+
+fig
+
+# Pearson correlation between 2 variables
+cor(automanualdata$Meanman ,automanualdata$Meanaut)
+```
+
