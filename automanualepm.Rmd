@@ -47,19 +47,28 @@ automanualdata = merge(x = epmmanualsubset , y = epmautosubset  , by = c("UID","
 plot and compute correlation
 
 ```{r analyze}
-#plot(automanualdata$Mean.x,automanualdata$Mean.y)
+#make the main plot
+plot(automanualdata$Meanman,automanualdata$Meanaut)
+
+#add linear trend
+abline(lm(automanualdata$Meanaut~automanualdata$Meanman))
+
+#compute trend line
+m1 = lm(automanualdata$Meanman~automanualdata$Meanaut)
+line.fmt = list(dash="solid", width = 1.5, color=NULL)
+
 fig <- plot_ly(
-  automanualdata, x = ~Meanman, y = ~Meanaut,
+  automanualdata, x = ~Meanman, y = ~Meanaut,type="scatter",
   # Hover text:
   text = ~paste("UID: ", UID, '<br>LabelID:', LabelID)
   #color = ~carat, size = ~carat
-) %>%
-  layout(xaxis = list(title = 'Manual'),
-         yaxis = list(title = 'Automatic'))
+) # %>% add_trace(automanualdata,x = ~Meanman, y = predict(m1), mode = "lines")
+
+#fig = add_lines(fig, x=myxi , y=predict(m1), line=line.fmt, name="Linear")
+fig = layout(fig,xaxis = list(title = 'Manual'), yaxis = list(title = 'Automatic'))
 
 fig
 
 # Pearson correlation between 2 variables
 cor(automanualdata$Meanman ,automanualdata$Meanaut)
 ```
-
