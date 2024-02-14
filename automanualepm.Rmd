@@ -47,8 +47,16 @@ automanualdata = merge(x = epmmanualsubset , y = epmautosubset  , by = c("UID","
 plot and compute correlation
 
 ```{r analyze}
+# Pearson correlation between 2 variables
+mypearson = cor(automanualdata$Meanman ,automanualdata$Meanaut)
+
+
+
 #make the main plot
-plot(automanualdata$Meanman,automanualdata$Meanaut)
+plot(automanualdata$Meanman,automanualdata$Meanaut,  main=sprintf("EPM correlation, r = %.2f", mypearson), xlab='Manual', ylab='Auto',
+     cex.main=1.5, #change font size of title
+     cex.lab=1.5, #change font size of axis labels
+     cex.axis=1.5) #change font size of axis text  
 
 #add linear trend
 abline(lm(automanualdata$Meanaut~automanualdata$Meanman))
@@ -69,6 +77,4 @@ fig = layout(fig,xaxis = list(title = 'Manual'), yaxis = list(title = 'Automatic
 
 fig
 
-# Pearson correlation between 2 variables
-cor(automanualdata$Meanman ,automanualdata$Meanaut)
 ```
