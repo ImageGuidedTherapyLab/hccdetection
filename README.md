@@ -3,12 +3,39 @@ Export slicer DB as nifti
 ==============
 vglrun /opt/apps/slicer/Slicer-4.10.2-linux-amd64/Slicer --no-main-window --python-script ./anonymize.py
 
+longitudinal registration 
+==============
+
+make -Bki labelbcm
+make -Bki maskbcm
+make -Bki maurerbcm
+make longregbcm
+make distregbcm
+
 epmstats 
 ==============
+make -k -i -B -f lrstatistics.makefile epm
 make -k -i -B -f lrstatistics.makefile epmstatdf
 cat epmstats/*/lstat.csv > epmstats/lstat.csv
 cat epmstatistics.sql  | sqlite3
 Rscript epmstats.R
+
+autoepmstats 
+==============
+make -k -i -B -f benignlrstats.makefile epmauto
+make -k -i    -f benignlrstats.makefile epmstatauto
+cat autostats/*/lstat.csv > autostats/lstat.csv
+cat epmautomanual.sql  | sqlite3
+Rscript automanualepm.Rmd
+
+benign epmstats 
+==============
+make -k -i -B -f benignlrstats.makefile fixedtrain
+make -k -i -B -f benignlrstats.makefile epmbenign
+make -k -i -B -f benignlrstats.makefile epmstatbenign
+cat epmstats/*/lstat.csv > epmstats/lstat.csv
+cat epmautostats.sql  | sqlite3
+Rscript autoepmstats.R
 
 Matlab example 
 ==============
