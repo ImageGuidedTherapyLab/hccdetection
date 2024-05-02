@@ -224,7 +224,7 @@ bcmdata/%.longregdbginitial.nii.gz: bcmdata/%.bias.nii.gz
 clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
 meltaherrsync:
-	rsync  -v -avz  --include={'*raw.nii.gz','*distregcc.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/ip/meltaher/github/hccdetection/bcmdata/
+	rsync  -v -avz  --include={'*beta1.nii.gz','*beta2.nii.gz','*kep.nii.gz','*doseve.nii.gz','*raw.nii.gz','*distregcc.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/ip/meltaher/github/hccdetection/bcmdata/
 radoncsync:
 	rsync    -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
