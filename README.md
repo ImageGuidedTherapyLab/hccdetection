@@ -9,8 +9,8 @@ longitudinal registration
 make -Bki labelbcm
 make -Bki maskbcm
 make -Bki maurerbcm
-make longregbcm
-make distregbcm
+make -ki -j 8 longregbcm
+make -ki -j 8 distregbcm
 
 epmstats 
 ==============
