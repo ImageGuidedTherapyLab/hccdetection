@@ -6,9 +6,9 @@ vglrun /opt/apps/slicer/Slicer-4.10.2-linux-amd64/Slicer --no-main-window --pyth
 longitudinal registration 
 ==============
 
-make -Bki labelbcm
-make -Bki maskbcm
-make -Bki maurerbcm
+make -Bki -j10 labelbcm
+make -Bki -j10 maskbcm
+make -Bki -j8 maurerbcm
 make -ki -j 8 longregbcm
 make -ki -j 8 distregbcm
 
