@@ -59,11 +59,13 @@ where im.seriesDescription not like '%SUB%'
 GROUP BY    im.SeriesInstanceUID;
 -- select StudyInstanceUID,seriesDescription,Vendor,ImageType from tmp.flagdata where ImageType is not NULL;
 
+select '(0018|0081) Echo Time';
 select min(tg.value), avg(tg.value), max(tg.value)
 from tmp.flagdata fl 
 join tag.TagCache tg   on fl.SOPInstanceUID= tg.SOPInstanceUID
 where tg.tag='0018,0081' and tg.value !='__TAG_NOT_IN_INSTANCE__'  and fl.ImageType is not NULL;
 
+select '(0018|0080) Repetition Time';
 select min(tg.value), avg(tg.value), max(tg.value)
 from tmp.flagdata fl 
 join tag.TagCache tg   on fl.SOPInstanceUID= tg.SOPInstanceUID
