@@ -33,7 +33,7 @@ CASE WHEN im.seriesDescription like "%vibe%" THEN 'vibe'
 -- "VIBE DYN1",vibe,Dyn
 -- "Ax LAVA Pre/Post Fast",lava,
 -- "PRE-POST DYNAMIC",,Dyn
-CASE WHEN (im.seriesDescription like 'DYNAMIC' or im.seriesDescription like 'DYN%VIBE%' or im.seriesDescription like 'VIBE%DYN%'   or im.seriesDescription like '%DISCO%Dyn%'  or im.seriesDescription like '%PRE%POST%'  )  THEN 'Dyn'
+CASE WHEN (im.seriesDescription like 'DYNAMIC' or im.seriesDescription like 'Ax%Dyn%' or im.seriesDescription like 'AX%VIBE%' or im.seriesDescription like 'DYN%VIBE%' or im.seriesDescription like 'VIBE%DYN%'   or im.seriesDescription like '%DISCO%Dyn%'  or im.seriesDescription like '%PRE%POST%'  )  THEN 'Dyn'
 -- delayed post contrast series:
 -- "AX VIBE DIXON TWIST DELAYED_TTC=3.3s_F",vibe,Pst
 -- "AX VIBE DIXON TWIST DELAYED_TTC=3.5s_W",vibe,Pst
@@ -50,7 +50,7 @@ CASE WHEN (im.seriesDescription like 'DYNAMIC' or im.seriesDescription like 'DYN
 -- "AX VIBE FS 10 MIN DELAYED",vibe,Pst
      WHEN (im.seriesDescription like 'AX%VIBE%10 MIN%' or im.seriesDescription like '%t1_VIBE%DELAY%'or im.seriesDescription like 'AX%VIBE%DELAY%' or im.seriesDescription like '%cor%lava%delay' or im.seriesDescription like '%Ax%LAVA%DELAY%')  THEN 'Pst'
      ELSE NULL END AS ImageType,
-     replace(di.Filename, "/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/",'') flagtmpptid
+     replace(di.Filename, "/rsrch9/ip/sasmith6/Documents/EPM_Multisite/Methodist/QIAC_Cases_2025/",'') flagtmpptid
      from series im  
      join images   di on di.SeriesInstanceUID= im.SeriesInstanceUID
 where im.seriesDescription not like '%SUB%'
@@ -62,7 +62,7 @@ GROUP BY    im.SeriesInstanceUID;
 -- select replace(flagtmpptid, rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/"))) ,'') from tmp.flagdata limit 2;
 -- clean up table to get uid
 update tmp.flagdata
-set flagtmpptid = replace(flagtmpptid, rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/"))) ,'') ;
+set flagtmpptid = rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/")));
 
 create table tmp.widestudy  as
 select fg.StudyInstanceUID StudyInstanceUID,max(fg.Vendor) Vendor,
@@ -78,31 +78,31 @@ select count(ws.StudyInstanceUID),count(ws.Dyn),count(ws.Pst)  from tmp.widestud
 
 create table tmp.wideformat  as
 select ws.*,dn.seriesDate DynDate ,dn.seriesDescription DynDescription , pt.seriesDate PstDate, pt.seriesDescription PstDescription,
-replace(di.Filename, "/Radonc/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/",'') tmpptid,
+replace(di.Filename, "/rsrch9/ip/sasmith6/Documents/EPM_Multisite/Methodist/QIAC_Cases_2025/",'') tmpptid,
 --replace(di.Filename, "X:/Cancer Physics and Engineering Lab/Milli Roach/LIRADS EPM/Methodist QIAC Uploads 2022/",'') tmpptid,
 rtrim(di.Filename, replace(di.Filename, '/', '')) DynFilename,
 rtrim(pi.Filename, replace(pi.Filename, '/', '')) PstFilename
 from tmp.widestudy ws 
 join images        di on di.SeriesInstanceUID= ws.Dyn
-join images        pi on pi.SeriesInstanceUID= ws.Pst
+left join images        pi on pi.SeriesInstanceUID= ws.Pst
 join tmp.flagdata  dn on dn.SeriesInstanceUID= ws.Dyn
-join tmp.flagdata  pt on pt.SeriesInstanceUID= ws.Pst 
+left join tmp.flagdata  pt on pt.SeriesInstanceUID= ws.Pst 
 GROUP BY    ws.StudyInstanceUID;
 
 -- clean up table to get uid
-update tmp.wideformat
-set tmpptid = replace(tmpptid, rtrim(substr(tmpptid,1,instr(tmpptid, "/"))) ,'') ;
+-- update tmp.wideformat
+-- set tmpptid = replace(tmpptid, rtrim(substr(tmpptid,1,instr(tmpptid, "/"))) ,'') ;
 
 -- wide format
--- sqlite3 -init methodistss.sql /rsrch9/ip/sasmith6/Documents/SlicerDICOMDatabase/ctkDICOM.sql
--- cat methodistss.sql  | sqlite3 /rsrch9/ip/sasmith6/Documents/SlicerDICOMDatabase/ctkDICOM.sql
+-- sqlite3 -init methodistss.sql /rsrch9/ip/sasmith6/Documents/SlicerDICOMDatabase/Slicer_Run_QIAC_2025/ctkDICOM.sql
+-- cat methodistss.sql  | sqlite3  /rsrch9/ip/sasmith6/Documents/SlicerDICOMDatabase/Slicer_Run_QIAC_2025/ctkDICOM.sql
 .mode csv
 .output methodistss/wideformat.csv 
 select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename, substr(DynFilename,1,instr(DynFilename,'SE00')-1) || "raystation"  as raystation , NULL as liverlabel0,  NULL as liverlabel1, NULL as liverlabel2, NULL as liverlabel3, NULL as lesionlabel  from tmp.wideformat;
 -- select rtrim(substr(tmpptid,1,instr(tmpptid, "/")),'/') ptid, StudyInstanceUID,Vendor,Dyn,Pst,DynDate,PstDate,DynDescription,PstDescription,DynFilename,PstFilename,rtrim(DynFilename,'/') || '_0' as DynFilename0,rtrim(DynFilename,'/') || '_1' as DynFilename1,rtrim(DynFilename,'/')||'_2' as DynFilename2,rtrim(DynFilename,'/')||'_3' as DynFilename3 ,rtrim(PstFilename,'/')||'_a' as PstFilename_a , NULL as liverlabel0,  NULL as liverlabel1, NULL as liverlabel2, NULL as liverlabel3, NULL as lesionlabel  from tmp.wideformat;
 
 .output methodistss/flagdata.csv 
-select rtrim(substr(flagtmpptid,1,instr(flagtmpptid, "/")),'/') ptid,SeriesDescription,Vendor,ImageType from tmp.flagdata;
+select flagtmpptid  ptid,SeriesDescription,Vendor,ImageType from tmp.flagdata;
 
 .output methodistss/ucsfdb.csv 
 select im.SeriesDescription,di.Filename from images di join series im on di.SeriesInstanceUID= im.SeriesInstanceUID where di.Filename like "%UCSF%" group by di.seriesinstanceuid;
