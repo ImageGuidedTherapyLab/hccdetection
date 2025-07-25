@@ -259,6 +259,12 @@ select wj.rowid, wj.UID,wj.PatientNumber,wj.StudyNumber,wj.StudyDate,wj.Vendor,w
 from  widejoinqa wj 
 left join benigndata  bd on wj.PatientNumber=bd.SlicerID
 order by cast(wj.PatientNumber as int),wj.StudyDate ;
+.output bcmlirads/wideanonAllsubset.csv 
+select wj.rowid, wj.UID,wj.PatientNumber,wj.StudyNumber,wj.StudyDate,wj.Vendor,wj.Status,wj.diagnosticinterval,wj.Pre,wj.Art,wj.Ven,wj.Del,wj.Post,wj.PatientNumber,wj.studynumber,wj.FixedNumber,wj.daysincebaseline,wj.daysuntilmax,wj.Fixed,bd.*
+from  widejoinqa wj 
+left join benigndata  bd on wj.PatientNumber=bd.SlicerID
+where wj.daysuntilmax =0 and  wj.Status='control' and bd.BenignLesion="Y"
+order by cast(wj.PatientNumber as int),wj.StudyDate ;
 .mode list
 .output stdout
 -- cat newwide.sql  | sqlite3

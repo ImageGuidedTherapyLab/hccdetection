@@ -3,7 +3,8 @@ SHELL := /bin/bash
 .SECONDARY: 
 MATLABROOT      := /opt/apps/matlab/R2020a/
 
-MTHLISTUID  = $(shell sed 1d BerettaLab/wideformat.csv | cut -d, -f7 | cut -d/ -f9)
+MTHLISTUID  = $(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv | cut -d, -f3 )
+
 MTHCONTRASTLIST = Del Pre Art Ven Pst fixed
 rawmethodist: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).raw.nii.gz,$(MTHLISTUID)))) 
 methodist/%/Pre.raw.nii.gz: ;
@@ -11,11 +12,11 @@ methodist/%/Art.raw.nii.gz: ;
 methodist/%/Ven.raw.nii.gz: ;
 methodist/%/Del.raw.nii.gz:
 	mkdir -p $(@D)
-	/rsrch1/ip/dtfuentes/github/FileConversionScripts/seriesreadwriteall/DicomSeriesReadImageWriteAll $(shell sed 1d BerettaLab/wideformat.csv | cut -d, -f7 | grep $*  ) $(@D) '0008|0032' 
-	c3d -verbose $(@D)/$(shell sed 1d BerettaLab/wideformat.csv | grep $* | cut -d, -f3 )/*.nii.gz -o $(@D)/Del.raw.nii.gz -pop -o $(@D)/Ven.raw.nii.gz  -pop -o $(@D)/Art.raw.nii.gz  -pop -o $(@D)/Pre.raw.nii.gz
+	/rsrch1/ip/dtfuentes/github/FileConversionScripts/seriesreadwriteall/DicomSeriesReadImageWriteAll '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  | cut -d, -f12 | grep $*  )' $(@D) '0008|0032' 
+	c3d -verbose $(@D)/$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  | grep $* | cut -d, -f6 )/*.nii.gz -o $(@D)/Del.raw.nii.gz -pop -o $(@D)/Ven.raw.nii.gz  -pop -o $(@D)/Art.raw.nii.gz  -pop -o $(@D)/Pre.raw.nii.gz
 methodist/%/Pst.raw.nii.gz:
 	mkdir -p $(@D)
-	DicomSeriesReadImageWrite2 $(shell sed 1d BerettaLab/wideformat.csv | grep $* | cut -d, -f8 )  $@
+	DicomSeriesReadImageWrite2 '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  |  cut -d, -f13 | grep $*  )'  $@
 rawmethodistfixed: $(addprefix methodist/,$(addsuffix /fixed.raw.nii.gz,$(MTHLISTUID)))
 methodist/%/fixed.raw.nii.gz:
 	ln -snf Art.raw.nii.gz $@
@@ -49,7 +50,7 @@ methodist/%.zscore.nii.gz:
 	python normalization.py --imagefile=methodist/$*.raw.nii.gz  --output=$@
 methodist/%.bias.nii.gz: 
 	c3d -verbose methodist/$*.raw.nii.gz  -shift 1  -o  $@
-	/opt/apps/ANTS/dev/install/bin/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
+	/opt/apps/ANTS/build/ANTS-build/Examples/N4BiasFieldCorrection -v 1 -d 3 -c [20x20x20x10,0] -b [200] -s 2 -i  $@  -o  $@
 	python normalization.py --imagefile=$@  --output=$@
 methodist/%.crop.nii.gz: methodist/%.zscore.nii.gz
 	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@

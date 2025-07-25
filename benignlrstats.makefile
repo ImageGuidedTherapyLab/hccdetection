@@ -72,7 +72,7 @@ bcmdata/%/qaepm:
 ## epm statistics
 bcmlirads/%fixed.train.nii.gz: bcmlirads/%Art.raw.train.nii.gz
 	mkdir -p $(@D)
-	/opt/apps/ANTS/build/ANTS-build/Examples/antsApplyTransforms -d 3 -r bcmdata/$*/fixed.raw.nii.gz -i $< -o $@ -n NearestNeighbor -t bcmdata/$*/Art.longregcc1Warp.nii.gz         -t bcmdata/$*/Art.longregcc0GenericAffine.mat   
+	/opt/apps/ANTS/build/ANTS-build/Examples/antsApplyTransforms -d 3 -r bcmdata/$*/fixed.raw.nii.gz -i $< -o $@ -n NearestNeighbor -t bcmdata/$*/Art.distregcc1Warp.nii.gz         -t bcmdata/$*/Art.distregcc0GenericAffine.mat   
 epmstats/%/lstat.csv: bcmlirads/%fixed.train.nii.gz
 	mkdir -p $(@D)
 	c3d bcmdata/$*/EPM.nii $<  -lstat  > $(@D)/epm.txt &&  sed "s/^\s\+/$*,fixed.train.nii.gz,epm,/g;s/\s\+/,/g;s/LabelID/InstanceUID,SegmentationID,FeatureID,LabelID/g;s/Vol(mm^3)/Vol.mm.3/g;s/Extent(Vox)/ExtentX,ExtentY,ExtentZ/g" $(@D)/epm.txt > $(@D)/epm.csv 
