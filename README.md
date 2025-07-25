@@ -43,6 +43,14 @@ Matlab example
 https://www.mathworks.com/help/images/segment-3d-brain-tumor-using-deep-learning.html
 
 
+litstumor model 
+==============
+
+make -f lits.makefile crctumor
+make -f lits.makefile analyze
+make -f lits.makefile preprocess
+make -f lits.makefile train
+
 # Usage
 
 ## convert dicome to nifti and anonymize data
