@@ -1,0 +1,27 @@
+{
+  "task": "lits",
+  "modality": "ct",
+  "train-data": "/rsrch3/ip/dtfuentes/github/hccdetection/litstumor",
+  "mask": [
+    "label.nii"
+  ],
+  "images": {
+    "CT": [
+      "maskimage.nii"
+    ]
+  },
+  "labels": [
+    0,
+    1,
+    2
+  ],
+  "final_classes": {
+    "liver": [
+      1,
+      2
+    ],
+    "tumor": [
+    2
+    ]
+    }
+}

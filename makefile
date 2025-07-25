@@ -225,6 +225,7 @@ clusterrsync:
 	rsync -n -v -avz  --include={'*256.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch3/ip/dtfuentes/github/hccdetection/bcmdata/
 meltaherrsync:
 	rsync  -v -avz  --include={'*beta1.nii.gz','*beta2.nii.gz','*kep.nii.gz','*doseve.nii.gz','*raw.nii.gz','*distregcc.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /rsrch1/ip/meltaher/github/hccdetection/bcmdata/
+	rsync  -v -avz   --include='BCM*fixed.train.nii.gz*'  --exclude='*'  bcmlirads/  /rsrch1/ip/meltaher/github/hccdetection/bcmlirads/
 radoncsync:
 	rsync    -v -avz  --include={'*raw.nii.gz','*longregcc.nii.gz','*liver.nii.gz','*bias.nii.gz','*mask.nii.gz'} --include='BCM*/' --exclude='*'  bcmdata/  /Radonc/Cancer\ Physics\ and\ Engineering\ Lab/David\ Fuentes/hccdetection/bcmdata/
 
@@ -292,25 +293,6 @@ viewmdalong: $(addprefix mdadata/,$(addsuffix /viewmdalong,$(MDALISTUID)))
 	c3d -verbose $(@D)/Del.bias.nii.gz    -info $(@D)/Del.mask.nii.gz    -info -lstat
 	c3d -verbose $(@D)/Pst.bias.nii.gz    -info $(@D)/Pst.mask.nii.gz    -info -lstat
 	vglrun itksnap -g  $(@D)/fixed.bias.nii.gz  -s $(@D)/fixed.liver.nii.gz  -o $(@D)/Pre.longregcc.nii.gz $(@D)/Art.longregcc.nii.gz $(@D)/Ven.longregcc.nii.gz $(@D)/Del.longregcc.nii.gz $(@D)/Pst.longregcc.nii.gz & vglrun itksnap -g  $(@D)/Pre.raw.nii.gz  -s $(@D)/Pre.mask.nii.gz  & vglrun itksnap -g  $(@D)/Art.raw.nii.gz  -s $(@D)/Art.mask.nii.gz  & vglrun itksnap -g  $(@D)/Ven.raw.nii.gz  -s $(@D)/Ven.mask.nii.gz & vglrun itksnap -g  $(@D)/Del.raw.nii.gz  -s $(@D)/Del.mask.nii.gz   & vglrun itksnap -g  $(@D)/Pst.raw.nii.gz  -s $(@D)/Pst.mask.nii.gz & SOLNSTATUS=$$(zenity  --list --title="QA" --text="$*"  --editable  --column "Status" RegistrationError MaskError PulseSequence Usable ) ; echo $$SOLNSTATUS; echo $$SOLNSTATUS >  $*/reviewsolution.txt ;   pkill -9 ITK-SNAP
-# setup CRC data
-CRCLIST       = $(shell sed 1d crctrainingdata.csv | cut -f1 )
-CRCIMAGELIST  = $(shell sed 1d crctrainingdata.csv | cut -f3 )
-CRCLABELLIST  = $(shell sed 1d crctrainingdata.csv | cut -f4 )
-DATADIRCRC=/rsrch1/ip/jacctor/LiTS/LiTS/
-crcsetup: $(addprefix $(WORKDIR)/,$(addsuffix /image.nii,$(CRCLIST)))  $(addprefix $(WORKDIR)/,$(addsuffix /label.nii,$(CRCLIST)))  
-$(WORKDIR)/i%/image.nii:
-	mkdir -p $(@D)
-	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) $@
-$(WORKDIR)/i%/label.nii:
-	mkdir -p $(@D)
-	cp $(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST)) $@
-# mask the liver to segment the tumor
-crctumor: $(addprefix $(WORKDIR)/crctumor,$(addsuffix /setup,$(CRCLIST)))
-$(WORKDIR)/crctumori%/setup:
-	mkdir -p $(@D)
-	python liverboundingbox.py --imagefile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) --labelfile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST))  --output=$(@D)
-	c3d -verbose $(@D)/label.nii -thresh 2 2 1 0 -connected-components -o  $(@D)/comp.nii.gz
-	python tumorboundingbox.py --imagefile=$(@D)/maskimage.nii --labelfile=$(@D)/comp.nii.gz --output=$(@D)
 
 # setup CT HCC data
 HCCCTLIST       = $(shell sed 1d datalocation/cthccdatakey.csv | cut -f2 )
@@ -462,4 +444,4 @@ bcmdata/%.longregcc.nii.gz: bcmdata/%.bias.nii.gz bcmdata/$$(*D)/fixed.bias.nii.
 
 
 bcmdata/%.distregcc.nii.gz: bcmdata/%.bias.nii.gz bcmdata/$$(*D)/fixed.bias.nii.gz
-	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 02:00 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --metric CC[$(@D)/fixed.bias.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
+	export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=28; bsub  -env "all" -J $(subst /,,$*) -Ip -cwd $(CLUSTERDIR) -n 28 -W 03:00 -q short -M 128 -R rusage[mem=128] -o  $(basename $(basename $@)).log /risapps/rhel7/ANTs/20200622/bin/antsRegistration --verbose 1 --dimensionality 3 --float 0 --collapse-output-transforms 1 --output [$(basename $(basename $@)),$@] --interpolation Linear --use-histogram-matching 0 --winsorize-image-intensities [ 0.005,0.995 ] -x [$(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz] -r [ $(@D)/fixed.mask.nii.gz,bcmdata/$*.mask.nii.gz,1] --transform Rigid[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform Affine[ 0.1 ] --metric MI[ $(@D)/fixed.bias.nii.gz,$<,1,32,Regular,0.25 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --convergence [ 1000x500x250x100,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox --transform SyN[ 0.1,3,0 ] --metric CC[$(@D)/fixed.maurer.nii.gz,$(subst bias,maurer,$<),1,4 ] --metric CC[$(@D)/fixed.bias.nii.gz,$<,1,4 ] --convergence [ 100x70x50x20,1e-6,10 ] --shrink-factors 8x4x2x1 --smoothing-sigmas 3x2x1x0vox 
