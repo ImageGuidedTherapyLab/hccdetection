@@ -33,6 +33,8 @@ analyze:
 preprocess:
 	/opt/apps/miniforge/mist/bin/mist_preprocess --data /rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy /rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results /rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults 
 train:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus 0 --amp --pocket 
+traindocker:
 	docker run --entrypoint=/bin/bash --rm -it -u $(id -u):$(id -g) --env CUDA_VISIBLE_DEVICES=0   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(PWD):/home  mistmedical/mist:0.2.1b0
 	docker run --entrypoint=/opt/conda/bin/mist_train --rm -it -u $$(id -u):$$(id -g) --env CUDA_VISIBLE_DEVICES=0   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(PWD):/home  mistmedical/mist:0.2.1b0 --data /home/litstumor.json --numpy /home/litstrainnumpy --results /home/litstrainresults --gpus 0 --amp --pocket  --oversampling O.9
 
