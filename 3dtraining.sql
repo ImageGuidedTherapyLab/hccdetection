@@ -1,4 +1,3 @@
-
 -- cat 3dtraining.sql  | sqlite3
 -- sqlite3 -init 3dtraining.sql
 .mode csv
@@ -18,7 +17,7 @@ select ptid,UID,status from patientlistprior;
 
 .headers on
 .output 3dtrainingdx.csv
-select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlist;
+select ptid,UID,CASE WHEN status = "control" THEN 0 else 1 END status,'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlist;
 .output 3dtrainingpredx.csv
-select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlistunion ;
+select ptid,UID,CASE WHEN status = "control" THEN 0 else 1 END status,'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlistunion ;
 .output stdout
