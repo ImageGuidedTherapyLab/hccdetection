@@ -12,16 +12,11 @@
   },
   "labels": [
     0,
-    1,
-    2
+    1
   ],
   "final_classes": {
-    "liver": [
-      1,
-      2
-    ],
     "tumor": [
-    2
+    1
     ]
     }
 }

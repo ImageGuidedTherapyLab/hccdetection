@@ -20,7 +20,7 @@ litstumor/crctumori%/setup:
 	mkdir -p $(@D)
 	python liverboundingbox.py --imagefile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCIMAGELIST)) --labelfile=$(DATADIRCRC)/$(word $(shell expr $* + 1 ), $(CRCLABELLIST))  --output=$(@D)
 	c3d -verbose $(@D)/label.nii -thresh 2 2 1 0 -connected-components -o  $(@D)/comp.nii.gz
-	echo python tumorboundingbox.py --imagefile=$(@D)/maskimage.nii --labelfile=$(@D)/comp.nii.gz --output=$(@D)
+	echo python tumorboundingbox.py --imagefile=$(@D)/maskimage.nii --labelfile=$(@D)/comp.nii.gz --output=$(@D) --datatype=float
 
 convertcsv:
 	/opt/apps/miniforge/mist/bin/mist_convert_dataset --format csv --train-csv /rsrch3/ip/dtfuentes/github/hccdetection/litstrainingdata.csv --dest /rsrch3/ip/dtfuentes/github/hccdetection/mistlits/train
@@ -32,8 +32,17 @@ analyze:
 	/opt/apps/miniforge/mist/bin/mist_analyze --data /rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json  --results /rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults
 preprocess:
 	/opt/apps/miniforge/mist/bin/mist_preprocess --data /rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy /rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results /rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults 
-train:
-	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus 0 --amp --pocket 
+train: train0 train1 train2 train3 train4
+train0:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus  0 --amp --pocket   --batch-size  4 --epoch 2500 --folds  0 --master-port 12355
+train1:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus  1 --amp --pocket   --batch-size  4 --epoch 2500 --folds  1 --master-port 12356
+train2:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus  2 --amp --pocket   --batch-size  4 --epoch 2500 --folds  2 --master-port 12357
+train3:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus  3 --amp --pocket   --batch-size  4 --epoch 2500 --folds  3 --master-port 12358
+train4:
+	/opt/apps/miniforge/mist/bin//mist_train  --data //rsrch3/ip/dtfuentes/github/hccdetection/litstumor.json --numpy //rsrch3/ip/dtfuentes/github/hccdetection/litstrainnumpy --results //rsrch3/ip/dtfuentes/github/hccdetection/litstrainresults  --oversampling .9  --gpus  4 --amp --pocket   --batch-size  4 --epoch 2500 --folds  4 --master-port 12359
 traindocker:
 	docker run --entrypoint=/bin/bash --rm -it -u $(id -u):$(id -g) --env CUDA_VISIBLE_DEVICES=0   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(PWD):/home  mistmedical/mist:0.2.1b0
 	docker run --entrypoint=/opt/conda/bin/mist_train --rm -it -u $$(id -u):$$(id -g) --env CUDA_VISIBLE_DEVICES=0   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(PWD):/home  mistmedical/mist:0.2.1b0 --data /home/litstumor.json --numpy /home/litstrainnumpy --results /home/litstrainresults --gpus 0 --amp --pocket  --oversampling O.9
