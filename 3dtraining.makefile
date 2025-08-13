@@ -11,5 +11,6 @@ raw:   $(addprefix svdnetwork/,$(addsuffix /image.nii.gz,$(LISTID)))
 
 svdnetwork/%/image.nii.gz:
 	echo $*
-	mkdir -p svdnetwork/$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTOUTCOME))
-	c3d $(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTIMAGE)) $(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTLABEL)) -binarize -multiply -o svdnetwork/$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTOUTCOME))/$*.nii
+	mkdir -p svdnetwork/$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTOUTCOME))/$*
+	echo c3d $(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTIMAGE)) $(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTLABEL)) -binarize -multiply -o svdnetwork/$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTOUTCOME))/$*.nii
+	python liverboundingbox.py --imagefile=$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTIMAGE)) --labelfile=$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTLABEL))  --output=svdnetwork/$(word $(shell sed 1d 3dtrainingdx.csv | cut -d, -f2 | grep -n '^$*' |cut -f1 -d: ), $(LISTOUTCOME))/$*/ --datatype=float

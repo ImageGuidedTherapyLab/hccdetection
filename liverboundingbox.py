@@ -18,6 +18,9 @@ parser.add_option( "--imagefile",
 parser.add_option( "--labelfile",
                   action="store", dest="labelfile", default=None,
                   help="FILE containing image info", metavar="FILE")
+parser.add_option( "--datatype",
+                  action="store", dest="datatype", default='short',
+                  help="datatype of output FILE containing image info", metavar="FILE")
 parser.add_option( "--output",
                   action="store", dest="output", default=None,
                   help="FILE output", metavar="FILE")
@@ -49,8 +52,8 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     npimagebb = numpyimage[:,:, liverboundingbox[2] ]
     nptruthbb = numpyimage[:,:, liverboundingbox[2] ]
 
-    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region 0x0x%dvox %dx%dx%dvox -info -type short -endfor -omc %s/image.nii -multiply -o %s/maskimage.nii ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output,options.output )
-    labelbbcmd = 'c3d -verbose %s -info -region 0x0x%dvox %dx%dx%dvox -info -type uchar -o %s/label.nii  ' % (options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
+    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region 0x0x%dvox %dx%dx%dvox -info -type %s -endfor -omc %s/image.nii -multiply -o %s/maskimage.nii ' % (options.imagefile, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.datatype, options.output,options.output )
+    labelbbcmd = 'c3d -verbose %s/maskimage.nii %s -info -region 0x0x%dvox %dx%dx%dvox -copy-transform -replace 1 0 2 1 -info -type uchar -o %s/label.nii  ' % (options.output, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
     print(imagebbcmd )
     os.system(imagebbcmd )
     print(labelbbcmd )
