@@ -18,7 +18,7 @@ select ptid,UID,status from patientlistprior;
 
 .headers on
 .output 3dtrainingdx.csv
-select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label from  patientlist;
+select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlist;
 .output 3dtrainingpredx.csv
-select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label from  patientlistunion ;
+select *, 'bcmdata/'||UID||'/EPM.nii' image, 'bcmdata/'||UID||'/Art.liver.nii.gz' label , 'bcmlirads/'||UID||'fixed.train.nii.gz' train from  patientlistunion ;
 .output stdout
