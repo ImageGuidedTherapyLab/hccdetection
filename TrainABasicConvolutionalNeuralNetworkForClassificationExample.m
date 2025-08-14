@@ -68,9 +68,11 @@ hyperweight = [1, 10, 100, 1000];
 hyperweight = [1, 2, 10];
 % gradient is proportial to the number of classes in each fold. Weight the cases by the class imbalance ratio
 hyperweight = [1];
-accuracy = zeros(length(hyperweight ),1);
+hyperepoch  = [1:100];
+accuracy = zeros(length(hyperweight ),length(hyperepoch)  );
 
 for idweight =1:length(hyperweight )
+for idepoch =1:length(hyperepoch )
 
 layers = [
     image3dInputLayer([128 128 128 ])
@@ -225,7 +227,7 @@ imdsValidation.Labels = imds.Labels(cv.test(iii));
 
 options = trainingOptions('adam', ...
     'InitialLearnRate',0.001, ...
-    'MaxEpochs',200, ...
+    'MaxEpochs',hyperepoch(idepoch), ...
     'Shuffle','every-epoch', ...
     'ValidationData',imdsValidation, ...
     'ValidationFrequency',1, ...
@@ -263,12 +265,13 @@ myactivations(cv.test(iii)) =  outputfc(1,1,1,1,:);
 
 end
 
-accuracy(idweight ) = sum(YPred == imds.Labels)/numel(imds.Labels)
+accuracy(idweight,idepoch ) = sum(YPred == imds.Labels)/numel(imds.Labels)
 C = confusionmat(YPred ,imds.Labels)
+end
 end
 
 figure(2)
-plot(hyperweight,accuracy )
+plot(hyperepoch,accuracy(1,:) )
 
 figure(3)
 plot(myactivations,imds.Labels, '+')
