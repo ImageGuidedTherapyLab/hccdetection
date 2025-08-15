@@ -70,7 +70,7 @@ hyperweight = [1, 2, 10];
 hyperweight = [1];
 hyperepoch  = [1:100];
 hyperepoch  = [4, 8, 16, 32, 64, 128];
-hyperepoch  = [256];
+hyperepoch  = [1024];
 accuracy = zeros(length(hyperweight ),length(hyperepoch)  );
 
 for idweight =1:length(hyperweight )
@@ -215,7 +215,7 @@ imdsTrain.Labels = imds.Labels(cv.training(iii));
 
 imdsValidation.Files = imds.Files(cv.test(iii));
 imdsValidation.Labels = imds.Labels(cv.test(iii));
-accThreshold =81;
+accThreshold =90;
 options = trainingOptions('adam', ...
     'InitialLearnRate',0.001, ...
     'MaxEpochs',hyperepoch(idepoch), ...
@@ -281,6 +281,6 @@ function imagedata= mycustomreader(filename)
 end
 
 function stop = stopTraining(info,accThreshold)
-info.ValidationAccuracy
+%info.ValidationAccuracy
 stop = info.ValidationAccuracy > accThreshold;
 end
