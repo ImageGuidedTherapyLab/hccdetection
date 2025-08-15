@@ -15,6 +15,9 @@ parser = OptionParser()
 parser.add_option( "--imagefile",
                   action="store", dest="imagefile", default=None,
                   help="FILE containing image info", metavar="FILE")
+parser.add_option( "--trainfile",
+                  action="store", dest="trainfile", default=None,
+                  help="FILE containing image info", metavar="FILE")
 parser.add_option( "--labelfile",
                   action="store", dest="labelfile", default=None,
                   help="FILE containing image info", metavar="FILE")
@@ -27,7 +30,7 @@ parser.add_option( "--output",
 (options, args) = parser.parse_args()
 
 
-if (options.imagefile != None and options.labelfile != None and options.output != None ):
+if (options.imagefile != None and options.trainfile != None and options.labelfile != None and options.output != None ):
     # load nifti file
     imagedata = nib.load(options.imagefile)
     numpyimage= imagedata.get_data().astype(IMG_DTYPE )
@@ -36,8 +39,13 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     truthdata = nib.load(options.labelfile )
     numpytruth= truthdata.get_data().astype(SEG_DTYPE)
 
+    # load nifti file
+    traindata = nib.load(options.trainfile )
+    numpytrain= traindata.get_data().astype(SEG_DTYPE)
+
     # error check
     assert numpyimage.shape == numpytruth.shape
+    assert numpyimage.shape == numpytrain.shape
 
     # bounding box for each label
     assert np.max(numpytruth) > 0 
@@ -52,8 +60,7 @@ if (options.imagefile != None and options.labelfile != None and options.output !
     npimagebb = numpyimage[:,:, liverboundingbox[2] ]
     nptruthbb = numpyimage[:,:, liverboundingbox[2] ]
 
-    imagebbcmd = 'c3d -verbose %s -dup %s -info -copy-transform -info -binarize -foreach -region %dx%dx%dvox %dx%dx%dvox -info -type %s -resample 128x128x128 -endfor -omc %simage.nii ' % (options.imagefile, options.labelfile, int(liverboundingbox[0].start),int(liverboundingbox[1].start),int(liverboundingbox[2].start), int(liverboundingbox[0].stop-liverboundingbox[0].start),int(liverboundingbox[1].stop-liverboundingbox[1].start),int(liverboundingbox[2].stop-liverboundingbox[2].start),options.datatype, options.output)
-    labelbbcmd = 'c3d -verbose %s/maskimage.nii %s -info -region 0x0x%dvox %dx%dx%dvox -copy-transform -replace 1 0 2 1 -info -type uchar -o %s/label.nii  ' % (options.output, options.labelfile, int(liverboundingbox[2].start), imagedata.shape[0],imagedata.shape[1],int(liverboundingbox[2].stop-liverboundingbox[2].start),options.output )
+    imagebbcmd = 'c3d -verbose %s  -region %dx%dx%dvox %dx%dx%dvox -type %s -resample 128x128x128 %s -info  -region %dx%dx%dvox %dx%dx%dvox -type %s -resample 128x128x128  %s -info -binarize -region %dx%dx%dvox %dx%dx%dvox -type %s -resample 128x128x128 -omc %simage.nii ' % (options.imagefile,int(liverboundingbox[0].start),int(liverboundingbox[1].start),int(liverboundingbox[2].start), int(liverboundingbox[0].stop-liverboundingbox[0].start),int(liverboundingbox[1].stop-liverboundingbox[1].start),int(liverboundingbox[2].stop-liverboundingbox[2].start),options.datatype,  options.labelfile ,int(liverboundingbox[0].start),int(liverboundingbox[1].start),int(liverboundingbox[2].start), int(liverboundingbox[0].stop-liverboundingbox[0].start),int(liverboundingbox[1].stop-liverboundingbox[1].start),int(liverboundingbox[2].stop-liverboundingbox[2].start),options.datatype, options.trainfile,int(liverboundingbox[0].start),int(liverboundingbox[1].start),int(liverboundingbox[2].start), int(liverboundingbox[0].stop-liverboundingbox[0].start),int(liverboundingbox[1].stop-liverboundingbox[1].start),int(liverboundingbox[2].stop-liverboundingbox[2].start),options.datatype, options.output)
     print(imagebbcmd )
     os.system(imagebbcmd )
     #print(labelbbcmd )
