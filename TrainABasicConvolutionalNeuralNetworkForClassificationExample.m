@@ -69,56 +69,57 @@ hyperweight = [1, 2, 10];
 % gradient is proportial to the number of classes in each fold. Weight the cases by the class imbalance ratio
 hyperweight = [1];
 hyperepoch  = [1:100];
-hyperepoch  = [4, 8, 16];
+hyperepoch  = [4, 8, 16, 32, 64, 128];
+hyperepoch  = [256];
 accuracy = zeros(length(hyperweight ),length(hyperepoch)  );
 
 for idweight =1:length(hyperweight )
 for idepoch =1:length(hyperepoch )
 
-layers = [
-    image3dInputLayer([128 128 128 ])
-    
-    convolution3dLayer(128,pocketchannels,'Stride',128)
-    batchNormalizationLayer
-    reluLayer
-    % TODO - concatenationLayer
-    
-    fullyConnectedLayer(2)
-    softmaxLayer
-    classificationLayer('ClassWeights',[1 hyperweight(idweight)],'Classes',unique(imds.Labels))];
 %% layers = [
 %%     image3dInputLayer([128 128 128 ])
 %%     
-%%     convolution3dLayer(3,pocketchannels,'Padding','same')
-%%     %batchNormalizationLayer
+%%     convolution3dLayer(128,pocketchannels,'Stride',128)
+%%     batchNormalizationLayer
 %%     reluLayer
+%%     % TODO - concatenationLayer
 %%     
-%%     maxPooling3dLayer(4,'Stride',4)
-%%     %convolution3dLayer(2,pocketchannels,'Stride',2,"Weights",ones(2,2,8,8),"Bias",zeros(1,1,8),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
-%%     
-%%     convolution3dLayer(3,pocketchannels,'Padding','same')
-%%     %batchNormalizationLayer
-%%     reluLayer
-%%     
-%%     maxPooling3dLayer(4,'Stride',4)
-%%     %convolution3dLayer(2,16,'Stride',2,"Weights",ones(2,2,16,16),"Bias",zeros(1,1,16),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
-%%     
-%%     convolution3dLayer(3,pocketchannels,'Padding','same')
-%%     %batchNormalizationLayer
-%%     reluLayer
-%%     
-%% %    maxPooling3dLayer(2,'Stride',2)
-%% %    %convolution3dLayer(2,16,'Stride',2,"Weights",ones(2,2,16,16),"Bias",zeros(1,1,16),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
-%% %    
-%% %    convolution3dLayer(3,pocketchannels,'Padding','same')
-%% %    %batchNormalizationLayer
-%% %    reluLayer
-%%     
-%%     %fullyConnectedLayer(2)
-%%     %regressionLayer];
 %%     fullyConnectedLayer(2)
 %%     softmaxLayer
 %%     classificationLayer('ClassWeights',[1 hyperweight(idweight)],'Classes',unique(imds.Labels))];
+layers = [
+    image3dInputLayer([128 128 128 ])
+    
+    convolution3dLayer(3,pocketchannels,'Padding','same')
+    %batchNormalizationLayer
+    reluLayer
+    
+    maxPooling3dLayer(4,'Stride',4)
+    %convolution3dLayer(2,pocketchannels,'Stride',2,"Weights",ones(2,2,8,8),"Bias",zeros(1,1,8),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
+    
+    convolution3dLayer(3,pocketchannels,'Padding','same')
+    %batchNormalizationLayer
+    reluLayer
+    
+    maxPooling3dLayer(4,'Stride',4)
+    %convolution3dLayer(2,16,'Stride',2,"Weights",ones(2,2,16,16),"Bias",zeros(1,1,16),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
+    
+    convolution3dLayer(3,pocketchannels,'Padding','same')
+    %batchNormalizationLayer
+    reluLayer
+    
+%    maxPooling3dLayer(2,'Stride',2)
+%    %convolution3dLayer(2,16,'Stride',2,"Weights",ones(2,2,16,16),"Bias",zeros(1,1,16),"WeightLearnRateFactor",0,"BiasLearnRateFactor",0)
+%    
+%    convolution3dLayer(3,pocketchannels,'Padding','same')
+%    %batchNormalizationLayer
+%    reluLayer
+    
+    %fullyConnectedLayer(2)
+    %regressionLayer];
+    fullyConnectedLayer(2)
+    softmaxLayer
+    classificationLayer('ClassWeights',[1 hyperweight(idweight)],'Classes',unique(imds.Labels))];
 %% %% 
 %% % *Image Input Layer* An <docid:nnet_ref.mw_fcd2d9b1-ce25-49d1-9d06-b7cf41594ff4 
 % imageInputLayer> is where you specify the image size, which, in this case, is 
@@ -214,7 +215,7 @@ imdsTrain.Labels = imds.Labels(cv.training(iii));
 
 imdsValidation.Files = imds.Files(cv.test(iii));
 imdsValidation.Labels = imds.Labels(cv.test(iii));
-
+accThreshold =81;
 options = trainingOptions('adam', ...
     'InitialLearnRate',0.001, ...
     'MaxEpochs',hyperepoch(idepoch), ...
@@ -225,7 +226,9 @@ options = trainingOptions('adam', ...
     'MiniBatchSize',batchsize, ...
     'L2Regularization', 1.0000e-01, ...
     'OutputNetwork','last-iteration',...'best-validation' 'last-iteration'
-    'Plots','training-progress');
+    'Plots','training-progress',...
+    'OutputFcn',@(info)stopTraining(info,accThreshold));
+
 %% Train Neural Network Using Training Data
 % Train the neural network using the architecture defined by |layers|, the training 
 % data, and the training options. By default, |trainNetwork| uses a GPU if one 
@@ -274,5 +277,10 @@ histogram(myactivations(imds.Labels=='1'),20)
 % _Copyright 2018 The MathWorks, Inc._
 function imagedata= mycustomreader(filename)
      vectorimage = squeeze(niftiread(filename));
-     imagedata = vectorimage(:,:,:,1).* (vectorimage(:,:,:,2) >0);
+     imagedata = vectorimage(:,:,:,1).* (vectorimage(:,:,:,3) >0);
+end
+
+function stop = stopTraining(info,accThreshold)
+info.ValidationAccuracy
+stop = info.ValidationAccuracy > accThreshold;
 end
