@@ -88,7 +88,8 @@ make overlap
 
 # detection 
 
-make -f methodist.makefile -j 4 rawmethodist resizemth
+make -f methodist.makefile -j 12 rawmethodist biasmth
+make -f methodist.makefile labelmth 
 
 # matlab code structure
 
