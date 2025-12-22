@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .SECONDARY: 
 MATLABROOT      := /opt/apps/matlab/R2020a/
 
-MTHLISTUID  = $(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv | cut -d, -f3 )
+MTHLISTUID  = $(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_AllData.csv | cut -d, -f2 )
 
 MTHCONTRASTLIST = Del Pre Art Ven Pst fixed
 rawmethodist: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).raw.nii.gz,$(MTHLISTUID)))) 
@@ -12,11 +12,11 @@ methodist/%/Art.raw.nii.gz: ;
 methodist/%/Ven.raw.nii.gz: ;
 methodist/%/Del.raw.nii.gz:
 	mkdir -p $(@D)
-	/rsrch1/ip/dtfuentes/github/FileConversionScripts/seriesreadwriteall/DicomSeriesReadImageWriteAll '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  | cut -d, -f12 | grep $*  )' $(@D) '0008|0032' 
-	c3d -verbose $(@D)/$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  | grep $* | cut -d, -f6 )/*.nii.gz -o $(@D)/Del.raw.nii.gz -pop -o $(@D)/Ven.raw.nii.gz  -pop -o $(@D)/Art.raw.nii.gz  -pop -o $(@D)/Pre.raw.nii.gz
+	/rsrch1/ip/dtfuentes/github/FileConversionScripts/seriesreadwriteall/DicomSeriesReadImageWriteAll '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_AllData.csv  | cut -d, -f11 | grep $*  )' $(@D) '0008|0032' 
+	c3d -verbose $(@D)/$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_AllData.csv  | grep $* | cut -d, -f5 )/*.nii.gz -o $(@D)/Del.raw.nii.gz -pop -o $(@D)/Ven.raw.nii.gz  -pop -o $(@D)/Art.raw.nii.gz  -pop -o $(@D)/Pre.raw.nii.gz
 methodist/%/Pst.raw.nii.gz:
 	mkdir -p $(@D)
-	DicomSeriesReadImageWrite2 '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_Automated.csv  |  cut -d, -f13 | grep $*  )'  $@
+	DicomSeriesReadImageWrite2 '$(shell sed 1d methodistss/Methodist_QIAC_Pst_Dyn_UIDs_AllData.csv  |  cut -d, -f12 | grep $*  )'  $@
 rawmethodistfixed: $(addprefix methodist/,$(addsuffix /fixed.raw.nii.gz,$(MTHLISTUID)))
 methodist/%/fixed.raw.nii.gz:
 	ln -snf Art.raw.nii.gz $@
@@ -56,16 +56,13 @@ methodist/%.crop.nii.gz: methodist/%.zscore.nii.gz
 	python resize.py --imagefile=methodist/$*.zscore.nii.gz  --output=$@
 # label data
 labelmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).label.nii.gz,$(MTHLISTUID)))) 
-methodist/%/label.nii.gz: methodist/%.256.nii.gz
-	echo applymodel\('$<','Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat','$(@D)','1','gpu'\)
-	mkdir -p $(@D);./run_applymodel.sh $(MATLABROOT) $< Processed/hccmrilog/dscimg/densenet3d/adadelta/256/hccmrima/005020/001/000/restore_10162020/trainedNet.mat $(@D) 1 gpu
-	echo vglrun itksnap -g $< -s methodist/$*/label.nii.gz -o methodist/$*/score.nii.gz
-methodist/%.label.nii.gz: methodist/%/label.nii.gz
-	c3d -verbose methodist/$*.raw.nii.gz $< -reslice-identity -o $@
+methodist/%.label.nii.gz: methodist/%.raw.nii.gz
+	docker run --rm -it --gpus all -u $$(id -u):$$(id -g) -v $(PWD)/$(@D):/input -v /tmp:/output hpcharbor.mdanderson.edu/aecelaya/mr_liver:0.1.7b0 --image /input/$(<F) --output /output ; mv /tmp/liver_mask.nii.gz $@
+
 # dilate mask
 maskmth: $(foreach idc,$(MTHCONTRASTLIST),$(addprefix methodist/,$(addsuffix /$(idc).mask.nii.gz,$(MTHLISTUID)))) 
 methodist/%.mask.nii.gz: 
-	c3d -verbose methodist/$*.label.nii.gz  -thresh 2 2 1 0  -comp -thresh 1 1 1 0  -o  methodist/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
+	c3d -verbose methodist/$*.label.nii.gz    -comp -thresh 1 1 1 0  -o  methodist/$*.liver.nii.gz -dilate 1 15x15x15vox -o $@
 # register study
 regmth:  $(foreach idc,$(filter-out Art fixed,$(MTHCONTRASTLIST)),$(addprefix methodist/,$(addsuffix /$(idc).regcc.nii.gz,$(MTHLISTUID)))) 
 methodist/%.regcc.nii.gz: methodist/%.bias.nii.gz methodist/%.mask.nii.gz
